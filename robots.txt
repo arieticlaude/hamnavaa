@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Nothing here is private, but there's no value in crawling the raw assets
+# directly — they're all reachable from the pages that use them.
+Disallow: /assets/js/
+Disallow: /assets/css/
+
+Sitemap: https://www.hamnavaa.com/sitemap.xml
