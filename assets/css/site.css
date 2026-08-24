@@ -243,8 +243,8 @@
     transition:opacity .4s ease;
   }
   .quick-link__icon img{
-    position:relative; z-index:1; width:100%; height:100%; object-fit:contain;
-    filter:drop-shadow(0 6px 12px rgba(30,46,43,0.16));
+    position:relative; z-index:1; width:100%; height:100%; object-fit:cover; border-radius:50%;
+    box-shadow:0 6px 14px -6px rgba(30,46,43,0.3);
   }
   .quick-link:hover .quick-link__icon{transform:scale(1.07);}
   .quick-link:hover .quick-link__icon::before{opacity:0.36;}
@@ -495,11 +495,15 @@
      background so the halo below reads as light coming off it rather than as a
      plate sitting behind a badge; the drop-shadow follows the cut-out silhouette
      for the same reason. */
+  /* The illustration set changed from cut-outs with a transparent background to
+     framed scenes. `object-fit:contain` plus a drop-shadow was right for a floating
+     cut-out; on a full-bleed scene it draws a shadow around a rectangle and leaves
+     letterboxing. These four slots now crop to fill their circle/square instead. */
   .benefit-card__art{
     position:relative; z-index:1;
-    width:100%; height:100%; object-fit:contain;
-    filter:drop-shadow(0 12px 22px rgba(30,46,43,0.18));
-    transition:transform .45s cubic-bezier(.34,1.56,.64,1), filter .35s ease;
+    width:100%; height:100%; object-fit:cover; border-radius:50%;
+    box-shadow:0 12px 22px -8px rgba(30,46,43,0.28);
+    transition:transform .45s cubic-bezier(.34,1.56,.64,1), box-shadow .35s ease;
   }
   .benefit-card:hover .benefit-card__art{
     transform:scale(1.06) translateY(-2px);
@@ -1867,8 +1871,8 @@
     opacity:0.26; filter:blur(20px); transition:opacity .4s ease;
   }
   .test-card__art{
-    position:relative; z-index:1; width:100%; height:100%; object-fit:contain;
-    filter:drop-shadow(0 12px 24px rgba(30,46,43,0.18));
+    position:relative; z-index:1; width:100%; height:100%; object-fit:cover; border-radius:50%;
+    box-shadow:0 12px 24px -10px rgba(30,46,43,0.3);
   }
   .test-card:hover .test-card__icon{transform:scale(1.06) translateY(-2px);}
   .test-card:hover .test-card__icon::before{opacity:0.42;}
@@ -1904,8 +1908,8 @@
     background:var(--grad-cool); opacity:0.24; filter:blur(20px);
   }
   .test-intro__art{
-    position:relative; z-index:1; width:100%; height:100%; object-fit:contain;
-    filter:drop-shadow(0 12px 24px rgba(30,46,43,0.18));
+    position:relative; z-index:1; width:100%; height:100%; object-fit:cover; border-radius:50%;
+    box-shadow:0 12px 24px -10px rgba(30,46,43,0.3);
   }
   .test-intro h3{font-size:1.3rem; color:var(--teal-deep); font-weight:700; margin-bottom:8px;}
   .test-intro p{font-size:0.92rem; color:var(--muted); line-height:1.85; margin-bottom:18px;}
