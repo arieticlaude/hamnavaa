@@ -2099,7 +2099,7 @@
       // which associated symptoms are present.
       {
         id: 'phq9',
-        art: 'test-phq9',
+        art: 'test-phq9-v2',
         name: 'آزمون جامع غربالگری افسردگی',
         subtitle: 'PHQ-9 +',
         short: 'در سه بخش: شدت نشانه‌ها با پرسشنامه استاندارد PHQ-9، میزان اثر آن بر زندگی روزمره، و نشانه‌های همراه — همان سه چیزی که یک روان‌شناس در جلسه اول بررسی می‌کند.',
@@ -2214,7 +2214,7 @@
       // completely different work.
       {
         id: 'rses',
-        art: 'test-rses',
+        art: 'test-rses-v2',
         name: 'آزمون جامع عزت‌نفس',
         subtitle: 'RSES +',
         short: 'در سه بخش: عزت‌نفس کلی با مقیاس استاندارد روزنبرگ، شدت خودانتقادی و شرم، و میزان خودشفقتی و پذیرش خود.',
@@ -2320,7 +2320,7 @@
       },
       {
         id: 'dass21',
-        art: 'test-dass21',
+        art: 'test-dass21-v2',
         name: 'مقیاس افسردگی، اضطراب و استرس',
         subtitle: 'DASS-21',
         short: 'یکی از معتبرترین و پراستفاده‌ترین ابزارهای دنیا؛ هم‌زمان سه بعد افسردگی، اضطراب و استرس را در یک هفته اخیر می‌سنجد.',
@@ -2420,7 +2420,7 @@
       },
       {
         id: 'panas',
-        art: 'test-panas',
+        art: 'test-panas-v2',
         name: 'مقیاس عاطفه مثبت و منفی',
         subtitle: 'PANAS',
         short: 'ابزاری معتبر و بسیار پراستفاده برای سنجش میزان احساسات مثبت (نشاط، اشتیاق) و منفی (تنش، نگرانی) که در هفته اخیر تجربه کرده‌اید.',
@@ -2504,7 +2504,7 @@
       // as descriptive severity, never as a diagnosis.
       {
         id: 'asrs',
-        art: 'test-asrs',
+        art: 'test-asrs-v2',
         name: 'آزمون غربالگری بیش‌فعالی و کم‌توجهی بزرگسالان',
         subtitle: 'ASRS v1.1',
         short: 'پرسشنامه رسمی سازمان جهانی بهداشت برای غربالگری ADHD در بزرگسالان؛ هر ۱۸ سؤال آن بر معیارهای تشخیصی DSM منطبق است و نتیجه در سه بخش گزارش می‌شود.',
@@ -2608,7 +2608,7 @@
       },
       {
         id: 'bigfive',
-        art: 'test-bigfive',
+        art: 'test-bigfive-v2',
         name: 'آزمون شخصیت پنج عامل بزرگ',
         subtitle: 'IPIP-50',
         short: 'معروف‌ترین و علمی‌ترین مدل شخصیت‌شناسی در روان‌شناسی امروز؛ شخصیت شما را در ۵ بعد اصلی توصیف می‌کند.',
@@ -2750,7 +2750,7 @@
       // agreeing with everything can never push an axis to one extreme.
       {
         id: 'mbti16',
-        art: 'test-mbti16',
+        art: 'test-mbti16-v2',
         name: 'آزمون ۱۶ تیپ شخصیتی',
         subtitle: '16 Personalities',
         short: 'شناخته‌شده‌ترین آزمون تیپ‌شناسی شخصیت در دنیا؛ شما را در ۵ محور می‌سنجد و یکی از ۱۶ تیپ شخصیتی (مثل INFJ-A) را با توصیف کامل به شما می‌دهد.',
@@ -2991,7 +2991,7 @@
       // only way an "accurate" result means anything here.
       {
         id: 'enneagram',
-        art: 'test-enneagram',
+        art: 'test-enneagram-v2',
         name: 'آزمون انیاگرام',
         subtitle: 'Enneagram',
         short: 'نُه تیپ شخصیتی بر پایه انگیزه‌های درونی — نه رفتار بیرونی. تیپ اصلی، بال، و مرکز هیجانی شما را با توضیح کامل مشخص می‌کند.',
@@ -3131,7 +3131,7 @@
       },
       {
         id: 'disc',
-        art: 'test-disc',
+        art: 'test-disc-v2',
         name: 'آزمون سبک رفتاری DISC',
         subtitle: 'DISC',
         short: 'پرکاربردترین مدل سبک ارتباطی در محیط کار؛ سبک غالب و سبک دوم شما را در چهار بعد قاطعیت، تأثیرگذاری، ثبات و دقت مشخص می‌کند.',
