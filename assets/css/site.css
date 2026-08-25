@@ -1512,6 +1512,22 @@
   .footer-col a:hover{color:var(--gold);}
   .footer-bottom{display:flex; justify-content:space-between; align-items:center; gap:18px; padding-top:24px; flex-wrap:wrap;}
   .footer-bottom p{font-size:0.83rem; color:rgba(238,241,236,0.5);}
+  /* Copyright and credit stack together at the far end of the row, so the
+     emergency note keeps the space it needs on the other side. flex-end is the
+     inline end, which is the left in Persian and the right in English —
+     correct in both without a direction-specific rule. */
+  .footer-meta{display:flex; flex-direction:column; align-items:flex-end; gap:5px;}
+  /* Scoped to .footer-bottom to outrank `.footer-bottom p` above, which would
+     otherwise pull the size and colour back to the copyright line's — and the
+     point of this line is to sit one step quieter than that. */
+  .footer-bottom .footer-credit{font-size:0.78rem; color:rgba(238,241,236,0.38);}
+  .footer-credit__name{
+    color:var(--gold); font-weight:700; letter-spacing:0.04em; opacity:0.85;
+    /* A Latin name inside a Persian sentence: isolate it, or the bidi
+       algorithm reorders it to the wrong side of the phrase. */
+    unicode-bidi:isolate; direction:ltr;
+  }
+  .footer-credit__name:hover{opacity:1;}
   .emergency-note{
     font-size:0.83rem; color:rgba(238,241,236,0.75); max-width:560px;
     border-inline-start:2px solid var(--gold); padding-inline-start:14px;
