@@ -1614,8 +1614,15 @@
       // it instead of chasing a moving target.
       var paused = false;
       var marqueeWrap = marqueeTrack.parentElement;
-      marqueeWrap.addEventListener('mouseenter', function(){ paused = true; });
-      marqueeWrap.addEventListener('mouseleave', function(){ paused = false; });
+      // Only for a real pointing device. A touch tap also fires mouseenter,
+      // but there is no matching mouseleave until the visitor happens to tap
+      // somewhere else — so on a phone this left the strip parked forever
+      // after the first time anyone touched it.
+      var canHover = !window.matchMedia || window.matchMedia('(hover: hover)').matches;
+      if (canHover){
+        marqueeWrap.addEventListener('mouseenter', function(){ paused = true; });
+        marqueeWrap.addEventListener('mouseleave', function(){ paused = false; });
+      }
       marqueeWrap.addEventListener('focusin', function(){ paused = true; });
       marqueeWrap.addEventListener('focusout', function(){ paused = false; });
 
@@ -1679,18 +1686,112 @@
       // a tap on a face and must be allowed to follow the link.
       var DRAG_SLOP = 6;
       var dragging = false, dragDist = 0, dragLastX = 0, captured = false;
+      var touchDriven = false;            // a finger owns the strip; see below
+      var vel = 0, velTs = 0, fling = 0;  // px/s, for the throw after release
 
-      marqueeWrap.addEventListener('pointerdown', function(e){
-        if (e.pointerType === 'mouse' && e.button !== 0) return;
-        dragging = true; dragDist = 0; dragLastX = e.clientX; captured = false;
+      function dragBegin(x){
+        dragging = true; dragDist = 0; dragLastX = x; captured = false;
         currentSpeed = 0;                 // hand over from the animation cleanly
+        fling = 0; vel = 0; velTs = (window.performance || Date).now();
+      }
+
+      function dragTo(x){
+        if (!dragging) return;
+        var dx = x - dragLastX;
+        dragLastX = x;
+        dragDist += Math.abs(dx);
+
+        // Smoothed rather than last-frame: one jittery sample as the finger
+        // lifts should not decide how hard the strip gets thrown.
+        var now = (window.performance || Date).now();
+        var dt = now - velTs;
+        if (dt > 0){
+          vel = vel * 0.72 + (dx / (dt / 1000)) * 0.28;
+          velTs = now;
+        }
+
+        offset -= dx;                     // drag right, strip follows right
+        apply();
+        recycle();
+      }
+
+      function dragEnd(){
+        if (!dragging) return;
+        dragging = false;
+        marqueeWrap.classList.remove('is-dragging');
+        // Carry the hand's speed on past the release, the way a native
+        // carousel does, then let it decay back into the steady auto-scroll.
+        if (dragDist > DRAG_SLOP && Math.abs(vel) > 60){
+          fling = -vel;
+          if (fling > 2600) fling = 2600;
+          if (fling < -2600) fling = -2600;
+        }
+      }
+
+      // ---- touch ----
+      // Pointer events alone are not enough here. On a phone the browser first
+      // has to decide whether a gesture belongs to the page or to us, and
+      // several mobile browsers resolve "a sideways drag inside a vertically
+      // scrolling page" in the page's favour and cancel the pointer stream —
+      // which is exactly this strip. Raw touch events leave no room for that
+      // negotiation: we pick the axis ourselves and preventDefault() the ones
+      // we claim. passive:false is required or that preventDefault is ignored.
+      var tStartX = 0, tStartY = 0, tAxis = '';
+
+      marqueeWrap.addEventListener('touchstart', function(e){
+        if (e.touches.length !== 1) return;
+        touchDriven = true; tAxis = '';
+        tStartX = e.touches[0].clientX;
+        tStartY = e.touches[0].clientY;
+        dragBegin(tStartX);
+      }, {passive:true});
+
+      marqueeWrap.addEventListener('touchmove', function(e){
+        if (!touchDriven || e.touches.length !== 1) return;
+        var t = e.touches[0];
+        if (!tAxis){
+          var adx = Math.abs(t.clientX - tStartX);
+          var ady = Math.abs(t.clientY - tStartY);
+          if (adx < 4 && ady < 4) return;          // too early to call it
+          // Ties go to the strip: swiping across a row of faces reads as
+          // sideways intent even when the finger wanders a little.
+          tAxis = adx >= ady ? 'x' : 'y';
+          if (tAxis === 'y'){                      // it's a page scroll, let go
+            dragging = false; dragDist = 0; touchDriven = false;
+            marqueeWrap.classList.remove('is-dragging');
+            return;
+          }
+          marqueeWrap.classList.add('is-dragging');
+        }
+        if (tAxis !== 'x') return;
+        e.preventDefault();                        // page must not scroll under us
+        dragTo(t.clientX);
+      }, {passive:false});
+
+      marqueeWrap.addEventListener('touchend', function(){
+        if (!touchDriven) return;
+        dragEnd();
+        touchDriven = false;
+      });
+      marqueeWrap.addEventListener('touchcancel', function(){
+        if (!touchDriven) return;
+        dragging = false; dragDist = 0; fling = 0; touchDriven = false;
+        marqueeWrap.classList.remove('is-dragging');
+      });
+
+      // ---- mouse / pen ----
+      // Touch is handled above; ignore the pointer events the browser also
+      // synthesises for it so a finger drag is not applied twice.
+      marqueeWrap.addEventListener('pointerdown', function(e){
+        if (touchDriven || e.pointerType === 'touch') return;
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        dragBegin(e.clientX);
       });
 
       marqueeWrap.addEventListener('pointermove', function(e){
+        if (touchDriven || e.pointerType === 'touch') return;
         if (!dragging) return;
-        var dx = e.clientX - dragLastX;
-        dragLastX = e.clientX;
-        dragDist += Math.abs(dx);
+        dragTo(e.clientX);
 
         // Capture is claimed only once this is unmistakably a drag, never on a
         // plain press. While a pointer is captured the browser retargets the
@@ -1704,15 +1805,12 @@
           marqueeWrap.classList.add('is-dragging');
           try { marqueeWrap.setPointerCapture(e.pointerId); } catch (err) {}
         }
-        offset -= dx;                     // drag right, strip follows right
-        apply();
-        recycle();
       });
 
       function endDrag(e){
+        if (touchDriven || (e && e.pointerType === 'touch')) return;
         if (!dragging) return;
-        dragging = false;
-        marqueeWrap.classList.remove('is-dragging');
+        dragEnd();
         if (captured){
           try { marqueeWrap.releasePointerCapture(e.pointerId); } catch (err) {}
           captured = false;
@@ -1741,6 +1839,21 @@
         if (lastTs === null) lastTs = ts;
         var dt = Math.min(ts - lastTs, 100);
         lastTs = ts;
+
+        // A flick keeps the strip moving after the finger leaves and decays
+        // back to the steady drift, instead of stopping dead the instant
+        // contact is lost. While it is running it owns the offset outright —
+        // easing the auto-scroll in underneath would fight it.
+        if (!dragging && Math.abs(fling) > 20){
+          offset += fling * (dt / 1000);
+          fling *= Math.exp(-dt / 240);
+          currentSpeed = 0;
+          apply();
+          recycle();
+          requestAnimationFrame(step);
+          return;
+        }
+        fling = 0;
 
         // ease current speed toward the target (0 while paused, full while running)
         // instead of a boolean on/off — glides to a stop and eases back up
