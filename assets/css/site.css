@@ -1523,8 +1523,9 @@
   .footer-bottom .footer-credit{font-size:0.78rem; color:rgba(238,241,236,0.38);}
   .footer-credit__name{
     color:var(--gold); font-weight:700; letter-spacing:0.04em; opacity:0.85;
-    /* A Latin name inside a Persian sentence: isolate it, or the bidi
-       algorithm reorders it to the wrong side of the phrase. */
+    /* The credit line stays English in both languages and carries dir="ltr",
+       so this isolate is belt-and-braces — it keeps the name readable if the
+       line is ever dropped back into Persian running text. */
     unicode-bidi:isolate; direction:ltr;
   }
   .footer-credit__name:hover{opacity:1;}
