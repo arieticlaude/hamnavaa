@@ -826,16 +826,26 @@
   .brand{display:flex; align-items:center; gap:10px;}
   .brand__mark{width:34px; height:34px; flex-shrink:0;}
   .brand__name{font-family:'Markazi Text',serif; font-size:1.5rem; font-weight:700; background:var(--grad-cool); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent;}
-  .nav__links{display:flex; align-items:center; gap:22px; font-size:0.95rem; font-weight:600; color:var(--ink);}
-  .nav__links a{position:relative; padding:4px 0; white-space:nowrap;}
+  /* 18px, not the original 26: the header CTA is a real pill again (41px tall,
+     26px of side padding) rather than the 23px text-link it had collapsed to,
+     which put the Persian nav at 1128px against a 1140px breakpoint — 12px of
+     margin. At 18px it needs 1092 and has ~48px to absorb a font that renders
+     a little wider. */
+  .nav__links{display:flex; align-items:center; gap:18px; font-size:0.95rem; font-weight:600; color:var(--ink);}
+  /* :not(.btn) throughout — these are the plain text links. `.nav__links a` is
+     more specific than `.btn`, so without it the CTA in the header inherited
+     the text link's 4px/0 padding (a 23px-tall pill against 41px everywhere
+     else) and its ::after was overwritten by the underline, killing the shine
+     sweep and leaving a gold rule drawn across the button on hover. */
+  .nav__links a:not(.btn){position:relative; padding:4px 0; white-space:nowrap;}
   .nav__links .btn{margin-inline-start:6px;}
-  .nav__links a::after{
+  .nav__links a:not(.btn)::after{
     content:""; position:absolute; inset-inline-start:0; bottom:0; width:0; height:2px;
     background:var(--gold-deep); transition:width .25s ease;
   }
-  .nav__links a:hover::after{width:100%;}
-  .nav__links a.is-active{color:var(--teal-deep);}
-  .nav__links a.is-active::after{width:100%; background:var(--teal-deep);}
+  .nav__links a:not(.btn):hover::after{width:100%;}
+  .nav__links a:not(.btn).is-active{color:var(--teal-deep);}
+  .nav__links a:not(.btn).is-active::after{width:100%; background:var(--teal-deep);}
   .nav__links a.nav__link--glow{
     display:inline-flex; align-items:center; gap:7px;
     padding:6px 14px; border-radius:999px;
@@ -2303,8 +2313,10 @@
        cannot go stale the next time a link is added, and the scroll keeps it
        usable on a short landscape screen where even 70vh is not enough. */
     .nav__links.is-open{max-height:70vh; overflow-y:auto; padding:14px 28px 22px;}
-    .nav__links a{width:100%; padding:11px 0;}
-    .nav__links .btn{margin-top:10px;}
+    .nav__links a:not(.btn){width:100%; padding:11px 0;}
+    /* Full width in the drawer, but its own padding — the flat 11px/0 above is
+       for text links and would square off the pill here too. */
+    .nav__links .btn{margin-top:10px; width:100%;}
     .nav__toggle{display:block;}
   }
   @media (max-width:680px){
