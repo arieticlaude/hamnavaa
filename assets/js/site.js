@@ -4137,7 +4137,7 @@
         confirmResign:'از بازی انصراف می‌دهید؟'
       },
       en: {
-        title:'Hamnava Chess', sub:'A quick game, right here',
+        title:'Hamnavaa Chess', sub:'A quick game, right here',
         newGame:'New game', undo:'Undo', flip:'Flip', sound:'Sound', resign:'Resign',
         white:'White', black:'Black', you:'You', bot:'Computer', p1:'Player 1', p2:'Player 2',
         thinking:'Thinking…', turnOf:'Turn: ', check:' — check!',
