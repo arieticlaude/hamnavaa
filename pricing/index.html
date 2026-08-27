@@ -53,7 +53,7 @@
 }
 </script>
 
-<link rel="stylesheet" href="../assets/css/site.css?v=a6d98f1c">
+<link rel="stylesheet" href="../assets/css/site.css?v=35314e53">
 <noscript><style>.reveal{opacity:1 !important; transform:none !important;} .stagger > *{opacity:1 !important;} .page{display:block !important;}</style></noscript>
 </head>
 <body>
@@ -227,7 +227,12 @@
         <p><span data-i18n="fa">پرداخت پس از هماهنگی جلسه و از طریق یک لینک پرداخت امن انجام می‌شود. هیچ اطلاعات کارتی در سایت هم‌نوا وارد یا نگهداری نمی‌شود.</span><span data-i18n="en">Payment happens after your session is scheduled, through a secure payment link. No card details are ever entered into or stored on the Hamnavaa website.</span></p>
       </div>
 
-      <div class="pay-methods reveal stagger">
+      <div class="pay-group reveal">
+        <div class="pay-group__head">
+          <h3><span data-i18n="fa">پرداخت بین‌المللی</span><span data-i18n="en">Paying from outside Iran</span></h3>
+          <p><span data-i18n="fa">اگر خارج از ایران هستید</span><span data-i18n="en">If you are outside Iran</span></p>
+        </div>
+        <div class="pay-methods pay-methods--intl stagger">
         <div class="pay-method">
           <span class="pay-method__mark" aria-hidden="true">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="2.5" y="5.5" width="19" height="13" rx="2.5" stroke="currentColor" stroke-width="1.6"/><path d="M2.5 9.5h19" stroke="currentColor" stroke-width="1.6"/><path d="M6 14.5h3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -249,6 +254,14 @@
           <strong>USDT</strong>
           <span data-i18n="fa">تتر، شبکه TRC20</span><span data-i18n="en">Tether, TRC20 network</span>
         </div>
+        </div>
+      </div>
+      <div class="pay-group reveal">
+        <div class="pay-group__head">
+          <h3><span data-i18n="fa">پرداخت از ایران</span><span data-i18n="en">Paying from inside Iran</span></h3>
+          <p><span data-i18n="fa">اگر داخل ایران هستید یا کسی از ایران برایتان پرداخت می‌کند</span><span data-i18n="en">If you are in Iran, or someone in Iran is paying for you</span></p>
+        </div>
+        <div class="pay-methods pay-methods--iran stagger">
         <div class="pay-method">
           <span class="pay-method__mark" aria-hidden="true">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.4" stroke="currentColor" stroke-width="1.6"/><path d="M8.6 10.4c0 2.4 1.5 3.6 3.4 3.6s3.4-1.2 3.4-3.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="7.6" r="0.9" fill="currentColor"/></svg>
@@ -256,6 +269,8 @@
           <strong><span data-i18n="fa">ریال</span><span data-i18n="en">Iranian rial</span></strong>
           <span data-i18n="fa">کارت‌های شتاب</span><span data-i18n="en">Shetab cards</span>
         </div>
+        </div>
+      </div>
       </div>
 
       <div class="pay-grid">
