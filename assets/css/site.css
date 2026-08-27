@@ -597,6 +597,58 @@
   .pricing-tier__list svg{flex-shrink:0;}
   .pricing-tier .btn{margin-top:20px; width:100%; justify-content:center;}
 
+  /* ---------- Payment (pricing page) ----------
+     Same glass surface as the pricing tiers and counselor cards, so the block
+     reads as part of the site rather than a payment widget bolted onto it —
+     which is the point: a payment section that looks foreign is the one people
+     hesitate over. */
+  .pay-methods{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:34px;
+  }
+  .pay-method{
+    background:var(--glass-bg); backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur);
+    border:1px solid var(--glass-border); border-radius:14px; box-shadow:var(--glass-shadow);
+    padding:20px 18px; display:flex; flex-direction:column; align-items:center;
+    text-align:center; gap:5px; transition:transform .25s ease, box-shadow .25s ease;
+  }
+  .pay-method:hover{transform:translateY(-3px); box-shadow:var(--shadow-md);}
+  .pay-method__mark{
+    width:44px; height:44px; border-radius:12px; display:grid; place-items:center;
+    background:rgba(58,98,89,0.09); color:var(--teal-deep); margin-bottom:5px;
+  }
+  .pay-method strong{font-size:0.98rem; color:var(--ink); letter-spacing:0.01em;}
+  .pay-method > span:not(.pay-method__mark){font-size:0.83rem; color:var(--muted);}
+
+  .pay-grid{display:grid; grid-template-columns:1.15fr 1fr; gap:24px; align-items:start;}
+  .pay-steps, .pay-assure{
+    background:var(--glass-bg); backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur);
+    border:1px solid var(--glass-border); border-radius:18px; box-shadow:var(--glass-shadow);
+    padding:30px 28px; position:relative; overflow:hidden;
+  }
+  .pay-steps::before, .pay-assure::before{
+    content:""; position:absolute; top:0; right:0; left:0; height:4px;
+  }
+  .pay-steps::before{background:var(--grad-cool);}
+  .pay-assure::before{background:var(--grad-warm);}
+  .pay-steps h3, .pay-assure h3{font-size:1.12rem; color:var(--ink); margin-bottom:20px;}
+  .pay-steps ol{list-style:none; display:flex; flex-direction:column; gap:20px;}
+  .pay-steps li{display:flex; gap:15px; align-items:flex-start;}
+  .pay-step__num{
+    flex-shrink:0; width:30px; height:30px; border-radius:50%; display:grid; place-items:center;
+    background:var(--grad-cool); color:var(--white); font-weight:700; font-size:0.9rem;
+  }
+  .pay-steps strong{display:block; color:var(--ink); font-size:0.97rem; margin-bottom:4px;}
+  .pay-steps p{color:var(--muted); font-size:0.9rem; line-height:1.75;}
+
+  .pay-assure ul{list-style:none; display:flex; flex-direction:column; gap:15px;}
+  .pay-assure li{display:flex; gap:11px; align-items:flex-start; color:var(--muted); font-size:0.91rem; line-height:1.7;}
+  .pay-assure li svg{flex-shrink:0; margin-top:3px; color:var(--gold-deep);}
+  .pay-assure__note{
+    margin-top:22px; padding:13px 15px; border-radius:11px;
+    background:rgba(156,74,68,0.07); border:1px solid rgba(156,74,68,0.18);
+    color:var(--coral); font-size:0.86rem; line-height:1.7;
+  }
+
   /* ---------- Counselors ---------- */
   .counselors-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:24px;}
   .counselor-card{
@@ -826,12 +878,13 @@
   .brand{display:flex; align-items:center; gap:10px;}
   .brand__mark{width:34px; height:34px; flex-shrink:0;}
   .brand__name{font-family:'Markazi Text',serif; font-size:1.5rem; font-weight:700; background:var(--grad-cool); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent;}
-  /* 18px, not the original 26: the header CTA is a real pill again (41px tall,
-     26px of side padding) rather than the 23px text-link it had collapsed to,
-     which put the Persian nav at 1128px against a 1140px breakpoint — 12px of
-     margin. At 18px it needs 1092 and has ~48px to absorb a font that renders
-     a little wider. */
-  .nav__links{display:flex; align-items:center; gap:18px; font-size:0.95rem; font-weight:600; color:var(--ink);}
+  /* 12px, down from 26 in two steps as the nav grew. The ceiling here is not
+     the viewport but --maxw: .nav is a .wrap, so the row can never exceed
+     1140px however wide the screen is. Nine items at an 18px gap measured
+     1156px in Persian and overflowed *at 1280* — widening the breakpoint would
+     not have helped, only shrinking the content does. Eight gaps × 6px buys
+     back 48px: 1108px needed, 32px of room. */
+  .nav__links{display:flex; align-items:center; gap:12px; font-size:0.95rem; font-weight:600; color:var(--ink);}
   /* :not(.btn) throughout — these are the plain text links. `.nav__links a` is
      more specific than `.btn`, so without it the CTA in the header inherited
      the text link's 4px/0 padding (a 23px-tall pill against 41px everywhere
@@ -1509,6 +1562,9 @@
   .faq-item.is-open .faq-item__plus::before{background:var(--white);}
   .faq-item__a{max-height:0; overflow:hidden; transition:max-height .3s ease;}
   .faq-item__a p{color:var(--muted); font-size:0.97rem; padding:0 22px 22px; max-width:640px;}
+  /* The answer's own <p> already carries 22px of bottom padding, so a link in a
+     paragraph of its own would sit a full gap below the text it belongs to. */
+  .faq-item__a p.faq-item__cta{margin-top:-14px;}
 
   /* ---------- Footer ---------- */
   .site-footer{background:linear-gradient(180deg, var(--footer), #16241F); color:var(--paper); padding:60px 0 30px; position:relative;}
@@ -2297,10 +2353,14 @@
      everything else. Measured, not guessed: logo 193 + links 902 + the minimum
      gap = 1119px, so anything narrower than --maxw leaves the desktop nav
      overflowing its container — which also desyncs the position:fixed elements
-     that assume no horizontal scroll. The links grew twice since 880px was
-     chosen (the psychology-tests item, then the longer CTA label), and the old
-     comment here claiming ~865px was simply out of date. Re-measure this
-     number if a nav item is ever added or renamed. */
+     that assume no horizontal scroll. The links have grown three times since
+     880px was chosen (the psychology-tests item, the longer CTA label, then
+     the pricing link), and the old comment here claiming ~865px was simply out
+     of date. Nine items measure 1108px at the tightened gap, so the drawer
+     takes over below --maxw, where the container stops being 1140 and starts
+     being the viewport. Re-measure if an item is ever added or renamed — at
+     nine there is 32px left, so the next one does not fit and something has to
+     move into the drawer instead. */
   @media (max-width:1140px){
     .nav__links{
       position:absolute; top:100%; right:0; left:0; background:var(--paper);
@@ -2335,6 +2395,11 @@
     .pricing-panel--student .pricing-tiers{max-width:380px;}
     .pricing-freebar{flex-direction:column; text-align:center; gap:14px;}
     .pricing-freebar .btn{width:100%;}
+    /* two across rather than one: the method cards are short, and a single
+       column pushes the steps below a full screen of scrolling */
+    .pay-methods{grid-template-columns:repeat(2,1fr); gap:12px;}
+    .pay-grid{grid-template-columns:1fr;}
+    .pay-steps, .pay-assure{padding:26px 22px;}
     .calltype-btn{font-size:0.82rem; padding:10px 8px; gap:5px;}
     .counselor-card{flex-direction:column; text-align:center; align-items:center;}
     .counselor-card__chips, .counselor-card__meta, .counselor-card__actions{justify-content:center;}
