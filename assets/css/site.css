@@ -602,9 +602,21 @@
      reads as part of the site rather than a payment widget bolted onto it —
      which is the point: a payment section that looks foreign is the one people
      hesitate over. */
+  /* Two groups rather than one row of four: the practice banks both inside and
+     outside Iran, and which rail a visitor can actually use is decided by where
+     *they* are. Labelling that up front is the difference between a list of
+     logos and an answer. */
+  .pay-group{margin-bottom:26px;}
+  .pay-group__head{margin-bottom:14px;}
+  .pay-group__head h3{font-size:1.02rem; color:var(--ink);}
+  .pay-group__head p{font-size:0.86rem; color:var(--muted); margin-top:3px;}
   .pay-methods{
-    display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:34px;
+    display:grid; grid-template-columns:repeat(3,1fr); gap:16px;
   }
+  /* one card on its own would stretch to the full row; hold it to a third so it
+     lines up with the international cards above it */
+  .pay-methods--iran{grid-template-columns:repeat(3,1fr);}
+  .pay-methods--iran .pay-method{grid-column:1;}
   .pay-method{
     background:var(--glass-bg); backdrop-filter:var(--glass-blur); -webkit-backdrop-filter:var(--glass-blur);
     border:1px solid var(--glass-border); border-radius:14px; box-shadow:var(--glass-shadow);
@@ -2398,6 +2410,7 @@
     /* two across rather than one: the method cards are short, and a single
        column pushes the steps below a full screen of scrolling */
     .pay-methods{grid-template-columns:repeat(2,1fr); gap:12px;}
+    .pay-methods--iran{grid-template-columns:repeat(2,1fr);}
     .pay-grid{grid-template-columns:1fr;}
     .pay-steps, .pay-assure{padding:26px 22px;}
     .calltype-btn{font-size:0.82rem; padding:10px 8px; gap:5px;}
