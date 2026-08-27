@@ -365,14 +365,15 @@
   // current page by comparing href strings — the same page is reached by different
   // relative paths depending on where you are. Each nav link carries data-page
   // instead, matched against the folder we are actually in.
-  const HOME_ANCHORS = ['process','faq','request','pricing','benefits','intro'];
+  // 'pricing' is not here any more — it is its own page now, not a homepage anchor.
+  const HOME_ANCHORS = ['process','faq','request','benefits','intro'];
 
   function currentPage(){
     const parts = location.pathname.split('/').filter(Boolean);
     const last = parts[parts.length - 1] || '';
     // .../services/index.html -> "services";  .../index.html or / -> "home"
     const dir = /\.html?$/i.test(last) ? parts[parts.length - 2] : last;
-    const KNOWN = ['services','about','counselors','tests','reviews'];
+    const KNOWN = ['services','about','counselors','tests','reviews','pricing'];
     return KNOWN.includes(dir) ? dir : 'home';
   }
 

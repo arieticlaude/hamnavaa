@@ -62,4 +62,14 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/reviews/"/>
   </url>
 
+  <url>
+    <loc>https://www.hamnavaa.com/pricing/</loc>
+    <lastmod>2026-08-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/pricing/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/pricing/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/pricing/"/>
+  </url>
+
 </urlset>
