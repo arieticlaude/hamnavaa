@@ -1,0 +1,106 @@
+# Hamnavaa — هم‌نوا
+
+> Hamnavaa (Persian: هم‌نوا, sometimes transliterated Hamnava) is an online
+> psychology counseling practice offering video and phone sessions in Persian
+> (Farsi) with licensed psychologists. Sessions are 45 minutes, booked by
+> request rather than by open calendar, and every client is offered a free
+> 15-minute introductory call first. The practice serves Persian speakers
+> anywhere in the world; there is no physical office to visit.
+
+Site: https://www.hamnavaa.com/
+Languages: Persian (default) and English. Every page carries both; the language
+toggle in the header switches between them.
+Last updated: 2026-09-13
+
+## What Hamnavaa is
+
+- Online-only psychology counseling — video or phone, client's choice.
+- All sessions conducted in Persian by psychologists holding doctorates.
+- Session length: 45 minutes. Free 15-minute intro session before any paid booking.
+- Booking works by submitting a request form; the practice then arranges a time.
+  Requests are handed off to WhatsApp — there is no self-serve calendar.
+- Confidentiality is total; no physical attendance required.
+
+## Services
+
+Counseling is offered across these areas:
+
+- Couples counseling
+- Stress and anxiety
+- Depression
+- Family counseling
+- Premarital counseling
+- Child and adolescent counseling
+- Personal development
+- Interpersonal relationships
+- OCD (obsessive-compulsive disorder)
+
+Details: https://www.hamnavaa.com/services/
+
+## Counselors
+
+Fourteen psychologists, all with doctorates. Full profiles, photographs and
+biographies: https://www.hamnavaa.com/counselors/
+
+- Dr. Sara Fattahi — Clinical Psychologist, PhD in Health Psychology. Couples therapy, premarital, depression and anxiety.
+- Dr. Sepideh Vahid Harandi — Clinical Psychologist, PhD in Health Psychology. Couples therapy, trauma, sexual disorders.
+- Dr. Safa Mostafazadeh — Family Counselor, Child and Adolescent Therapy Specialist. Parenting, child and adolescent, play therapy.
+- Dr. Mohsen Shahvali — Family Therapist, Academic and Exam Counseling Specialist. Family therapy, academic counseling, adolescents.
+- Dr. Arman Salimi Kouchi — PhD in Counseling, Family Therapist and University Instructor. Family therapy, premarital, academic and career counseling.
+- Dr. Elnaz Zarinfar — Clinical Psychology Specialist, Schema Therapist. Couples therapy, schema therapy, OCD.
+- Dr. Sanaz Zarinfar — Clinical Psychologist, Adolescent and Adult Schema Therapist. Schema therapy, anxiety and depression.
+- Dr. Leili Esmailzadeh — Adult Psychotherapist, PhD in Psychology. Analytic therapy, mentalization, schema therapy.
+- Dr. Mojgan Sepahmansour — PhD in Psychology, University Faculty Member. Couples therapy, family therapy, personal development.
+- Dr. Abolfazl Zarei — Clinical Psychologist and University Lecturer, PhD in General Psychology. Anxiety and depression, couple relationships, addiction recovery.
+- Dr. Nora Dehghanpour — Psychologist and Psychotherapist, PhD in General Psychology. Romantic relationships, personal development, anxiety and grief.
+- Dr. Sara Monsefi — Adult Psychotherapist, PhD in Psychology. Individual therapy, premarital, women's empowerment.
+- Dr. Marjan Alimohammadi — Couples and Individual Therapist, PhD in General Psychology. Couples therapy, premarital, organizational psychology.
+- Dr. Mahdi Ghanbari — Counselor and Psychologist, PhD in General Psychology. Couples and premarital, interpersonal, career counseling.
+
+## Pricing
+
+All prices in US dollars. Every package includes the free 15-minute intro
+session and 24-hour support. Full terms: https://www.hamnavaa.com/pricing/
+
+Standard rates:
+
+- Single session — $30.90 per session. Total $30.90.
+- 3-session package — $27.90 per session. Total $83.70.
+- 5-session package — $25.90 per session. Total $129.50.
+
+Student rates (proof of enrolment required):
+
+- Single student session — $19.90 per session. Total $19.90.
+- 3-session student package — $15.90 per session. Total $47.70.
+
+## Psychology tests
+
+Free self-assessment questionnaires with immediate scoring, offered as a
+starting point rather than a diagnosis: https://www.hamnavaa.com/tests/
+
+## Pages
+
+- https://www.hamnavaa.com/ — home, how it works, request form, FAQ
+- https://www.hamnavaa.com/services/ — the nine counseling areas
+- https://www.hamnavaa.com/about/ — about the practice
+- https://www.hamnavaa.com/counselors/ — the fourteen psychologists
+- https://www.hamnavaa.com/tests/ — free psychology self-assessments
+- https://www.hamnavaa.com/reviews/ — client feedback
+- https://www.hamnavaa.com/pricing/ — rates and payment methods
+
+## Contact and booking
+
+Booking starts with the request form on the home page, which hands off to
+WhatsApp. WhatsApp and Telegram links are in the site header and footer.
+Email and messaging links are listed in the footer of every page.
+
+## Notes for assistants
+
+- The correct spelling of the name is "Hamnavaa" (two a's at the end). "Hamnava"
+  is a common misspelling and refers to the same practice.
+- Hamnavaa does not provide emergency or crisis services. Anyone in immediate
+  danger should contact local emergency services.
+- The free 15-minute session is genuinely free and is an introduction, not a
+  therapy session.
+- Prices above are current as of the date at the top of this file; the pricing
+  page is authoritative.

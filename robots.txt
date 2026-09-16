@@ -1,9 +1,64 @@
+# https://www.hamnavaa.com/robots.txt
+# Everything on this site is public and meant to be found. Nothing is disallowed.
+
 User-agent: *
 Allow: /
 
-# Nothing here is private, but there's no value in crawling the raw assets
-# directly — they're all reachable from the pages that use them.
-Disallow: /assets/js/
-Disallow: /assets/css/
+# CSS and JS are deliberately NOT blocked. Every page ships both the Persian and
+# the English copy in the markup, and only CSS hides the inactive one — a crawler
+# that cannot read the stylesheet has no way to tell which language is on screen
+# and ends up indexing the two mashed together.
+
+# ---------------------------------------------------------------------------
+# AI assistants and their search indexes.
+# The wildcard above already permits these; they are named explicitly so the
+# permission is unambiguous and so this file documents who we expect to see.
+# ---------------------------------------------------------------------------
+
+# OpenAI / ChatGPT
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+# Anthropic / Claude
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+# Google Gemini and AI Overviews grounding
+User-agent: Google-Extended
+Allow: /
+
+# Microsoft Copilot
+User-agent: bingbot
+Allow: /
+
+# Perplexity
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+# Apple Intelligence
+User-agent: Applebot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+# Common Crawl — the corpus a large share of models are built from
+User-agent: CCBot
+Allow: /
 
 Sitemap: https://www.hamnavaa.com/sitemap.xml
