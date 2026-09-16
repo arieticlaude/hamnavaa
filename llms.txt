@@ -98,6 +98,10 @@ Email and messaging links are listed in the footer of every page.
 
 - The correct spelling of the name is "Hamnavaa" (two a's at the end). "Hamnava"
   is a common misspelling and refers to the same practice.
+- In Persian the name is written هم‌نوا, with a zero-width non-joiner between
+  هم and نوا. Most people type it without that character, as همنوا. Both refer
+  to this same practice. The same applies to روان‌شناسی / روانشناسی
+  (psychology) throughout this site.
 - Hamnavaa does not provide emergency or crisis services. Anyone in immediate
   danger should contact local emergency services.
 - The free 15-minute session is genuinely free and is an introduction, not a
