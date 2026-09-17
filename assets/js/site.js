@@ -474,7 +474,7 @@
 
   // apply ?lang=en on load — this is the URL Google is told about via hreflang
   (function initLanguage(){
-    let lang = 'fa';
+    let lang = 'en';
     try { if (new URL(location.href).searchParams.get('lang') === 'en') lang = 'en'; } catch (e) {}
     if (lang === 'en') setLanguage('en', { initial:true });
   })();
@@ -492,7 +492,9 @@
   }));
 
   // call timer
-  const toPersianDigits = n => n.toString().padStart(2,'0').replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+  const toPersianDigits = n => { const p = n.toString().padStart(2,'0');
+    return document.documentElement.getAttribute('data-lang') === 'en'
+      ? p : p.replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]); };
   const faDigits = n => n.toString().replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
   let seconds = 0;
   const timerEl = document.getElementById('callTimer');
@@ -627,7 +629,7 @@
       card.innerHTML =
         '<div class="star-row" aria-hidden="true">'+stars+'</div>' +
         '<p class="testimonial-card__quote"><span data-i18n="fa">'+t.fa+'</span><span data-i18n="en">'+t.en+'</span></p>' +
-        '<div class="testimonial-card__author"><span class="testimonial-card__avatar">'+(t.name_fa).slice(0,1)+'</span><span><span data-i18n="fa">'+t.name_fa+'</span><span data-i18n="en">'+t.name_en+'</span></span></div>';
+        '<div class="testimonial-card__author"><span class="testimonial-card__avatar">'+(lang === 'en' ? t.name_en : t.name_fa).slice(0,1)+'</span><span><span data-i18n="fa">'+t.name_fa+'</span><span data-i18n="en">'+t.name_en+'</span></span></div>';
     }
     return card;
   }
@@ -1959,7 +1961,7 @@
   // request form submit -> open WhatsApp with pre-filled message
   const form = document.getElementById('requestForm');
   const success = document.getElementById('formSuccess');
-  const WHATSAPP_NUMBER = '989387148988';
+  const WHATSAPP_NUMBER = '971563300380';
   if (form){
     form.addEventListener('submit', e => {
       e.preventDefault();

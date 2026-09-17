@@ -2418,3 +2418,18 @@
     .counselor-card__chips, .counselor-card__meta, .counselor-card__actions{justify-content:center;}
     .topbar .wrap{font-size:0.78rem; padding:8px 20px;}
   }
+
+/* ==== TEMPORARY 2026-09-16 — revert with restore-point-2026-09-16 ==== */
+/* The language toggle has nothing to toggle to while the site is English-only. */
+.lang-toggle{display:none !important;}
+/* Every route to the counselors: nav, footer, hero CTA, benefits card and each
+   face in the home page marquee are all anchors pointing into counselors/. */
+a[href*="counselors/"]{display:none !important;}
+.counselor-marquee-wrap{display:none !important;}
+/* The request form carries a "choose a counselor" select listing all fourteen
+   by name, in both languages. Hidden, it stays on its first option — "No
+   preference" — so no name reaches the WhatsApp message either. */
+.field:has(select[name="counselor"]){display:none !important;}
+/* The assessments are Persian-only, so that page redirects while the site is
+   English — hide the routes to it for the same reason. */
+a[href*="tests/"]{display:none !important;}
