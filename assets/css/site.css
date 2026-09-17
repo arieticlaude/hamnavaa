@@ -2433,3 +2433,8 @@ a[href*="counselors/"]{display:none !important;}
 /* The assessments are Persian-only, so that page redirects while the site is
    English — hide the routes to it for the same reason. */
 a[href*="tests/"]{display:none !important;}
+/* Reviews: the home page has no testimonial section of its own, only links. */
+a[href*="reviews/"]{display:none !important;}
+/* The whole counters band goes, not just the session tally — a row built for
+   four numbers reads as broken with one missing. */
+.stats-band{display:none !important;}
