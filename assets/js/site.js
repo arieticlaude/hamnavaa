@@ -721,7 +721,7 @@
         // en-US-u-ca-gregory, not fa-IR: fa-IR defaults to the Persian calendar
         // and would hand back 1405 for the year. h23 keeps midnight at 00, not 12.
         iranFmt = new Intl.DateTimeFormat('en-US-u-ca-gregory', {
-          timeZone:'Asia/Tehran', hourCycle:'h23',
+          timeZone:'Asia/Dubai', hourCycle:'h23',
           year:'numeric', month:'2-digit', day:'2-digit',
           hour:'2-digit', minute:'2-digit', second:'2-digit'
         });
@@ -738,8 +738,8 @@
         if (y && mo && d && isFinite(h)) return { y, mo, d, h, mi:Number(p.minute), s:Number(p.second) };
       } catch (e) { /* fall through to the offset maths below */ }
     }
-    // Fallback: Iran abolished DST in 2022, so the offset is a flat +03:30.
-    const shifted = new Date(now.getTime() + (210 + now.getTimezoneOffset()) * 60000);
+    // Fallback: the UAE has never observed DST, so the offset is a flat +04:00.
+    const shifted = new Date(now.getTime() + (240 + now.getTimezoneOffset()) * 60000);
     return { y:shifted.getFullYear(), mo:shifted.getMonth() + 1, d:shifted.getDate(),
              h:shifted.getHours(), mi:shifted.getMinutes(), s:shifted.getSeconds() };
   }
@@ -821,7 +821,7 @@
     const l = dayLabels(d);
     return {
       fa: (l.relFa ? l.relFa + '، ' : '') + l.jalaliFa + ' — ' + l.gregFa,
-      en: (l.relEn ? l.relEn + ', ' : '') + l.gregEn + ' — ' + l.jalaliEn
+      en: (l.relEn ? l.relEn + ', ' : '') + l.gregEn
     };
   }
 
@@ -842,7 +842,7 @@
     };
     set('.daypick__rel', lang === 'en' ? (l.relEn || l.wdEn) : (l.relFa || l.wdFa));
     set('.daypick__value', lang === 'en' ? l.gregEnShort : l.jalaliFaShort);
-    set('.daypick__alt', lang === 'en' ? l.jalaliEn : l.gregFa);
+    set('.daypick__alt', lang === 'en' ? '' : l.gregFa);
   }
 
   function commitDay(wrap, date){
@@ -928,7 +928,9 @@
     const altA = fmtDate(first, { month:'short' }, altLoc) || fmtDate(first, { month:'long' }, altLoc);
     const altB = fmtDate(last, { month:'short' }, altLoc) || fmtDate(last, { month:'long' }, altLoc);
     const altYear = fmtDate(last, { year:'numeric' }, altLoc);
-    const subtitle = (altA === altB ? altA : altA + ' – ' + altB) + ' ' + altYear;
+    const subtitle = lang === 'en'
+      ? ''
+      : (altA === altB ? altA : altA + ' – ' + altB) + ' ' + altYear;
 
     // the roving-tabindex day: keyboard focus lands here when the grid is entered
     let focusDate = cal.dataset.focus ? midnight(new Date(cal.dataset.focus)) : null;
@@ -954,7 +956,7 @@
       const main = fmtDate(d, { day:'numeric' }, lang === 'en' ? 'en-US' : 'fa-IR');
       // the secondary number is the OTHER calendar, in Latin digits so the two
       // readings never blur together
-      const alt = fmtDate(d, { day:'numeric' }, lang === 'en' ? 'en-u-ca-persian' : 'en-GB');
+      const alt = lang === 'en' ? '' : fmtDate(d, { day:'numeric' }, 'en-GB');
       const s = daySummary(d);
       cells += '<button type="button" class="' + cls + '" data-date="' + d.toISOString() + '"'
         + ' role="gridcell" aria-label="' + (lang === 'en' ? s.en : s.fa) + '"'
@@ -1147,7 +1149,7 @@
     const hidden = document.getElementById(wrap.dataset.target);
     // "ساعت ۱۸:۳۰ (عصر) / 6:30 PM (Evening)" — same two-language convention the
     // rest of the form uses
-    if (hidden) hidden.value = 'ساعت ' + l.fa + ' (' + l.bandFa + '، به وقت ایران) / ' + l.en + ' (' + l.bandEn + ', Iran time)';
+    if (hidden) hidden.value = 'ساعت ' + l.fa + ' (' + l.bandFa + '، به وقت ایران) / ' + l.en + ' (' + l.bandEn + ', Dubai time)';
     paintTimeTrigger(wrap);
   }
 
@@ -1240,7 +1242,7 @@
         rings +
       '</div>' +
       '<p class="timedial__tz">' +
-        (lang === 'en' ? 'Iran time (IRST) — now ' : 'به وقت ایران — هم‌اکنون ') +
+        (lang === 'en' ? 'Dubai time (GST) — now ' : 'به وقت ایران — هم‌اکنون ') +
         '<span class="timedial__tz-time">' + iranClockText(lang) + '</span></p>';
     placePopover(dial);
   }

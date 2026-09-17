@@ -2438,3 +2438,8 @@ a[href*="reviews/"]{display:none !important;}
 /* The whole counters band goes, not just the session tally — a row built for
    four numbers reads as broken with one missing. */
 .stats-band{display:none !important;}
+/* The rial / Shetab payment group is specific to Iran and has no Dubai
+   equivalent — the UAE uses the dirham and Shetab is an Iranian network. Hidden
+   rather than relabelled, since renaming it would advertise a way to pay that
+   does not exist. */
+.pay-group:has(.pay-methods--iran){display:none !important;}
