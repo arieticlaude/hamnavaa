@@ -2426,10 +2426,12 @@
    face in the home page marquee are all anchors pointing into counselors/. */
 a[href*="counselors/"]{display:none !important;}
 .counselor-marquee-wrap{display:none !important;}
-/* The request form carries a "choose a counselor" select listing all fourteen
-   by name, in both languages. Hidden, it stays on its first option — "No
-   preference" — so no name reaches the WhatsApp message either. */
-.field:has(select[name="counselor"]){display:none !important;}
+/* Both forms on the home page carry a "choose a counselor" select listing all
+   fourteen by name, in both languages — the booking form under name="counselor"
+   and the free-intro form under name="introCounselor". Hidden, each stays on its
+   first option — "No preference" — so no name reaches the WhatsApp message. */
+.field:has(select[name="counselor"]),
+.field:has(select[name="introCounselor"]){display:none !important;}
 /* The assessments are Persian-only, so that page redirects while the site is
    English — hide the routes to it for the same reason. */
 a[href*="tests/"]{display:none !important;}
