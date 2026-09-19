@@ -2418,30 +2418,3 @@
     .counselor-card__chips, .counselor-card__meta, .counselor-card__actions{justify-content:center;}
     .topbar .wrap{font-size:0.78rem; padding:8px 20px;}
   }
-
-/* ==== TEMPORARY 2026-09-16 — revert with restore-point-2026-09-16 ==== */
-/* The language toggle has nothing to toggle to while the site is English-only. */
-.lang-toggle{display:none !important;}
-/* Every route to the counselors: nav, footer, hero CTA, benefits card and each
-   face in the home page marquee are all anchors pointing into counselors/. */
-a[href*="counselors/"]{display:none !important;}
-.counselor-marquee-wrap{display:none !important;}
-/* Both forms on the home page carry a "choose a counselor" select listing all
-   fourteen by name, in both languages — the booking form under name="counselor"
-   and the free-intro form under name="introCounselor". Hidden, each stays on its
-   first option — "No preference" — so no name reaches the WhatsApp message. */
-.field:has(select[name="counselor"]),
-.field:has(select[name="introCounselor"]){display:none !important;}
-/* The assessments are Persian-only, so that page redirects while the site is
-   English — hide the routes to it for the same reason. */
-a[href*="tests/"]{display:none !important;}
-/* Reviews: the home page has no testimonial section of its own, only links. */
-a[href*="reviews/"]{display:none !important;}
-/* The whole counters band goes, not just the session tally — a row built for
-   four numbers reads as broken with one missing. */
-.stats-band{display:none !important;}
-/* The rial / Shetab payment group is specific to Iran and has no Dubai
-   equivalent — the UAE uses the dirham and Shetab is an Iranian network. Hidden
-   rather than relabelled, since renaming it would advertise a way to pay that
-   does not exist. */
-.pay-group:has(.pay-methods--iran){display:none !important;}
