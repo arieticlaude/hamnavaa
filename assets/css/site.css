@@ -2418,3 +2418,100 @@
     .counselor-card__chips, .counselor-card__meta, .counselor-card__actions{justify-content:center;}
     .topbar .wrap{font-size:0.78rem; padding:8px 20px;}
   }
+
+/* ==== payment picker (/payment/) ====================================
+   Two radio groups and a result panel. It borrows the pricing cards'
+   proportions so moving from /pricing/ to /payment/ feels continuous. */
+.paypick{display:flex;flex-direction:column;gap:clamp(26px,4vw,42px);}
+.paypick__legend{display:flex;align-items:center;gap:14px;margin-bottom:18px;
+  font-weight:700;font-size:clamp(17px,2.2vw,20px);}
+.paypick__num{display:inline-flex;align-items:center;justify-content:center;
+  width:36px;height:36px;border-radius:50%;flex:none;
+  background:var(--teal);color:var(--white);font-size:17px;}
+.paypick__grid{display:grid;gap:14px;
+  grid-template-columns:repeat(auto-fit,minmax(218px,1fr));}
+.paypick__grid--methods{grid-template-columns:repeat(auto-fit,minmax(196px,1fr));}
+
+.paypick__opt{display:flex;flex-direction:column;align-items:flex-start;gap:6px;
+  width:100%;min-height:96px;padding:20px 22px;border-radius:var(--radius);
+  border:1px solid var(--line);background:var(--glass-bg-soft);
+  backdrop-filter:var(--glass-blur-sm);-webkit-backdrop-filter:var(--glass-blur-sm);
+  font-family:inherit;color:inherit;text-align:start;cursor:pointer;position:relative;
+  transition:border-color .22s ease, background .22s ease, transform .22s ease,
+             box-shadow .22s ease;}
+.paypick__opt:hover:not([aria-disabled="true"]){background:var(--glass-bg-hover);
+  transform:translateY(-2px);box-shadow:var(--glass-shadow-hover);}
+.paypick__opt[aria-checked="true"]{border-color:var(--teal);background:var(--white);
+  box-shadow:0 0 0 2px var(--teal) inset, var(--shadow-sm);}
+.paypick__opt[aria-disabled="true"]{opacity:.42;cursor:not-allowed;}
+.paypick__opt:focus-visible{outline:3px solid var(--gold);outline-offset:3px;}
+
+.paypick__opt-name{font-weight:700;font-size:clamp(16px,2vw,18px);line-height:1.35;}
+.paypick__opt-price{font-weight:800;font-size:clamp(19px,2.6vw,23px);color:var(--teal-deep);}
+.paypick__opt-note{font-size:14px;color:var(--muted);line-height:1.55;}
+.paypick__opt-eta{font-size:13px;font-weight:700;color:var(--teal);display:inline-flex;align-items:center;gap:7px;}
+.paypick__opt-eta::before{content:'';width:7px;height:7px;border-radius:50%;background:currentColor;flex:none;}
+.paypick__opt-tag{position:absolute;inset-inline-end:14px;top:-11px;
+  padding:4px 12px;border-radius:999px;font-size:12px;font-weight:700;
+  background:var(--gold);color:#241a08;box-shadow:var(--gold-glow);}
+
+.paypick__out{padding:clamp(22px,3vw,30px);border-radius:calc(var(--radius) + 6px);
+  border:1px solid var(--line);background:var(--glass-bg-soft);
+  backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);
+  box-shadow:var(--glass-shadow);}
+.paypick__hint{color:var(--muted);font-size:clamp(15px,2vw,17px);line-height:1.7;margin:0;}
+.paypick__sum{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;
+  font-size:clamp(16px,2.1vw,19px);margin:0 0 18px;}
+.paypick__sum b{font-weight:800;color:var(--teal-deep);}
+.paypick__sum-sep{opacity:.4;}
+.paypick__go{display:inline-flex;align-items:center;justify-content:center;gap:12px;}
+.paypick__fine{margin:16px 0 0;font-size:14px;color:var(--muted);line-height:1.7;}
+
+/* USDT and bank transfer are details to copy, not a checkout page to open */
+.paypick__addr{display:flex;flex-wrap:wrap;align-items:center;gap:12px;
+  padding:16px 18px;margin:0 0 14px;border-radius:var(--radius);
+  border:1px dashed var(--line);background:var(--white);}
+.paypick__addr-label{flex:none;min-width:118px;font-size:14px;font-weight:700;
+  color:var(--muted);}
+.paypick__addr-text{flex:1 1 220px;font-size:16px;line-height:1.6;}
+.paypick__addr code{direction:ltr;unicode-bidi:embed;word-break:break-all;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:15px;line-height:1.6;flex:1 1 260px;}
+.paypick__copy{flex:none;}
+.paypick__warn{display:flex;align-items:flex-start;gap:12px;padding:14px 18px;
+  border-radius:var(--radius);border:1px solid rgba(156,74,68,.34);
+  background:rgba(156,74,68,.08);color:var(--coral);
+  font-size:15px;font-weight:600;line-height:1.65;}
+.paypick__warn svg{flex:none;margin-top:2px;}
+
+@media (max-width:520px){
+  .paypick__grid,.paypick__grid--methods{grid-template-columns:1fr;}
+  .paypick__opt{min-height:0;}
+}
+
+/* ==== gold frames on portraits and test art =========================
+   The test illustrations and the counsellor photographs both sit on the
+   same cream ground as the page, so without an edge they float. A gold
+   rule is the one brand colour that reads as a frame rather than as a
+   second subject. Borders are safe to add here: box-sizing is border-box
+   globally, so none of these boxes change size. */
+.test-card__art{
+  border:3px solid var(--gold);
+  box-shadow:0 14px 28px -14px rgba(30,46,43,0.34),
+             0 0 0 1px rgba(183,138,70,0.28);
+}
+.counselor-card__avatar{
+  border:3px solid var(--gold);
+  box-shadow:0 0 0 1px rgba(183,138,70,0.22);
+}
+/* the home-page strip framed these in deep teal; gold matches the rest now */
+.counselor-marquee__avatar{
+  border:4px solid var(--gold);
+  box-shadow:0 10px 24px -10px rgba(22,57,50,0.35),
+             0 0 0 1px rgba(183,138,70,0.28);
+}
+.counselor-marquee__item:hover .counselor-marquee__avatar,
+.counselor-marquee__item:focus-visible .counselor-marquee__avatar{
+  box-shadow:0 20px 36px -14px rgba(22,57,50,0.45),
+             0 0 0 5px rgba(183,138,70,0.38);
+}
