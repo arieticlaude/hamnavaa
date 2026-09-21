@@ -2591,3 +2591,30 @@
     background-position:44% 50%;
   }
 }
+
+/* ==== single test page (/tests/<slug>/) =============================
+   One test per URL. The layout is deliberately plain: this page exists to
+   answer one search, so the copy carries it and the art stays a companion. */
+.test-page{display:grid;gap:clamp(22px,3vw,38px);align-items:center;
+  grid-template-columns:minmax(0,0.9fr) minmax(0,1.1fr);margin-bottom:clamp(30px,4vw,48px);}
+.test-page__art{min-width:0;}
+.test-page__art img{width:100%;height:auto;display:block;border-radius:18px;}
+.test-page__body{min-width:0;display:flex;flex-direction:column;gap:16px;align-items:flex-start;}
+.test-page__lede{font-size:clamp(15px,2vw,17px);line-height:2;color:var(--muted);margin:0;}
+.test-page__detail{max-width:72ch;margin-inline:auto;}
+.test-page__detail h2{font-size:clamp(19px,2.6vw,24px);margin:clamp(26px,3vw,36px) 0 12px;}
+.test-page__detail p{line-height:2;color:var(--muted);margin:0 0 12px;}
+.test-page__parts{list-style:none;padding:0;margin:0 0 8px;display:grid;gap:12px;}
+.test-page__parts li{padding:14px 18px;border-radius:var(--radius);
+  border:1px solid var(--line);background:var(--glass-bg-soft);line-height:1.9;}
+.test-page__parts strong{color:var(--teal-deep);}
+.test-page__note{padding:14px 18px;border-radius:var(--radius);
+  border:1px solid rgba(183,138,70,.35);background:rgba(183,138,70,.09);
+  font-size:15px;line-height:1.9;}
+.test-page__siblings{list-style:none;padding:0;margin:0 0 18px;display:flex;
+  flex-wrap:wrap;gap:10px;}
+.test-page__siblings a{display:inline-block;padding:9px 16px;border-radius:999px;
+  border:1px solid var(--line);background:var(--glass-bg-soft);font-size:14px;
+  font-weight:600;text-decoration:none;color:inherit;}
+.test-page__siblings a:hover{background:var(--white);border-color:var(--gold);}
+@media (max-width:760px){ .test-page{grid-template-columns:1fr;} }

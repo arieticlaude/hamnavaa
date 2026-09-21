@@ -4,7 +4,7 @@
 
   <url>
     <loc>https://www.hamnavaa.com/</loc>
-    <lastmod>2026-08-20</lastmod>
+    <lastmod>2026-09-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/"/>
@@ -14,7 +14,7 @@
 
   <url>
     <loc>https://www.hamnavaa.com/services/</loc>
-    <lastmod>2026-08-20</lastmod>
+    <lastmod>2026-09-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/services/"/>
@@ -24,7 +24,7 @@
 
   <url>
     <loc>https://www.hamnavaa.com/counselors/</loc>
-    <lastmod>2026-08-20</lastmod>
+    <lastmod>2026-09-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/counselors/"/>
@@ -34,17 +34,125 @@
 
   <url>
     <loc>https://www.hamnavaa.com/tests/</loc>
-    <lastmod>2026-08-20</lastmod>
+    <lastmod>2026-09-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/tests/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/tests/?lang=en"/>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/tests/"/>
   </url>
+  <url>
+    <loc>https://www.hamnavaa.com/tests/depression/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/tests/depression/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/tests/depression/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/tests/depression/"/>
+  </url>
+  <url>
+    <loc>https://www.hamnavaa.com/tests/self-esteem/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/tests/self-esteem/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/tests/self-esteem/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/tests/self-esteem/"/>
+  </url>
+  <url>
+    <loc>https://www.hamnavaa.com/tests/depression-anxiety-stress/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/tests/depression-anxiety-stress/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/tests/depression-anxiety-stress/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/tests/depression-anxiety-stress/"/>
+  </url>
+  <url>
+    <loc>https://www.hamnavaa.com/tests/mood/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/tests/mood/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/tests/mood/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/tests/mood/"/>
+  </url>
+  <url>
+    <loc>https://www.hamnavaa.com/tests/adhd/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/tests/adhd/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/tests/adhd/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/tests/adhd/"/>
+  </url>
+  <url>
+    <loc>https://www.hamnavaa.com/tests/big-five/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/tests/big-five/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/tests/big-five/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/tests/big-five/"/>
+  </url>
+  <url>
+    <loc>https://www.hamnavaa.com/tests/personality-types/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/tests/personality-types/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/tests/personality-types/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/tests/personality-types/"/>
+  </url>
+  <url>
+    <loc>https://www.hamnavaa.com/tests/enneagram/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/tests/enneagram/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/tests/enneagram/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/tests/enneagram/"/>
+  </url>
+  <url>
+    <loc>https://www.hamnavaa.com/tests/disc/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/tests/disc/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/tests/disc/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/tests/disc/"/>
+  </url>
+  <url>
+    <loc>https://www.hamnavaa.com/tests/schema/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/tests/schema/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/tests/schema/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/tests/schema/"/>
+  </url>
+  <url>
+    <loc>https://www.hamnavaa.com/tests/attachment/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/tests/attachment/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/tests/attachment/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/tests/attachment/"/>
+  </url>
+  <url>
+    <loc>https://www.hamnavaa.com/tests/ocd/</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/tests/ocd/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/tests/ocd/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/tests/ocd/"/>
+  </url>
 
   <url>
     <loc>https://www.hamnavaa.com/about/</loc>
-    <lastmod>2026-08-20</lastmod>
+    <lastmod>2026-09-21</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/about/"/>
@@ -54,7 +162,7 @@
 
   <url>
     <loc>https://www.hamnavaa.com/reviews/</loc>
-    <lastmod>2026-08-20</lastmod>
+    <lastmod>2026-09-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
     <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/reviews/"/>
@@ -64,7 +172,7 @@
 
   <url>
     <loc>https://www.hamnavaa.com/pricing/</loc>
-    <lastmod>2026-08-27</lastmod>
+    <lastmod>2026-09-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/pricing/"/>
