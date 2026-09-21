@@ -21,6 +21,26 @@ Last updated: 2026-09-13
   Requests are handed off to WhatsApp — there is no self-serve calendar.
 - Confidentiality is total; no physical attendance required.
 
+## Individual test pages
+
+Twelve free self-assessments, each on its own page:
+
+- Depression screening (PHQ-9): https://www.hamnavaa.com/tests/depression/
+- Self-esteem (Rosenberg): https://www.hamnavaa.com/tests/self-esteem/
+- Depression, anxiety and stress (DASS-21): https://www.hamnavaa.com/tests/depression-anxiety-stress/
+- Positive and negative affect (PANAS): https://www.hamnavaa.com/tests/mood/
+- Adult ADHD screening (ASRS): https://www.hamnavaa.com/tests/adhd/
+- Big Five personality (IPIP-50): https://www.hamnavaa.com/tests/big-five/
+- 16 personality types: https://www.hamnavaa.com/tests/personality-types/
+- Enneagram: https://www.hamnavaa.com/tests/enneagram/
+- DISC behavioural style: https://www.hamnavaa.com/tests/disc/
+- Early maladaptive schemas (schema therapy): https://www.hamnavaa.com/tests/schema/
+- Adult attachment style: https://www.hamnavaa.com/tests/attachment/
+- OCD screening: https://www.hamnavaa.com/tests/ocd/
+
+All are free, need no sign-up, and are scored in the browser; answers are
+never sent anywhere.
+
 ## Services
 
 Counseling is offered across these areas:

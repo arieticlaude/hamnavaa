@@ -2137,7 +2137,9 @@
     const overlay = document.getElementById('testModal');
     const content = document.getElementById('testModalContent');
     const closeBtn = document.getElementById('testModalClose');
-    if (!grid || !overlay || !content) return;
+    // The grid is optional: a single-test page carries only the modal shell
+    // and one start button, and must still be able to run its test.
+    if (!overlay || !content) return;
 
     // Each test is fronted by its own illustration. This file is shared by pages
     // at different depths, so the folder is derived from the stylesheet link the
@@ -2228,6 +2230,7 @@
       // which associated symptoms are present.
       {
         id: 'phq9',
+        slug: 'depression',
         art: 'test-phq9-w',
         name: 'آزمون جامع غربالگری افسردگی',
         subtitle: 'PHQ-9 +',
@@ -2343,6 +2346,7 @@
       // completely different work.
       {
         id: 'rses',
+        slug: 'self-esteem',
         art: 'test-rses-w',
         name: 'آزمون جامع عزت‌نفس',
         subtitle: 'RSES +',
@@ -2449,6 +2453,7 @@
       },
       {
         id: 'dass21',
+        slug: 'depression-anxiety-stress',
         art: 'test-dass21-w',
         name: 'مقیاس افسردگی، اضطراب و استرس',
         subtitle: 'DASS-21',
@@ -2549,6 +2554,7 @@
       },
       {
         id: 'panas',
+        slug: 'mood',
         art: 'test-panas-w',
         name: 'مقیاس عاطفه مثبت و منفی',
         subtitle: 'PANAS',
@@ -2633,6 +2639,7 @@
       // as descriptive severity, never as a diagnosis.
       {
         id: 'asrs',
+        slug: 'adhd',
         art: 'test-asrs-w',
         name: 'آزمون غربالگری بیش‌فعالی و کم‌توجهی بزرگسالان',
         subtitle: 'ASRS v1.1',
@@ -2737,6 +2744,7 @@
       },
       {
         id: 'bigfive',
+        slug: 'big-five',
         art: 'test-bigfive-w',
         name: 'آزمون شخصیت پنج عامل بزرگ',
         subtitle: 'IPIP-50',
@@ -2879,6 +2887,7 @@
       // agreeing with everything can never push an axis to one extreme.
       {
         id: 'mbti16',
+        slug: 'personality-types',
         art: 'test-mbti16-w',
         name: 'آزمون ۱۶ تیپ شخصیتی',
         subtitle: '16 Personalities',
@@ -3120,6 +3129,7 @@
       // only way an "accurate" result means anything here.
       {
         id: 'enneagram',
+        slug: 'enneagram',
         art: 'test-enneagram-w',
         name: 'آزمون انیاگرام',
         subtitle: 'Enneagram',
@@ -3260,6 +3270,7 @@
       },
       {
         id: 'disc',
+        slug: 'disc',
         art: 'test-disc-w',
         name: 'آزمون سبک رفتاری DISC',
         subtitle: 'DISC',
@@ -3348,6 +3359,7 @@
       // the reader assume they have taken the YSQ.
       {
         id: 'schema',
+        slug: 'schema',
         art: 'test-schema-w',
         name: 'آزمون طرحواره‌های ناسازگار اولیه',
         subtitle: 'Schema Therapy',
@@ -3569,6 +3581,7 @@
       // original; the four-category framework itself is published theory.
       {
         id: 'attach',
+        slug: 'attachment',
         art: 'test-attach-w',
         name: 'آزمون سبک دلبستگی',
         subtitle: 'Attachment Style',
@@ -3660,6 +3673,7 @@
       // takes the same route as the schema test and says so in `about`.
       {
         id: 'ocd',
+        slug: 'ocd',
         art: 'test-ocd-w',
         name: 'آزمون غربالگری وسواس',
         subtitle: 'OCD Screening',
@@ -3871,10 +3885,18 @@
           <h3>${t.name} <span class="test-card__abbr">(${t.subtitle})</span></h3>
           <p>${t.short}</p>
           <div class="test-card__meta"><span>${t.questions.length} سؤال</span><span>${t.duration}</span></div>
-          <button type="button" class="btn btn--primary" data-start-test="${t.id}">شروع تست</button>
+          <a class="btn btn--primary" href="${t.slug}/index.html" data-link>شروع تست</a>
         </div>
       `).join('');
-      grid.querySelectorAll('[data-start-test]').forEach(btn => {
+      bindStarters();
+    }
+
+    // Start buttons are bound document-wide rather than inside the grid, so a
+    // page that carries a single test and no grid can still launch it.
+    function bindStarters(){
+      document.querySelectorAll('[data-start-test]').forEach(btn => {
+        if (btn.dataset.starterBound) return;
+        btn.dataset.starterBound = '1';
         btn.addEventListener('click', () => openTest(btn.getAttribute('data-start-test')));
       });
     }
@@ -4329,7 +4351,8 @@
     overlay.addEventListener('click', e => { if (e.target === overlay) closeTest(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeTest(); });
 
-    renderGrid();
+    if (grid) renderGrid();
+    bindStarters();
   })();
 
   // ---------- Hidden chess easter egg ----------
