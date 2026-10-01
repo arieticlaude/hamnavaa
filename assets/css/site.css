@@ -2618,3 +2618,26 @@
   font-weight:600;text-decoration:none;color:inherit;}
 .test-page__siblings a:hover{background:var(--white);border-color:var(--gold);}
 @media (max-width:760px){ .test-page{grid-template-columns:1fr;} }
+
+/* ==== brand slogan ==================================================
+   The headline is long enough that setting it as one run buries the
+   part that matters. The first clause is therefore its own line, a
+   size down, so «صدای شما شنیده می‌شود» still lands as the statement. */
+.hero__kicker{display:block;font-size:0.62em;font-weight:600;
+  color:var(--teal);opacity:.92;margin-bottom:.18em;}
+/* On a phone the line broke between «شنیده» and «می‌شود», splitting the
+   verb and orphaning the one word the gradient is on. */
+.hero__nb{white-space:nowrap;}
+/* The longer headline ran to three lines on a phone and its last line
+   landed under the fixed WhatsApp/Telegram buttons, which cover the first
+   letter. One size down puts it back to two lines, clear of them. */
+@media (max-width:420px){
+  .hero h1{font-size:2.05rem;}
+  .hero__kicker{margin-bottom:.12em;}
+}
+/* `.footer-brand p` sets a muted colour and a top margin, so the slogan
+   has to match that specificity or it inherits the body-copy treatment
+   and stops reading as a slogan at all. */
+.footer-brand p.footer-slogan{font-family:'Markazi Text',serif;
+  font-size:clamp(1.2rem,2.3vw,1.5rem);line-height:1.5;font-weight:700;
+  color:var(--gold);margin:14px 0 2px;max-width:320px;}
