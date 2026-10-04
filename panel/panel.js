@@ -128,7 +128,8 @@
       S.profile = r.data;
       if (!r.data || !r.data.active) { S.view = 'pending'; return render(); }
       S.view = (r.data.role === 'counselor') ? 'counselor' : 'staff';
-      S.view === 'counselor' ? loadCounselor() : loadStaff();
+      if (S.view === 'counselor') loadCounselor();
+      else { S.tab = 'board'; startRealtime(); loadStaff(); }
     });
   }
 
@@ -228,9 +229,15 @@
   function openRoom(session) {
     var url = S.profile.meet_url;
     if (!url) { flash('info', 'اول لینک اتاق خودتان را ثبت کنید.'); return render(); }
-    window.open(url, '_blank', 'noopener');
-    S.room = session || true;          // پیشنهاد می‌دهیم لینک برای منشی هم فرستاده شود
+    window.open(url, '_blank', 'noopener');                  // باید همین لحظه و داخل کلیک باشد
+    S.room = session || true;
+    S.notified = null;
     render();
+    var sid = (session && session.id && inWindow(session)) ? session.id : null;
+    sb.rpc('counselor_open_room', { p_session: sid }).then(function (r) {
+      S.notified = r.error ? 'fail' : 'ok';
+      if (S.view === 'counselor') render();
+    });
   }
   function toSecretary(session) {
     var p = S.profile;
@@ -286,6 +293,8 @@
         svgEl(VIDEO_ICON), h('span', { text: 'ورود به اتاق مشاوره' })),
       !hasLink ? h('p', { class: 'hint', text: 'برای فعال شدن، پایین‌تر لینک اتاقتان را ثبت کنید.' }) : null);
     if (S.room && hasLink) {
+      hero.appendChild(h('p', { class: 'hint', role: 'status', text: S.notified === 'ok' ? 'اتاق باز شد و برای منشی اعلام شد ✓' :
+        S.notified === 'fail' ? 'اتاق باز شد، ولی اطلاع‌رسانی خودکار به منشی انجام نشد. لینک را با دکمهٔ زیر بفرستید.' : 'اتاق باز شد. در حال اطلاع‌رسانی به منشی…' }));
       hero.appendChild(h('div', { class: 'actions' },
         h('button', { class: 'btn btn--wa', type: 'button', text: 'ارسال لینک به منشی (واتساپ)', onclick: function () { toSecretary(S.room === true ? null : S.room); } }),
         h('button', { class: 'btn btn--small', type: 'button', text: 'بستن', onclick: function () { S.room = null; render(); } })));
@@ -295,7 +304,9 @@
       h('section', { class: 'card' }, h('h2', { text: 'جلسه‌های پیش‌رو' }),
         upcoming.length ? upcoming.map(function (s) { return sessionCard(s, true); }) : h('p', { class: 'empty', text: 'جلسه‌ای در پیش نیست.' })),
       h('section', { class: 'card' }, h('h2', { text: 'جلسه‌های گذشته' }),
-        past.length ? past.slice(0, 60).map(function (s) { return sessionCard(s, true); }) : h('p', { class: 'empty', text: 'هنوز جلسه‌ای ثبت نشده.' }))]);
+        past.length ? [past.slice(0, S.pastN || 30).map(function (s) { return sessionCard(s, true); }),
+          past.length > (S.pastN || 30) ? h('div', { class: 'actions' }, h('button', { class: 'btn btn--small', type: 'button', text: 'نمایش جلسه‌های قدیمی‌تر (' + n(past.length - (S.pastN || 30)) + ')', onclick: function () { S.pastN = (S.pastN || 30) + 30; render(); } })) : null]
+          : h('p', { class: 'empty', text: 'هنوز جلسه‌ای ثبت نشده.' }))]);
   }
 
   function roomLinkCard(hasLink) {
@@ -325,11 +336,11 @@
       if (res[0].error || res[1].error) flash('err', explain(res[0].error || res[1].error));
       S.data.sessions = res[0].data || []; S.data.profiles = res[1].data || [];
       var ids = S.data.sessions.map(function (s) { return s.id; });
-      if (!ids.length) { S.data.contacts = {}; return render(); }
+      if (!ids.length) { S.data.contacts = {}; render(); return loadBoard(); }
       sb.from('session_contacts').select('*').in('session_id', ids).then(function (c) {
         S.data.contacts = {};
         (c.data || []).forEach(function (x) { S.data.contacts[x.session_id] = x.client_phone; });
-        render();
+        render(); loadBoard();
       });
     });
   }
@@ -340,11 +351,107 @@
   function profileOf(id) { return (S.data.profiles || []).filter(function (x) { return x.id === id; })[0]; }
 
   function vStaff() {
-    var tabs = h('div', { class: 'tabs', role: 'tablist' }, [['sessions', 'جلسه‌ها'], ['new', 'جلسهٔ جدید'], ['people', 'مشاورها']].map(function (t) {
-      return h('button', { class: 'tab', role: 'tab', 'aria-selected': S.tab === t[0] ? 'true' : 'false', text: t[1], onclick: function () { S.tab = t[0]; render(); } });
+    var open = (S.data.board && S.data.board.events.length) || 0;
+    var tabs = h('div', { class: 'tabs', role: 'tablist' }, [['board', 'اتاق‌های باز'], ['sessions', 'جلسه‌ها'], ['new', 'جلسهٔ جدید'], ['people', 'مشاورها']].map(function (t) {
+      return h('button', { class: 'tab', role: 'tab', 'aria-selected': S.tab === t[0] ? 'true' : 'false', onclick: function () { S.tab = t[0]; render(); } },
+        t[1], t[0] === 'board' ? h('span', { class: 'badge', id: 'boardBadge', text: open ? n(open) : '' }) : null);
     }));
-    var body = S.tab === 'new' ? tNew() : S.tab === 'people' ? tPeople() : tSessions();
+    var body = S.tab === 'board' ? tBoard() : S.tab === 'new' ? tNew() : S.tab === 'people' ? tPeople() : tSessions();
     shell([tabs, body]);
+  }
+
+  /* ───────────── اتاق‌های باز: مشاور دکمه را می‌زند، منشی همان لحظه می‌بیند ───────────── */
+  var BASE_TITLE = document.title;
+  function clientText(s, p) {
+    return ['سلام ' + s.client_label + ' عزیز', 'لینک اتاق مشاورهٔ شما با ' + (p.full_name || 'مشاور هم‌نوا') + ':', p.meet_url,
+      'زمان: ' + dayOf(s.starts_at) + '، ساعت ' + timeOf(s.starts_at) + ' (به وقت ایران)', 'سر وقت روی لینک بزنید؛ مشاور شما را به اتاق می‌پذیرد.'].join('\n');
+  }
+  function sendToClient(s, p, phone) { window.open(waLink(phoneDigits(phone), clientText(s, p)), '_blank', 'noopener'); }
+  function copyText(t) {
+    var done = function () { flash('ok', 'کپی شد.'); render(); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, function () { flash('err', 'کپی نشد.'); render(); });
+    else { flash('info', t); render(); }
+  }
+
+  function loadBoard() {
+    var since = new Date(Date.now() - 6 * 3600000).toISOString();
+    return sb.from('room_events').select('*').eq('handled', false).gte('opened_at', since).order('opened_at', { ascending: false }).limit(50).then(function (r) {
+      var evs = r.data || [], ids = evs.map(function (e) { return e.session_id; }).filter(Boolean);
+      var board = { events: evs, sessions: {}, contacts: {} };
+      if (!ids.length) return board;
+      return Promise.all([sb.from('sessions').select('*').in('id', ids), sb.from('session_contacts').select('*').in('session_id', ids)]).then(function (res) {
+        (res[0].data || []).forEach(function (x) { board.sessions[x.id] = x; });
+        (res[1].data || []).forEach(function (x) { board.contacts[x.session_id] = x.client_phone; });
+        return board;
+      });
+    }).then(function (board) {
+      var fresh = S.seen ? board.events.filter(function (e) { return !S.seen[e.id]; }) : [];
+      S.seen = S.seen || {};
+      board.events.forEach(function (e) { S.seen[e.id] = 1; });
+      S.data.board = board;
+      if (S.view !== 'staff') return;
+      if (S.tab === 'board') render();                                    // این تب فیلد ندارد؛ بی‌خطر
+      else { var b = document.getElementById('boardBadge'); if (b) b.textContent = board.events.length ? n(board.events.length) : ''; }
+      if (fresh.length) alertStaff(fresh);
+    });
+  }
+  function startRealtime() {
+    if (S.rt) return;
+    S.rt = true;
+    if (sb.channel) sb.channel('room-events').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'room_events' }, function () { loadBoard(); }).subscribe();
+    setInterval(function () { if (S.view === 'staff') loadBoard(); }, 20000);      // اگر اتصال زنده قطع شد
+    window.addEventListener('focus', function () { document.title = BASE_TITLE; });
+  }
+  function beep() {
+    try {
+      if (!S.audio) return;
+      var a = S.audio, o = a.createOscillator(), g = a.createGain();
+      o.type = 'sine'; o.frequency.value = 880;
+      g.gain.setValueAtTime(0.001, a.currentTime); g.gain.exponentialRampToValueAtTime(0.25, a.currentTime + 0.02); g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + 0.7);
+      o.connect(g); g.connect(a.destination); o.start(); o.stop(a.currentTime + 0.75);
+    } catch (e) { /* بی‌صدا */ }
+  }
+  function alertStaff(fresh) {
+    if (!S.alerts) return;
+    beep();
+    document.title = '🔔 اتاق جدید — ' + BASE_TITLE;
+    if (window.Notification && Notification.permission === 'granted') {
+      try { new Notification('اتاق جدید باز شد', { body: fresh.map(function (e) { return nameOf(e.counselor_id); }).join('، ') }); } catch (e) { /* نادیده */ }
+    }
+  }
+  function enableAlerts() {
+    S.alerts = true;
+    try { var C = window.AudioContext || window.webkitAudioContext; if (C) { S.audio = S.audio || new C(); if (S.audio.resume) S.audio.resume(); } } catch (e) { /* بی‌صدا */ }
+    if (window.Notification && Notification.permission === 'default') Notification.requestPermission();
+    beep(); render();
+  }
+  function handle(e) {
+    sb.from('room_events').update({ handled: true, handled_by: S.user.id }).eq('id', e.id).then(function (r) {
+      if (r.error) flash('err', explain(r.error));
+      loadBoard();
+    });
+  }
+
+  function tBoard() {
+    var B = S.data.board || { events: [], sessions: {}, contacts: {} };
+    return h('section', { class: 'card' }, h('h2', { text: 'اتاق‌های باز' }),
+      h('p', { class: 'hint', text: 'وقتی مشاوری دکمهٔ «ورود به اتاق مشاوره» را می‌زند، همین‌جا ظاهر می‌شود. این صفحه را باز نگه دارید.' }),
+      h('div', { class: 'actions' }, h('button', { class: 'btn btn--small', type: 'button', disabled: !!S.alerts, onclick: enableAlerts,
+        text: S.alerts ? 'صدا و اعلان فعال است ✓' : 'فعال‌سازی صدا و اعلان' })),
+      B.events.length ? B.events.map(function (e) { return eventCard(e, B); }) : h('p', { class: 'empty', text: 'الان اتاق بازی نیست.' }));
+  }
+  function eventCard(e, B) {
+    var p = profileOf(e.counselor_id), s = e.session_id && B.sessions[e.session_id], phone = s && B.contacts[s.id];
+    var acts = h('div', { class: 'actions' });
+    if (s && phone && p && p.meet_url) acts.appendChild(h('button', { class: 'btn btn--wa', type: 'button', text: 'ارسال لینک به مراجع (واتساپ)', onclick: function () { sendToClient(s, p, phone); } }));
+    else if (p && p.meet_url) acts.appendChild(h('button', { class: 'btn btn--small', type: 'button', text: 'کپی لینک اتاق', onclick: function () { copyText(p.meet_url); } }));
+    if (s && !phone) acts.appendChild(h('span', { class: 'chip', text: 'شمارهٔ مراجع ثبت نشده' }));
+    acts.appendChild(h('button', { class: 'btn btn--small', type: 'button', text: 'انجام شد', onclick: function () { handle(e); } }));
+    return h('div', { class: 's s--live' },
+      h('div', { class: 's__head' }, h('div', { class: 's__time' }, nameOf(e.counselor_id), h('small', { text: 'اتاق را باز کرد — ساعت ' + timeOf(e.opened_at) }))),
+      s ? h('div', null, h('b', { text: 'مراجع: ' }), s.client_label, ' — ', dayOf(s.starts_at), '، ساعت ', timeOf(s.starts_at))
+        : h('p', { class: 'hint', text: 'این دکمه خارج از ساعت یک جلسهٔ ثبت‌شده زده شد.' }),
+      acts);
   }
 
   function tSessions() {
@@ -371,11 +478,7 @@
     } }, Object.keys(STATUS).map(function (k) { return h('option', { value: k, text: STATUS[k], selected: s.status === k }); }));
     var acts = h('div', { class: 'actions' });
     if (phone && p && p.meet_url) {
-      acts.appendChild(h('button', { class: 'btn btn--wa btn--small', type: 'button', text: 'ارسال لینک به مراجع', onclick: function () {
-        var text = ['سلام ' + s.client_label + ' عزیز', 'لینک اتاق مشاورهٔ شما با ' + (p.full_name || 'مشاور هم‌نوا') + ':', p.meet_url,
-          'زمان: ' + dayOf(s.starts_at) + '، ساعت ' + timeOf(s.starts_at) + ' (به وقت ایران)', 'سر وقت روی لینک بزنید؛ مشاور شما را به اتاق می‌پذیرد.'].join('\n');
-        window.open(waLink(phoneDigits(phone), text), '_blank', 'noopener');
-      } }));
+      acts.appendChild(h('button', { class: 'btn btn--wa btn--small', type: 'button', text: 'ارسال لینک به مراجع', onclick: function () { sendToClient(s, p, phone); } }));
     } else if (!p || !p.meet_url) acts.appendChild(h('span', { class: 'chip chip--warn', text: 'مشاور هنوز لینک اتاق ثبت نکرده' }));
     else acts.appendChild(h('span', { class: 'chip', text: 'شمارهٔ مراجع ثبت نشده' }));
     acts.appendChild(h('button', { class: 'btn btn--danger btn--small', type: 'button', text: 'حذف', onclick: function () {
