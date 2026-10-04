@@ -102,3 +102,6 @@ button,input,select{font:inherit;color:inherit}
 .login .brand{justify-content:center;margin-bottom:14px}
 .center{text-align:center}
 .sp{height:6px}
+
+.badge{background:var(--coral);color:#fff;border-radius:999px;padding:0 9px;font-size:13px;margin-inline-start:8px;display:inline-block;min-width:22px;text-align:center}
+.badge:empty{display:none}
