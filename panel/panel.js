@@ -353,7 +353,7 @@
   function vStaff() {
     var open = (S.data.board && S.data.board.events.length) || 0;
     var tabs = h('div', { class: 'tabs', role: 'tablist' }, [['board', 'اتاق‌های باز'], ['sessions', 'جلسه‌ها'], ['new', 'جلسهٔ جدید'], ['people', 'مشاورها']].map(function (t) {
-      return h('button', { class: 'tab', role: 'tab', 'aria-selected': S.tab === t[0] ? 'true' : 'false', onclick: function () { S.tab = t[0]; render(); } },
+      return h('button', { class: 'tab', role: 'tab', 'aria-selected': S.tab === t[0] ? 'true' : 'false', onclick: function () { S.tab = t[0]; if (t[0] !== 'new') S.booked = null; render(); } },
         t[1], t[0] === 'board' ? h('span', { class: 'badge', id: 'boardBadge', text: open ? n(open) : '' }) : null);
     }));
     var body = S.tab === 'board' ? tBoard() : S.tab === 'new' ? tNew() : S.tab === 'people' ? tPeople() : tSessions();
@@ -366,6 +366,23 @@
     return ['سلام ' + s.client_label + ' عزیز', 'لینک اتاق مشاورهٔ شما با ' + (p.full_name || 'مشاور هم‌نوا') + ':', p.meet_url,
       'زمان: ' + dayOf(s.starts_at) + '، ساعت ' + timeOf(s.starts_at) + ' (به وقت ایران)', 'سر وقت روی لینک بزنید؛ مشاور شما را به اتاق می‌پذیرد.'].join('\n');
   }
+  function confirmText(s, p) {
+    var lines = ['سلام ' + s.client_label + ' عزیز 🌿', 'جلسهٔ شما در هم‌نوا ثبت شد.',
+      'مشاور: ' + ((p && p.full_name) || 'هم‌نوا'),
+      'زمان: ' + dayOf(s.starts_at) + '، ساعت ' + timeOf(s.starts_at) + ' (به وقت ایران)',
+      'نوع: ' + (s.kind === 'intro' ? 'جلسهٔ معارفهٔ رایگان' : 'جلسهٔ مشاوره') + ' — ' + (s.mode === 'audio' ? 'تماس صوتی' : 'تماس تصویری')];
+    if (p && p.meet_url) lines.push('لینک اتاق: ' + p.meet_url, 'سر وقت روی لینک بزنید؛ مشاور شما را به اتاق می‌پذیرد.');
+    else lines.push('لینک اتاق پیش از جلسه برایتان فرستاده می‌شود.');
+    return lines.join('\n');
+  }
+  function reminderText(s, p) {
+    var lines = ['سلام ' + s.client_label + ' عزیز', 'یادآوری جلسهٔ شما با ' + ((p && p.full_name) || 'مشاور هم‌نوا') + ':',
+      dayOf(s.starts_at) + '، ساعت ' + timeOf(s.starts_at) + ' (به وقت ایران)'];
+    if (p && p.meet_url) lines.push(p.meet_url);
+    return lines.join('\n');
+  }
+  function sendConfirm(s, p, phone) { window.open(waLink(phoneDigits(phone), confirmText(s, p)), '_blank', 'noopener'); }
+  function sendReminder(s, p, phone) { window.open(waLink(phoneDigits(phone), reminderText(s, p)), '_blank', 'noopener'); }
   function sendToClient(s, p, phone) { window.open(waLink(phoneDigits(phone), clientText(s, p)), '_blank', 'noopener'); }
   function copyText(t) {
     var done = function () { flash('ok', 'کپی شد.'); render(); };
@@ -477,10 +494,11 @@
       });
     } }, Object.keys(STATUS).map(function (k) { return h('option', { value: k, text: STATUS[k], selected: s.status === k }); }));
     var acts = h('div', { class: 'actions' });
-    if (phone && p && p.meet_url) {
-      acts.appendChild(h('button', { class: 'btn btn--wa btn--small', type: 'button', text: 'ارسال لینک به مراجع', onclick: function () { sendToClient(s, p, phone); } }));
-    } else if (!p || !p.meet_url) acts.appendChild(h('span', { class: 'chip chip--warn', text: 'مشاور هنوز لینک اتاق ثبت نکرده' }));
-    else acts.appendChild(h('span', { class: 'chip', text: 'شمارهٔ مراجع ثبت نشده' }));
+    if (phone) {
+      acts.appendChild(h('button', { class: 'btn btn--wa btn--small', type: 'button', text: 'ارسال تأیید', onclick: function () { sendConfirm(s, p, phone); } }));
+      if (s.status === 'scheduled') acts.appendChild(h('button', { class: 'btn btn--wa btn--small', type: 'button', text: 'یادآوری', onclick: function () { sendReminder(s, p, phone); } }));
+    } else acts.appendChild(h('span', { class: 'chip', text: 'شمارهٔ مراجع ثبت نشده' }));
+    if (!p || !p.meet_url) acts.appendChild(h('span', { class: 'chip chip--warn', text: 'مشاور هنوز لینک اتاق ثبت نکرده' }));
     acts.appendChild(h('button', { class: 'btn btn--danger btn--small', type: 'button', text: 'حذف', onclick: function () {
       if (!window.confirm('این جلسه حذف شود؟')) return;
       sb.from('sessions').delete().eq('id', s.id).then(function (r) { flash(r.error ? 'err' : 'ok', r.error ? explain(r.error) : 'حذف شد.'); loadStaff(); });
@@ -498,7 +516,7 @@
     var counselors = (S.data.profiles || []).filter(function (p) { return p.role === 'counselor' && p.active; });
     var f = {
       who: h('select', { class: 'select', required: true }, h('option', { value: '', text: 'انتخاب مشاور…' }),
-        counselors.map(function (p) { return h('option', { value: p.id, text: p.full_name || 'بدون نام' }); })),
+        counselors.map(function (p) { return h('option', { value: p.id, text: p.full_name || 'بدون نام', selected: S.lastWho === p.id }); })),
       label: h('input', { class: 'input', maxlength: 60, required: true, placeholder: 'نام کوچک یا یک کد، نه نام کامل' }),
       phone: h('input', { class: 'input', dir: 'ltr', placeholder: '+1 647 000 0000  یا  0912…' }),
       when: h('input', { class: 'input', type: 'datetime-local', required: true }),
@@ -521,10 +539,12 @@
         duration_min: +f.dur.value, mode: f.mode.value, kind: f.kind.value, created_by: S.user.id }).select().single().then(function (r) {
         if (r.error) { submit.disabled = false; flash('err', explain(r.error)); return render(); }
         var phone = f.phone.value.trim();
-        if (!phone) { flash('ok', 'جلسه ثبت شد.'); S.tab = 'sessions'; return loadStaff(); }
+        S.lastWho = f.who.value;
+        var booked = function (saved) { S.booked = { s: r.data, phone: saved ? phone : '' }; loadStaff(); };
+        if (!phone) return booked(false);
         sb.from('session_contacts').insert({ session_id: r.data.id, client_phone: phone }).then(function (c) {
-          flash(c.error ? 'err' : 'ok', c.error ? 'جلسه ثبت شد ولی شمارهٔ مراجع ذخیره نشد.' : 'جلسه ثبت شد.');
-          S.tab = 'sessions'; loadStaff();
+          if (c.error) flash('err', 'جلسه ثبت شد ولی شمارهٔ مراجع ذخیره نشد.');
+          booked(!c.error);
         });
       });
     } },
@@ -532,13 +552,25 @@
       counselors.length ? null : h('p', { class: 'flash flash--info', text: 'هنوز مشاور فعالی نیست. از تب «مشاورها» فعالشان کنید.' }),
       h('div', { class: 'field' }, h('label', { text: 'مشاور' }), f.who),
       h('div', { class: 'field' }, h('label', { text: 'مراجع (نام کوچک یا کد)' }), f.label),
-      h('div', { class: 'field' }, h('label', { text: 'شمارهٔ مراجع (اختیاری؛ فقط منشی و مدیر می‌بینند)' }), f.phone),
+      h('div', { class: 'field' }, h('label', { text: 'شمارهٔ مراجع (برای ارسال تأیید با واتساپ؛ فقط منشی و مدیر می‌بینند)' }), f.phone),
       h('div', { class: 'field' }, h('label', { text: 'زمان (به وقت ایران)' }), f.when, preview),
       h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'مدت' }), f.dur), h('div', { class: 'field' }, h('label', { text: 'نوع تماس' }), f.mode)),
       h('div', { class: 'field' }, h('label', { text: 'جلسه یا معارفه' }), f.kind),
       h('p', { class: 'hint', text: 'محتوای جلسه یا یادداشت بالینی را هیچ‌جا این‌جا ننویسید.' }),
       h('div', { class: 'actions' }, submit));
-    return form;
+    var done = null;
+    if (S.booked) {
+      var bs = S.booked.s, bp = profileOf(bs.counselor_id);
+      done = h('section', { class: 'card hero', role: 'status' },
+        h('h2', { text: 'جلسه ثبت شد ✓' }),
+        h('p', { class: 'hint', text: nameOf(bs.counselor_id) + ' — ' + bs.client_label + ' — ' + dayOf(bs.starts_at) + '، ساعت ' + timeOf(bs.starts_at) }),
+        S.booked.phone
+          ? h('button', { class: 'room-btn', type: 'button', onclick: function () { sendConfirm(bs, bp, S.booked.phone); } }, h('span', { text: 'ارسال تأیید به مراجع (واتساپ)' }))
+          : h('p', { class: 'hint', text: 'شمارهٔ مراجع ثبت نشد؛ بعداً از تب «جلسه‌ها» می‌توانید تأیید بفرستید.' }),
+        bp && bp.meet_url ? null : h('p', { class: 'hint', text: 'توجه: این مشاور هنوز لینک اتاق ثبت نکرده؛ پیام بدون لینک می‌رود.' }),
+        h('div', { class: 'actions' }, h('button', { class: 'btn btn--small', type: 'button', text: 'ثبت جلسهٔ دیگر', onclick: function () { S.booked = null; render(); } })));
+    }
+    return h('div', null, done, form);
   }
 
   function tPeople() {
