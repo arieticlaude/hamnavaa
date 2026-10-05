@@ -274,13 +274,25 @@
   html[data-lang="en"] [data-i18n="fa"]{display:none;}
   html[data-lang="en"] body{font-family:'Vazirmatn','Segoe UI',Tahoma,sans-serif;}
 
-  .nav__right{display:flex; align-items:center; gap:16px;}
+  .nav__right{display:flex; align-items:center; gap:12px;}
   .lang-toggle{display:flex; align-items:center; background:var(--paper-alt); border-radius:999px; padding:3px; gap:2px; flex-shrink:0;}
   .lang-toggle__btn{
     padding:7px 13px; border-radius:999px; font-size:0.78rem; font-weight:800;
     color:var(--muted); transition:background .25s ease, color .25s ease;
   }
   .lang-toggle__btn.is-active{background:var(--teal-deep); color:var(--paper);}
+  .nav__login-btn{display:inline-flex; align-items:center; gap:8px; flex-shrink:0; padding:9px 18px; border-radius:999px;
+    font-weight:800; font-size:0.9rem; color:var(--teal-deep); background:linear-gradient(135deg,#FFF6DE,#F0D9A6);
+    border:1px solid rgba(183,138,70,.55); box-shadow:0 10px 22px -14px rgba(138,107,57,.7);
+    transition:transform .2s ease, box-shadow .2s ease, background .2s ease;}
+  .nav__login-btn svg{width:18px; height:18px; flex:none;}
+  .nav__login-btn:hover{transform:translateY(-1px); background:linear-gradient(135deg,#FFFBEF,#E8C486); box-shadow:0 14px 26px -14px rgba(138,107,57,.85);}
+  .nav__login-btn:focus-visible{outline:3px solid var(--gold); outline-offset:2px;}
+  /* the full pill needs 1300px next to nine nav links; below that it is the icon alone */
+  @media (max-width:1299px){
+    .nav__login-btn{padding:0; width:42px; height:42px; justify-content:center;}
+    .nav__login-btn span{display:none !important;}
+  }
 
   .wrap{max-width:var(--maxw); margin:0 auto; padding:0 28px;}
 
@@ -896,7 +908,7 @@
      1156px in Persian and overflowed *at 1280* — widening the breakpoint would
      not have helped, only shrinking the content does. Eight gaps × 6px buys
      back 48px: 1108px needed, 32px of room. */
-  .nav__links{display:flex; align-items:center; gap:12px; font-size:0.95rem; font-weight:600; color:var(--ink);}
+  .nav__links{display:flex; align-items:center; gap:9px; font-size:0.92rem; font-weight:600; color:var(--ink);}
   /* :not(.btn) throughout — these are the plain text links. `.nav__links a` is
      more specific than `.btn`, so without it the CTA in the header inherited
      the text link's 4px/0 padding (a 23px-tall pill against 41px everywhere
@@ -2373,7 +2385,7 @@
      being the viewport. Re-measure if an item is ever added or renamed — at
      nine there is 32px left, so the next one does not fit and something has to
      move into the drawer instead. */
-  @media (max-width:1140px){
+  @media (max-width:1199px){
     .nav__links{
       position:absolute; top:100%; right:0; left:0; background:var(--paper);
       flex-direction:column; align-items:flex-start; gap:0; border-bottom:1px solid var(--line);
