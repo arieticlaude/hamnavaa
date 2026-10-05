@@ -148,3 +148,7 @@ button,input,select{font:inherit;color:inherit}
 /* phone notifications card */
 .push{border-color:#BFD9C9;background:linear-gradient(135deg,#FFFDF8,#EEF6F0)}
 .push h3{font-family:'Markazi Text',serif;font-size:24px;color:var(--teal-deep);display:flex;align-items:center;gap:10px;margin-bottom:4px}
+
+/* مشاور بدون حساب ورود */
+.guest{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(32,48,43,.18)}
+.warnbox{margin-top:8px;font-size:.92rem;color:#8A4B2B;background:#FBEFE3;border:1px solid #EBCBA9;border-radius:10px;padding:10px 12px}

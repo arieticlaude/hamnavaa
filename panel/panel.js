@@ -797,6 +797,7 @@
   }
 
   function tNew() {
+    var noLogin = h('p', { class: 'warnbox', hidden: true, text: 'این مشاور هنوز حساب ورود ندارد: جلسه ثبت می‌شود و تأیید برای مراجع ارسال می‌شود، ولی مشاور اعلانی نمی‌گیرد. جلسه را خودتان به او خبر بدهید.' });
     var counselors = (S.data.profiles || []).filter(function (p) { return isProvider(p) && p.active; });
     var f = {
       who: h('select', { class: 'select', required: true }, h('option', { value: '', text: 'انتخاب مشاور…' }),
@@ -837,7 +838,7 @@
     } },
       h('h2', { text: 'جلسهٔ جدید' }),
       counselors.length ? null : h('p', { class: 'flash flash--info', text: 'هنوز مشاور فعالی نیست. از تب «مشاورها» فعالشان کنید.' }),
-      h('div', { class: 'field' }, h('label', { text: 'مشاور' }), f.who),
+      h('div', { class: 'field' }, h('label', { text: 'مشاور' }), f.who, noLogin),
       h('div', { class: 'field' }, h('label', { text: 'مراجع (نام کوچک یا کد)' }), f.label),
       h('div', { class: 'field' }, h('label', { text: 'شمارهٔ مراجع (برای ارسال تأیید با واتساپ؛ فقط منشی و مدیر می‌بینند)' }), f.phone),
       h('div', { class: 'row' },
@@ -848,6 +849,10 @@
       h('div', { class: 'field' }, h('label', { text: 'جلسه یا پیش‌مشاوره' }), f.kind),
       h('p', { class: 'hint', text: 'محتوای جلسه یا یادداشت بالینی را هیچ‌جا این‌جا ننویسید.' }),
       h('div', { class: 'actions' }, submit));
+    f.who.addEventListener('change', function () {
+      var p = counselors.filter(function (x) { return x.id === f.who.value; })[0];
+      noLogin.hidden = !(p && p.no_login);
+    });
     var done = null;
     if (S.booked) {
       var bs = S.booked.s, bp = profileOf(bs.counselor_id);
@@ -871,14 +876,37 @@
       var role = h('select', { class: 'select', disabled: !isAdmin || self, 'aria-label': 'نقش', onchange: function (e) { upd(p.id, { role: e.target.value }); } },
         [['counselor', 'مشاور'], ['secretary', 'منشی'], ['admin', 'مدیر']].map(function (r) { return h('option', { value: r[0], text: r[1], selected: p.role === r[0] }); }));
       var name = h('input', { class: 'input', value: p.full_name || '', disabled: !isAdmin, 'aria-label': 'نام', onchange: function (e) { upd(p.id, { full_name: e.target.value.trim() }); } });
+      var guest = p.no_login ? guestBlock(p, isAdmin) : null;
       var takes = p.role === 'counselor' ? null : h('label', null, h('input', { type: 'checkbox', checked: !!p.takes_sessions, disabled: !isAdmin, 'aria-label': 'جلسه می‌گیرد', onchange: function (e) { upd(p.id, { takes_sessions: e.target.checked }); } }), ' خودش هم جلسه می‌گیرد (مشاور است)');
       return h('div', { class: 's' }, name,
-        h('div', { class: 'row' }, role, h('label', null, active, ' فعال')), takes,
+        h('div', { class: 'row' }, role, h('label', null, active, ' فعال')), takes, guest,
         h('div', { class: 'chips' }, h('span', { class: 'chip ' + (p.meet_url ? 'chip--ok' : 'chip--warn'), text: p.meet_url ? 'لینک اتاق ثبت شده' : 'لینک اتاق ندارد' })));
     });
     return h('section', { class: 'card' }, h('h2', { text: 'مشاورها و کارکنان' }),
       h('p', { class: 'hint' }, 'برای دعوت یک مشاور جدید: در داشبورد ', ltr('Supabase'), ' بخش ', ltr('Authentication'), ' ← ', ltr('Users'), ' ← ', ltr('Invite user'), ' را بزنید. بعد از اولین ورودش، این‌جا فعالش کنید. اگر مدیر یا منشی خودش مشاور هم هست، گزینهٔ «خودش هم جلسه می‌گیرد» را بزنید تا در فهرست مشاورهای ثبت جلسه بیاید.'),
       rows.length ? rows : h('p', { class: 'empty', text: 'هنوز کسی نیست.' }));
+  }
+  function guestBlock(p, isAdmin) {
+    var meet = h('input', { class: 'input', dir: 'ltr', type: 'url', placeholder: 'https://meet.google.com/abc-defg-hij', value: p.meet_url || '', disabled: !isAdmin, 'aria-label': 'لینک اتاق' });
+    var email = h('input', { class: 'input', dir: 'ltr', type: 'email', placeholder: 'ایمیلی که برایش دعوت فرستاده‌اید', disabled: !isAdmin, 'aria-label': 'ایمیل حساب' });
+    return h('div', { class: 'guest' },
+      h('p', { class: 'hint', text: 'این مشاور هنوز حساب ورود ندارد؛ منشی می‌تواند برایش جلسه ثبت کند، ولی خودش اعلان نمی‌گیرد و اتاق را از پنل باز نمی‌کند.' }),
+      h('div', { class: 'field' }, h('label', { text: 'لینک اتاق او (Google Meet) برای پیام تأیید' }), meet),
+      isAdmin ? h('div', { class: 'actions' }, h('button', { class: 'btn btn--small', type: 'button', text: 'ذخیرهٔ لینک', onclick: function () {
+        var v = meet.value.trim().split('?')[0];
+        if (v && !MEET_RE.test(v)) { flash('err', explain('invalid meet')); return render(); }
+        upd(p.id, { meet_url: v || null });
+      } })) : null,
+      isAdmin ? h('div', { class: 'field' }, h('label', { text: 'وقتی او را دعوت کردید و حسابش ساخته شد، ایمیلش را اینجا بنویسید تا جلسه‌ها به حساب واقعی‌اش وصل شوند' }), email) : null,
+      isAdmin ? h('div', { class: 'actions' }, h('button', { class: 'btn btn--small btn--primary', type: 'button', text: 'اتصال به حساب', onclick: function () {
+        var e = email.value.trim();
+        if (!e) { flash('err', 'ایمیل را بنویسید.'); return render(); }
+        if (!window.confirm('همهٔ جلسه‌های ' + (p.full_name || 'این مشاور') + ' به حساب ' + e + ' منتقل شود؟')) return;
+        sb.rpc('link_counselor_account', { p_placeholder: p.id, p_email: e }).then(function (r) {
+          flash(r.error ? 'err' : 'ok', r.error ? (/no such account/.test(r.error.message || '') ? 'حسابی با این ایمیل پیدا نشد. اول باید دعوتش کنید.' : explain(r.error)) : 'متصل شد.');
+          loadStaff();
+        });
+      } })) : null);
   }
   function upd(id, patch) {
     sb.from('profiles').update(patch).eq('id', id).then(function (r) {
