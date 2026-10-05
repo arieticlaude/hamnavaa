@@ -144,3 +144,7 @@ button,input,select{font:inherit;color:inherit}
 /* install-on-phone card */
 .install{border-color:#E0CFA8;background:linear-gradient(135deg,#FFFDF8,#F3EBD8)}
 .install h3{font-family:'Markazi Text',serif;font-size:24px;color:var(--teal-deep);margin-bottom:4px}
+
+/* phone notifications card */
+.push{border-color:#BFD9C9;background:linear-gradient(135deg,#FFFDF8,#EEF6F0)}
+.push h3{font-family:'Markazi Text',serif;font-size:24px;color:var(--teal-deep);display:flex;align-items:center;gap:10px;margin-bottom:4px}
