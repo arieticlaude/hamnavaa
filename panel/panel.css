@@ -140,3 +140,7 @@ button,input,select{font:inherit;color:inherit}
 .timef__sep{font-weight:800;font-size:20px;color:var(--teal-deep)}
 .timef__note{color:var(--muted);font-size:13px;margin-inline-start:6px}
 .hint a{color:var(--teal);font-weight:600}
+
+/* install-on-phone card */
+.install{border-color:#E0CFA8;background:linear-gradient(135deg,#FFFDF8,#F3EBD8)}
+.install h3{font-family:'Markazi Text',serif;font-size:24px;color:var(--teal-deep);margin-bottom:4px}
