@@ -199,6 +199,7 @@
       if (r.error) { flash('err', explain(r.error)); S.view = 'login'; return render(); }
       S.profile = r.data;
       if (!r.data || !r.data.active) { S.view = 'pending'; return render(); }
+      try { if (!MOCK && !sessionStorage.getItem('hn_sig')) { sessionStorage.setItem('hn_sig', '1'); sb.rpc('record_signin', { p_ua: navigator.userAgent || '' }); } } catch (e) { /* ثبت ورود اختیاری است */ }
       S.view = (r.data.role === 'counselor') ? 'counselor' : 'staff';
       if (S.view === 'counselor') { loadCounselor(); refreshPush(); }
       else { S.tab = 'board'; startRealtime(); loadStaff(); refreshPush(); }
@@ -918,11 +919,11 @@
   /* ───────────── پایش: نمای کلی، ورودها، گزارش فعالیت (فقط مدیر و منشی) ───────────── */
   var ACTIONS = {
     session_created: 'جلسهٔ جدید', session_moved: 'جابه‌جایی جلسه', session_status: 'وضعیت جلسه', session_reassigned: 'انتقال جلسه', session_deleted: 'حذف جلسه',
-    room_opened: 'باز شدن اتاق', profile_created: 'پروفایل تازه', profile_changed: 'تغییر افراد', profile_deleted: 'حذف پروفایل', push_enabled: 'اعلان گوشی', account_linked: 'اتصال حساب'
+    room_opened: 'باز شدن اتاق', signin: 'ورود به پنل', profile_created: 'پروفایل تازه', profile_changed: 'تغییر افراد', profile_deleted: 'حذف پروفایل', push_enabled: 'اعلان گوشی', account_linked: 'اتصال حساب'
   };
   var ACTION_GROUPS = { '': 'همه', sessions: 'جلسه‌ها', rooms: 'اتاق‌ها', people: 'افراد و حساب‌ها', push: 'اعلان‌ها' };
   var GROUP_OF = { session_created: 'sessions', session_moved: 'sessions', session_status: 'sessions', session_reassigned: 'sessions', session_deleted: 'sessions',
-    room_opened: 'rooms', profile_created: 'people', profile_changed: 'people', profile_deleted: 'people', account_linked: 'people', push_enabled: 'push' };
+    room_opened: 'rooms', signin: 'people', profile_created: 'people', profile_changed: 'people', profile_deleted: 'people', account_linked: 'people', push_enabled: 'push' };
   var SIGN_LABEL = { login: 'ورود', logout: 'خروج', user_signedup: 'ثبت‌نام', user_invited: 'دعوت', user_recovery_requested: 'درخواست بازیابی رمز', user_confirmation_requested: 'ایمیل تأیید' };
   var ROLE_FA = { counselor: 'مشاور', secretary: 'منشی', admin: 'مدیر' };
 
@@ -956,9 +957,9 @@
         done();
       });
     } else if (M.sub === 'logins') {
-      Promise.all([sb.rpc('staff_people'), sb.rpc('staff_signins', { p_limit: 300 })]).then(function (r) {
+      Promise.all([sb.rpc('staff_people'), sb.rpc('staff_signins', { p_limit: 300 }), sb.from('activity_log').select('*').eq('action', 'signin').order('at', { ascending: false }).limit(300)]).then(function (r) {
         if (r[0].error) M.err = r[0].error;
-        M.people = r[0].data || []; M.signins = r[1].data || []; M.signinErr = r[1].error || null;
+        M.people = r[0].data || []; M.signins = r[1].data || []; M.signinErr = r[1].error || null; M.panelSign = r[2].data || [];
         done();
       });
     } else {
@@ -1019,6 +1020,12 @@
   }
   function num(label, v) { return h('div', null, h('b', { text: n(v || 0) }), h('span', { text: label })); }
 
+  function device(ua) {
+    ua = ua || '';
+    var os = /iPhone|iPad|iPod/.test(ua) ? 'آیفون/آیپد' : /Android/.test(ua) ? 'اندروید' : /Windows/.test(ua) ? 'ویندوز' : /Mac OS X|Macintosh/.test(ua) ? 'مک' : /Linux/.test(ua) ? 'لینوکس' : '';
+    var br = /Edg\//.test(ua) ? 'Edge' : /OPR\/|Opera/.test(ua) ? 'Opera' : /Chrome\//.test(ua) ? 'Chrome' : /Safari\//.test(ua) ? 'Safari' : /Firefox\//.test(ua) ? 'Firefox' : '';
+    return (os + (os && br ? ' · ' : '') + br) || 'دستگاه نامشخص';
+  }
   function mLogins(M) {
     var people = (M.people || []).map(function (u) {
       var st = u.last_sign_in_at ? ['chip chip--ok', 'وارد شده'] : (u.confirmed ? ['chip chip--warn', 'ورود نکرده'] : ['chip chip--warn', 'دعوت‌شده، رمز نگذاشته']);
@@ -1026,6 +1033,9 @@
         h('div', { class: 's__time' }, u.full_name || 'بدون نام', h('small', null, ltr(u.email || ''), ' · ' + (ROLE_FA[u.role] || '—') + (u.active ? '' : ' · غیرفعال'))),
         h('div', { class: 'chips' }, h('span', { class: st[0], text: st[1] }))),
         h('div', { class: 'hint' }, u.last_sign_in_at ? ['آخرین ورود: ', stamp(u.last_sign_in_at), ' — ' + ago(u.last_sign_in_at)] : ['دعوت: ', u.invited_at ? stamp(u.invited_at) : '—']));
+    });
+    var ps = (M.panelSign || []).map(function (e) {
+      return h('div', { class: 'logrow' }, stamp(e.at), h('b', { text: e.actor_name || '—' }), h('small', { text: device(e.meta && e.meta.ua) }));
     });
     var ev = (M.signins || []).map(function (e) {
       return h('div', { class: 'logrow' }, stamp(e.at), h('b', { text: SIGN_LABEL[e.action] || e.action }), ltr(e.email || ''), e.ip ? h('small', null, ltr(e.ip)) : null);
@@ -1035,7 +1045,10 @@
     } }) : null;
     return h('div', null,
       h('section', { class: 'card' }, h('h2', { text: 'افراد و آخرین ورود' }), people.length ? people : h('p', { class: 'empty', text: 'کسی نیست.' })),
-      h('section', { class: 'card' }, h('h2', { text: 'رویدادهای ورود' }),
+      h('section', { class: 'card' }, h('h2', { text: 'ورودهای ثبت‌شده در پنل' }),
+        h('p', { class: 'hint', text: 'هر بار که کسی (در یک مرورگر یا اپ تازه) وارد پنل می‌شود، با ساعت و نوع دستگاه ثبت می‌شود. ساعت‌ها به وقت ایران است.' }),
+        ps.length ? ps : h('p', { class: 'empty', text: 'هنوز ورودی ثبت نشده؛ از این به بعد ثبت می‌شود.' })),
+      h('section', { class: 'card' }, h('h2', { text: 'رویدادهای سامانهٔ احراز هویت' }),
         h('p', { class: 'hint', text: 'ورود، خروج و دعوت‌ها، از گزارش داخلی سامانهٔ احراز هویت. ساعت‌ها به وقت ایران است.' }), exp,
         M.signinErr ? h('p', { class: 'hint', text: 'گزارش رویدادها در دسترس نیست؛ فقط «آخرین ورود» بالا نمایش داده می‌شود.' }) : (ev.length ? ev : h('p', { class: 'empty', text: 'رویدادی ثبت نشده.' }))));
   }
