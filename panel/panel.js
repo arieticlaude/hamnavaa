@@ -121,7 +121,7 @@
   function dayG(ts) { var d = tehranDate(ts); return G_MONTHS[d.gm - 1] + ' ' + d.gd + ', ' + d.gy; }   // «Oct 4, 2026»
   var dayOf = function (ts) { return dayJ(ts) + ' (' + dayG(ts) + ')'; };       // برای متن پیام‌ها
   // همان تاریخ برای نمایش در صفحه: بخش لاتین یک تکه می‌ماند و وسط خط شکسته نمی‌شود
-  function dayNode(ts) { var f = document.createDocumentFragment(); f.appendChild(document.createTextNode(dayJ(ts) + ' (')); f.appendChild(ltr(dayG(ts))); f.appendChild(document.createTextNode(')')); return f; }
+  function dayNode(ts) { var f = document.createDocumentFragment(), g = ltr('(' + dayG(ts) + ')'); g.style.whiteSpace = 'nowrap'; f.appendChild(document.createTextNode(dayJ(ts) + ' ')); f.appendChild(g); return f; }
 
   /* «۲۰۲۶-۱۰-۰۴T۱۸:۳۰» که منشی به وقت تهران می‌نویسد ← لحظهٔ UTC */
   function tehranToUtc(local) {
