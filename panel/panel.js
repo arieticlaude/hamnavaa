@@ -199,7 +199,7 @@
       if (r.error) { flash('err', explain(r.error)); S.view = 'login'; return render(); }
       S.profile = r.data;
       if (!r.data || !r.data.active) { S.view = 'pending'; return render(); }
-      try { if (!MOCK && !sessionStorage.getItem('hn_sig')) { sessionStorage.setItem('hn_sig', '1'); sb.rpc('record_signin', { p_ua: navigator.userAgent || '' }); } } catch (e) { /* ثبت ورود اختیاری است */ }
+      try { if (!MOCK && !sessionStorage.getItem('hn_sig')) { sessionStorage.setItem('hn_sig', '1'); sb.rpc('record_signin', { p_ua: navigator.userAgent || '' }).then(function () {}, function () {}); } } catch (e) { /* ثبت ورود اختیاری است */ }
       S.view = (r.data.role === 'counselor') ? 'counselor' : 'staff';
       if (S.view === 'counselor') { loadCounselor(); refreshPush(); }
       else { S.tab = 'board'; startRealtime(); loadStaff(); refreshPush(); }
