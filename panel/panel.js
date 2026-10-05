@@ -201,7 +201,7 @@
       if (!r.data || !r.data.active) { S.view = 'pending'; return render(); }
       S.view = (r.data.role === 'counselor') ? 'counselor' : 'staff';
       if (S.view === 'counselor') loadCounselor();
-      else { S.tab = 'board'; startRealtime(); loadStaff(); }
+      else { S.tab = 'board'; startRealtime(); loadStaff(); refreshPush(); }
     });
   }
 
@@ -218,6 +218,77 @@
     var inst = installCard();
     if (inst) nodes.push(inst);
     app.replaceChildren.apply(app, nodes);
+  }
+
+  /* ───────────── اعلان روی گوشی (Web Push) ───────────── */
+  function b64ToBytes(b) {
+    var s = (b + '='.repeat((4 - b.length % 4) % 4)).replace(/-/g, '+').replace(/_/g, '/'), raw = atob(s), out = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+    return out;
+  }
+  function pushSupported() { return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window; }
+  function refreshPush() {
+    var ios = /iphone|ipad|ipod/i.test(navigator.userAgent || '');
+    if (!CFG.vapidPublicKey) S.push = { state: 'unsupported' };
+    else if (!pushSupported()) S.push = { state: (ios && !isStandalone()) ? 'need-install' : 'unsupported' };
+    else if (Notification.permission === 'denied') S.push = { state: 'denied' };
+    else {
+      S.push = { state: 'checking' };
+      navigator.serviceWorker.ready.then(function (reg) { return reg.pushManager.getSubscription(); }).then(function (sub) {
+        S.push = { state: sub ? 'on' : 'off' }; render();
+      }).catch(function () { S.push = { state: 'off' }; render(); });
+    }
+  }
+  function enablePush() {
+    S.push = { state: 'busy' }; render();
+    Notification.requestPermission().then(function (perm) {
+      if (perm !== 'granted') { S.push = { state: perm === 'denied' ? 'denied' : 'off' }; return render(); }
+      return navigator.serviceWorker.ready.then(function (reg) {
+        return reg.pushManager.getSubscription().then(function (old) {
+          return old || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(CFG.vapidPublicKey) });
+        });
+      }).then(function (sub) {
+        var j = sub.toJSON();
+        return sb.from('push_subscriptions').upsert({ user_id: S.user.id, endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth,
+          user_agent: (navigator.userAgent || '').slice(0, 200) }, { onConflict: 'endpoint' });
+      }).then(function (r) {
+        if (r.error) { flash('err', 'ذخیرهٔ اعلان انجام نشد. دوباره امتحان کنید.'); S.push = { state: 'off' }; }
+        else { flash('ok', 'اعلان روی این گوشی فعال شد.'); S.push = { state: 'on' }; }
+        render();
+      });
+    }).catch(function () { S.push = { state: 'off' }; flash('err', 'فعال‌سازی اعلان انجام نشد.'); render(); });
+  }
+  function disablePush() {
+    navigator.serviceWorker.ready.then(function (reg) { return reg.pushManager.getSubscription(); }).then(function (sub) {
+      if (!sub) return null;
+      var ep = sub.toJSON().endpoint;
+      return sb.from('push_subscriptions').delete().eq('endpoint', ep).then(function () { return sub.unsubscribe(); });
+    }).then(function () { S.push = { state: 'off' }; flash('ok', 'اعلان روی این گوشی خاموش شد.'); render(); })
+      .catch(function () { flash('err', 'خاموش کردن انجام نشد.'); render(); });
+  }
+  function testPush() {
+    navigator.serviceWorker.ready.then(function (reg) {
+      return reg.showNotification('آزمایش اعلان', { body: 'اگر این را می‌بینید، اعلان‌ها روی همین گوشی کار می‌کنند.', icon: 'icons/icon-192.png', dir: 'rtl', lang: 'fa', tag: 'hn-test' });
+    });
+  }
+  function pushCard() {
+    var st = (S.push && S.push.state) || 'checking';
+    var msg = {
+      unsupported: 'این مرورگر اعلان نمی‌دهد. در اندروید از Chrome و در آیفون از Safari (پنل نصب‌شده) استفاده کنید.',
+      'need-install': 'در آیفون اعلان فقط برای پنلِ نصب‌شده کار می‌کند: پنل را با «Add to Home Screen» به صفحهٔ اصلی اضافه کنید و از همان آیکون باز کنید؛ بعد این دکمه فعال می‌شود.',
+      denied: 'اعلان برای هم‌نوا بسته است. در تنظیمات گوشی یا مرورگر، اعلان‌های این سایت را روشن کنید و صفحه را دوباره باز کنید.',
+      checking: 'در حال بررسی…', busy: 'لطفاً صبر کنید…',
+      off: 'وقتی مشاوری وارد اتاق شود، حتی اگر پنل بسته باشد، روی همین گوشی اعلان می‌آید.',
+      on: 'اعلان روی این گوشی فعال است. وقتی مشاوری وارد اتاق شود، حتی با بسته بودن پنل، خبر می‌رسد.'
+    }[st];
+    var acts = h('div', { class: 'actions' });
+    if (st === 'off') acts.appendChild(h('button', { class: 'btn btn--primary', type: 'button', text: 'فعال‌سازی اعلان روی گوشی', onclick: enablePush }));
+    if (st === 'on') {
+      acts.appendChild(h('button', { class: 'btn btn--small', type: 'button', text: 'اعلان آزمایشی', onclick: testPush }));
+      acts.appendChild(h('button', { class: 'btn btn--small btn--danger', type: 'button', text: 'خاموش کردن', onclick: disablePush }));
+    }
+    return h('section', { class: 'card push' }, h('h3', null, 'اعلان روی گوشی ', st === 'on' ? h('span', { class: 'chip chip--ok', text: 'فعال ✓' }) : null),
+      h('p', { class: 'hint', text: msg }), acts);
   }
 
   /* ───────────── نصب روی گوشی (مثل یک اپ) ───────────── */
@@ -657,11 +728,11 @@
 
   function tBoard() {
     var B = S.data.board || { events: [], sessions: {}, contacts: {} };
-    return h('section', { class: 'card' }, h('h2', { text: 'اتاق‌های باز' }),
+    return h('div', null, pushCard(), h('section', { class: 'card' }, h('h2', { text: 'اتاق‌های باز' }),
       h('p', { class: 'hint', text: 'وقتی مشاوری دکمهٔ «ورود به اتاق مشاوره» را می‌زند، همین‌جا ظاهر می‌شود. این صفحه را باز نگه دارید.' }),
       h('div', { class: 'actions' }, h('button', { class: 'btn btn--small', type: 'button', disabled: !!S.alerts, onclick: enableAlerts,
         text: S.alerts ? 'صدا و اعلان فعال است ✓' : 'فعال‌سازی صدا و اعلان' })),
-      B.events.length ? B.events.map(function (e) { return eventCard(e, B); }) : h('p', { class: 'empty', text: 'الان اتاق بازی نیست.' }));
+      B.events.length ? B.events.map(function (e) { return eventCard(e, B); }) : h('p', { class: 'empty', text: 'الان اتاق بازی نیست.' })));
   }
   function eventCard(e, B) {
     var p = profileOf(e.counselor_id), s = e.session_id && B.sessions[e.session_id], phone = s && B.contacts[s.id];

@@ -4,5 +4,6 @@
 window.PANEL_CONFIG = {
   url: 'https://bxrwcdonxeirhvpinwpz.supabase.co',
   key: 'sb_publishable_j0TSi0ik_6HZ_EccF01wvg_Nifs-YXT',
-  secretaryWhatsApp: '989387148988'
+  secretaryWhatsApp: '989387148988',
+  vapidPublicKey: 'BNnmLD_njHjOGJUOARmsbgGMDjynP2hXMOiBKdNDMDNno35D01yHWcIPA8JltASUWHTbEAxH7Kt1MswoivnySy4'
 };
