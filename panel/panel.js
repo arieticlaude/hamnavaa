@@ -39,7 +39,7 @@
     else el.appendChild(c.nodeType ? c : document.createTextNode(String(c)));
   }
 
-  var MARK = '<svg viewBox="0 0 84 84" fill="none" aria-hidden="true"><path d="M14 18 h56 a8 8 0 0 1 8 8 v28 a8 8 0 0 1 -8 8 h-30 l-16 14 v-14 h-10 a8 8 0 0 1 -8 -8 v-28 a8 8 0 0 1 8 -8 Z" fill="#3A6259"/><rect x="28" y="34" width="6" height="14" rx="3" fill="#FDFBF5"/><rect x="39" y="28" width="6" height="26" rx="3" fill="#B78A46"/><rect x="50" y="34" width="6" height="14" rx="3" fill="#FDFBF5"/></svg>';
+  var MARK = '<svg viewBox="0 0 84 84" fill="none" aria-hidden="true"><path d="M14 18 h56 a8 8 0 0 1 8 8 v28 a8 8 0 0 1 -8 8 h-30 l-16 14 v-14 h-10 a8 8 0 0 1 -8 -8 v-28 a8 8 0 0 1 8 -8 Z" fill="#3D6B61"/><rect x="28" y="34" width="6" height="14" rx="3" fill="#F1F4EF"/><rect x="39" y="28" width="6" height="26" rx="3" fill="#C2A06B"/><rect x="50" y="34" width="6" height="14" rx="3" fill="#FDFBF5"/></svg>';
   var VIDEO_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="14" height="12" rx="3"/><path d="M16 10l6-3v10l-6-3z"/></svg>';
   var nf = new Intl.NumberFormat('fa-IR');
   function n(x) { return nf.format(x); }                       // رقم فارسی
@@ -179,7 +179,7 @@
     // صفحهٔ مشاور هر دقیقه تازه می‌شود (پنجرهٔ ورود به اتاق)، ولی هرگز وسط نوشتن در یک فیلد
     setInterval(function () {
       var tag = (document.activeElement && document.activeElement.tagName) || '';
-      if (S.view === 'counselor' && !/INPUT|SELECT|TEXTAREA/.test(tag)) loadCounselor();
+      if ((S.view === 'counselor' || (S.view === 'staff' && S.tab === 'mine')) && !/INPUT|SELECT|TEXTAREA/.test(tag)) loadCounselor();
     }, 60000);
   }
 
@@ -273,7 +273,7 @@
   }
   function pushCard() {
     var st = (S.push && S.push.state) || 'checking';
-    var counselorView = S.view === 'counselor';
+    var counselorView = S.view === 'counselor' || S.tab === 'mine';
     var msg = {
       unsupported: 'این مرورگر اعلان نمی‌دهد. در اندروید از Chrome و در آیفون از Safari (پنل نصب‌شده) استفاده کنید.',
       'need-install': 'در آیفون اعلان فقط برای پنلِ نصب‌شده کار می‌کند: پنل را با «Add to Home Screen» به صفحهٔ اصلی اضافه کنید و از همان آیکون باز کنید؛ بعد این دکمه فعال می‌شود.',
@@ -399,10 +399,11 @@
     sb.from('sessions').select('*').eq('counselor_id', S.user.id).order('starts_at', { ascending: true }).limit(300)
       .then(function (r) {
         if (r.error) flash('err', explain(r.error));
-        S.data.sessions = r.data || [];
+        S.mine = r.data || [];
         render();
       });
   }
+  function isProvider(p) { return p.role === 'counselor' || !!p.takes_sessions; }
   function endOf(s) { return new Date(s.starts_at).getTime() + s.duration_min * 60000; }
   function inWindow(s) {
     var n = Date.now(), t = new Date(s.starts_at).getTime();
@@ -419,7 +420,7 @@
     var sid = (session && session.id && inWindow(session)) ? session.id : null;
     sb.rpc('counselor_open_room', { p_session: sid }).then(function (r) {
       S.notified = r.error ? 'fail' : 'ok';
-      if (S.view === 'counselor') render();
+      if (S.view === 'counselor' || S.tab === 'mine') render();
     });
   }
   function toSecretary(session) {
@@ -461,8 +462,9 @@
     });
   }
 
-  function vCounselor() {
-    var all = S.data.sessions || [];
+  function vCounselor() { shell(counselorBody()); }
+  function counselorBody() {
+    var all = S.mine || [];
     var now = Date.now();
     var upcoming = all.filter(function (s) { return s.status === 'scheduled' && endOf(s) + JOIN_AFTER_MIN * 60000 >= now; });
     var past = all.filter(function (s) { return upcoming.indexOf(s) < 0; }).reverse();
@@ -483,13 +485,13 @@
         h('button', { class: 'btn btn--small', type: 'button', text: 'بستن', onclick: function () { S.room = null; render(); } })));
     }
 
-    shell([hero, roomLinkCard(hasLink), pushCard(),
+    return [hero, roomLinkCard(hasLink), pushCard(),
       h('section', { class: 'card' }, h('h2', { text: 'جلسه‌های پیش‌رو' }),
         upcoming.length ? upcoming.map(function (s) { return sessionCard(s, true); }) : h('p', { class: 'empty', text: 'جلسه‌ای در پیش نیست.' })),
       h('section', { class: 'card' }, h('h2', { text: 'جلسه‌های گذشته' }),
         past.length ? [past.slice(0, S.pastN || 30).map(function (s) { return sessionCard(s, true); }),
           past.length > (S.pastN || 30) ? h('div', { class: 'actions' }, h('button', { class: 'btn btn--small', type: 'button', text: 'نمایش جلسه‌های قدیمی‌تر (' + n(past.length - (S.pastN || 30)) + ')', onclick: function () { S.pastN = (S.pastN || 30) + 30; render(); } })) : null]
-          : h('p', { class: 'empty', text: 'هنوز جلسه‌ای ثبت نشده.' }))]);
+          : h('p', { class: 'empty', text: 'هنوز جلسه‌ای ثبت نشده.' }))];
   }
 
   function roomLinkCard(hasLink) {
@@ -632,11 +634,13 @@
 
   function vStaff() {
     var open = (S.data.board && S.data.board.events.length) || 0;
-    var tabs = h('div', { class: 'tabs', role: 'tablist' }, [['board', 'اتاق‌های باز'], ['sessions', 'جلسه‌ها'], ['new', 'جلسهٔ جدید'], ['people', 'مشاورها']].map(function (t) {
-      return h('button', { class: 'tab', role: 'tab', 'aria-selected': S.tab === t[0] ? 'true' : 'false', onclick: function () { S.tab = t[0]; if (t[0] !== 'new') S.booked = null; render(); } },
+    var tabList = [['board', 'اتاق‌های باز'], ['sessions', 'جلسه‌ها'], ['new', 'جلسهٔ جدید'], ['people', 'مشاورها']];
+    if (S.profile.takes_sessions) tabList.push(['mine', 'جلسه‌های من']);
+    var tabs = h('div', { class: 'tabs', role: 'tablist' }, tabList.map(function (t) {
+      return h('button', { class: 'tab', role: 'tab', 'aria-selected': S.tab === t[0] ? 'true' : 'false', onclick: function () { S.tab = t[0]; if (t[0] !== 'new') S.booked = null; if (t[0] === 'mine') loadCounselor(); render(); } },
         t[1], t[0] === 'board' ? h('span', { class: 'badge', id: 'boardBadge', text: open ? n(open) : '' }) : null);
     }));
-    var body = S.tab === 'board' ? tBoard() : S.tab === 'new' ? tNew() : S.tab === 'people' ? tPeople() : tSessions();
+    var body = S.tab === 'board' ? tBoard() : S.tab === 'new' ? tNew() : S.tab === 'people' ? tPeople() : S.tab === 'mine' ? h('div', null, counselorBody()) : tSessions();
     shell([tabs, body]);
   }
 
@@ -752,7 +756,7 @@
   }
 
   function tSessions() {
-    var counselors = (S.data.profiles || []).filter(function (p) { return p.role === 'counselor'; });
+    var counselors = (S.data.profiles || []).filter(isProvider);
     var from = dateField(S.data.from || tehranDateInput(-7));
     var to = dateField(S.data.to || tehranDateInput(30));
     var who = h('select', { class: 'select' }, h('option', { value: '', text: 'همهٔ مشاورها' }),
@@ -793,7 +797,7 @@
   }
 
   function tNew() {
-    var counselors = (S.data.profiles || []).filter(function (p) { return p.role === 'counselor' && p.active; });
+    var counselors = (S.data.profiles || []).filter(function (p) { return isProvider(p) && p.active; });
     var f = {
       who: h('select', { class: 'select', required: true }, h('option', { value: '', text: 'انتخاب مشاور…' }),
         counselors.map(function (p) { return h('option', { value: p.id, text: p.full_name || 'بدون نام', selected: S.lastWho === p.id }); })),
@@ -867,12 +871,13 @@
       var role = h('select', { class: 'select', disabled: !isAdmin || self, 'aria-label': 'نقش', onchange: function (e) { upd(p.id, { role: e.target.value }); } },
         [['counselor', 'مشاور'], ['secretary', 'منشی'], ['admin', 'مدیر']].map(function (r) { return h('option', { value: r[0], text: r[1], selected: p.role === r[0] }); }));
       var name = h('input', { class: 'input', value: p.full_name || '', disabled: !isAdmin, 'aria-label': 'نام', onchange: function (e) { upd(p.id, { full_name: e.target.value.trim() }); } });
+      var takes = p.role === 'counselor' ? null : h('label', null, h('input', { type: 'checkbox', checked: !!p.takes_sessions, disabled: !isAdmin, 'aria-label': 'جلسه می‌گیرد', onchange: function (e) { upd(p.id, { takes_sessions: e.target.checked }); } }), ' خودش هم جلسه می‌گیرد (مشاور است)');
       return h('div', { class: 's' }, name,
-        h('div', { class: 'row' }, role, h('label', null, active, ' فعال')),
+        h('div', { class: 'row' }, role, h('label', null, active, ' فعال')), takes,
         h('div', { class: 'chips' }, h('span', { class: 'chip ' + (p.meet_url ? 'chip--ok' : 'chip--warn'), text: p.meet_url ? 'لینک اتاق ثبت شده' : 'لینک اتاق ندارد' })));
     });
     return h('section', { class: 'card' }, h('h2', { text: 'مشاورها و کارکنان' }),
-      h('p', { class: 'hint' }, 'برای دعوت یک مشاور جدید: در داشبورد ', ltr('Supabase'), ' بخش ', ltr('Authentication'), ' ← ', ltr('Users'), ' ← ', ltr('Invite user'), ' را بزنید. بعد از اولین ورودش، این‌جا فعالش کنید.'),
+      h('p', { class: 'hint' }, 'برای دعوت یک مشاور جدید: در داشبورد ', ltr('Supabase'), ' بخش ', ltr('Authentication'), ' ← ', ltr('Users'), ' ← ', ltr('Invite user'), ' را بزنید. بعد از اولین ورودش، این‌جا فعالش کنید. اگر مدیر یا منشی خودش مشاور هم هست، گزینهٔ «خودش هم جلسه می‌گیرد» را بزنید تا در فهرست مشاورهای ثبت جلسه بیاید.'),
       rows.length ? rows : h('p', { class: 'empty', text: 'هنوز کسی نیست.' }));
   }
   function upd(id, patch) {
