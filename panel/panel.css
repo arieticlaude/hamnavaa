@@ -152,3 +152,26 @@ button,input,select{font:inherit;color:inherit}
 /* مشاور بدون حساب ورود */
 .guest{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(32,48,43,.18)}
 .warnbox{margin-top:8px;font-size:.92rem;color:#8A4B2B;background:#FBEFE3;border:1px solid #EBCBA9;border-radius:10px;padding:10px 12px}
+
+/* پایش */
+.subtabs{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
+.subtab{border:1px solid rgba(32,48,43,.16);background:#fff;border-radius:999px;padding:8px 16px;font:inherit;font-weight:600;cursor:pointer;color:#20302B}
+.subtab[aria-selected=true]{background:#3D6B61;color:#fff;border-color:#3D6B61}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:0 0 14px}
+.tilekpi{background:#fff;border:1px solid rgba(32,48,43,.12);border-radius:16px;padding:14px 12px;text-align:center;box-shadow:0 10px 24px -20px rgba(22,57,50,.6)}
+.tilekpi b{display:block;font-size:1.9rem;line-height:1.1;color:#3D6B61}
+.tilekpi span{display:block;font-size:.88rem;font-weight:600;margin-top:4px;color:#20302B}
+.tilekpi small{display:block;font-size:.76rem;color:#6B7B74;margin-top:2px}
+.tilekpi.warn b{color:#9C4A44}.tilekpi.live b{color:#2E8B57}
+.bars{display:flex;align-items:flex-end;gap:6px;height:170px;margin-top:10px}
+.bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;position:relative;min-width:0}
+.bar i{display:block;width:100%;max-width:26px;background:#C2A06B66;border-radius:6px 6px 2px 2px;position:relative;min-height:3px;margin-top:auto;overflow:hidden}
+.bar u{position:absolute;bottom:0;left:0;right:0;background:#3D6B61;display:block}
+.bar span{font-size:.7rem;color:#6B7B74;margin-top:4px}
+.bar em{position:absolute;top:0;font-style:normal;font-size:.72rem;font-weight:700;color:#20302B;transform:translateY(-100%);display:none}
+.nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px;margin-top:10px;text-align:center}
+.nums b{display:block;font-size:1.15rem;color:#20302B}.nums span{display:block;font-size:.76rem;color:#6B7B74}
+.logrow{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:9px 0;border-bottom:1px solid rgba(32,48,43,.08);font-size:.92rem}
+.logrow:last-child{border-bottom:0}.logrow small{color:#6B7B74;display:block}
+.logrow--act{align-items:flex-start}.logtxt{flex:1;min-width:200px}
+.stamp{color:#55655E;font-size:.84rem;white-space:normal}

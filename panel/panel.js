@@ -634,13 +634,13 @@
 
   function vStaff() {
     var open = (S.data.board && S.data.board.events.length) || 0;
-    var tabList = [['board', 'اتاق‌های باز'], ['sessions', 'جلسه‌ها'], ['new', 'جلسهٔ جدید'], ['people', 'مشاورها']];
+    var tabList = [['board', 'اتاق‌های باز'], ['sessions', 'جلسه‌ها'], ['new', 'جلسهٔ جدید'], ['people', 'مشاورها'], ['monitor', 'پایش']];
     if (S.profile.takes_sessions) tabList.push(['mine', 'جلسه‌های من']);
     var tabs = h('div', { class: 'tabs', role: 'tablist' }, tabList.map(function (t) {
-      return h('button', { class: 'tab', role: 'tab', 'aria-selected': S.tab === t[0] ? 'true' : 'false', onclick: function () { S.tab = t[0]; if (t[0] !== 'new') S.booked = null; if (t[0] === 'mine') loadCounselor(); render(); } },
+      return h('button', { class: 'tab', role: 'tab', 'aria-selected': S.tab === t[0] ? 'true' : 'false', onclick: function () { S.tab = t[0]; if (t[0] !== 'new') S.booked = null; if (t[0] === 'mine') loadCounselor(); if (t[0] === 'monitor') loadMonitor(); render(); } },
         t[1], t[0] === 'board' ? h('span', { class: 'badge', id: 'boardBadge', text: open ? n(open) : '' }) : null);
     }));
-    var body = S.tab === 'board' ? tBoard() : S.tab === 'new' ? tNew() : S.tab === 'people' ? tPeople() : S.tab === 'mine' ? h('div', null, counselorBody()) : tSessions();
+    var body = S.tab === 'board' ? tBoard() : S.tab === 'new' ? tNew() : S.tab === 'people' ? tPeople() : S.tab === 'mine' ? h('div', null, counselorBody()) : S.tab === 'monitor' ? tMonitor() : tSessions();
     shell([tabs, body]);
   }
 
@@ -912,6 +912,154 @@
     sb.from('profiles').update(patch).eq('id', id).then(function (r) {
       flash(r.error ? 'err' : 'ok', r.error ? explain(r.error) : 'ذخیره شد.'); loadStaff();
     });
+  }
+
+
+  /* ───────────── پایش: نمای کلی، ورودها، گزارش فعالیت (فقط مدیر و منشی) ───────────── */
+  var ACTIONS = {
+    session_created: 'جلسهٔ جدید', session_moved: 'جابه‌جایی جلسه', session_status: 'وضعیت جلسه', session_reassigned: 'انتقال جلسه', session_deleted: 'حذف جلسه',
+    room_opened: 'باز شدن اتاق', profile_created: 'پروفایل تازه', profile_changed: 'تغییر افراد', profile_deleted: 'حذف پروفایل', push_enabled: 'اعلان گوشی', account_linked: 'اتصال حساب'
+  };
+  var ACTION_GROUPS = { '': 'همه', sessions: 'جلسه‌ها', rooms: 'اتاق‌ها', people: 'افراد و حساب‌ها', push: 'اعلان‌ها' };
+  var GROUP_OF = { session_created: 'sessions', session_moved: 'sessions', session_status: 'sessions', session_reassigned: 'sessions', session_deleted: 'sessions',
+    room_opened: 'rooms', profile_created: 'people', profile_changed: 'people', profile_deleted: 'people', account_linked: 'people', push_enabled: 'push' };
+  var SIGN_LABEL = { login: 'ورود', logout: 'خروج', user_signedup: 'ثبت‌نام', user_invited: 'دعوت', user_recovery_requested: 'درخواست بازیابی رمز', user_confirmation_requested: 'ایمیل تأیید' };
+  var ROLE_FA = { counselor: 'مشاور', secretary: 'منشی', admin: 'مدیر' };
+
+  function ago(ts) {
+    if (!ts) return '—';
+    var m = Math.round((Date.now() - new Date(ts).getTime()) / 60000);
+    if (m < 1) return 'همین حالا';
+    if (m < 60) return n(m) + ' دقیقه پیش';
+    if (m < 60 * 24) return n(Math.round(m / 60)) + ' ساعت پیش';
+    return n(Math.round(m / 1440)) + ' روز پیش';
+  }
+  function stamp(ts) { return h('span', { class: 'stamp' }, dayNode(ts), ' · ' + timeOf(ts)); }
+  function csvDownload(name, rows) {
+    var body = rows.map(function (r) { return r.map(function (c) { c = String(c === null || c === undefined ? '' : c); return '"' + c.replace(/"/g, '""') + '"'; }).join(','); }).join('\r\n');
+    try {
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob(['\ufeff' + body], { type: 'text/csv;charset=utf-8' }));
+      a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    } catch (e) { flash('err', 'ساخت فایل انجام نشد.'); render(); }
+  }
+
+  function loadMonitor() {
+    var M = S.mon = S.mon || { sub: 'overview', group: '', q: '', limit: 200 };
+    M.loading = true; M.err = null;
+    var done = function () { M.loading = false; if (S.view === 'staff' && S.tab === 'monitor') render(); };
+    if (M.sub === 'overview') {
+      Promise.all([sb.rpc('staff_kpis'), sb.rpc('staff_counselor_stats'), sb.rpc('staff_daily', { p_days: 14 })]).then(function (r) {
+        var bad = r.filter(function (x) { return x.error; })[0];
+        if (bad) M.err = bad.error;
+        M.kpi = (r[0].data && r[0].data[0]) || null; M.stats = r[1].data || []; M.daily = r[2].data || [];
+        done();
+      });
+    } else if (M.sub === 'logins') {
+      Promise.all([sb.rpc('staff_people'), sb.rpc('staff_signins', { p_limit: 300 })]).then(function (r) {
+        if (r[0].error) M.err = r[0].error;
+        M.people = r[0].data || []; M.signins = r[1].data || []; M.signinErr = r[1].error || null;
+        done();
+      });
+    } else {
+      var q = sb.from('activity_log').select('*').order('at', { ascending: false }).limit(M.limit);
+      var acts = Object.keys(GROUP_OF).filter(function (k) { return !M.group || GROUP_OF[k] === M.group; });
+      if (M.group) q = q.in('action', acts);
+      if (M.q) q = q.ilike('summary', '%' + M.q.replace(/[%_]/g, '') + '%');
+      q.then(function (r) { if (r.error) M.err = r.error; M.log = r.data || []; done(); });
+    }
+  }
+
+  function tMonitor() {
+    var M = S.mon = S.mon || { sub: 'overview', group: '', q: '', limit: 200 };
+    var subs = [['overview', 'نمای کلی'], ['logins', 'ورودها'], ['activity', 'گزارش فعالیت']];
+    var bar = h('div', { class: 'subtabs', role: 'tablist' }, subs.map(function (t) {
+      return h('button', { class: 'subtab', type: 'button', role: 'tab', 'aria-selected': M.sub === t[0] ? 'true' : 'false', onclick: function () { M.sub = t[0]; loadMonitor(); render(); } }, t[1]);
+    }), h('button', { class: 'btn btn--small', type: 'button', text: 'تازه‌سازی', onclick: function () { loadMonitor(); render(); } }));
+    var body;
+    if (M.loading && !M.loaded) body = h('p', { class: 'empty', text: 'در حال بارگذاری…' });
+    else if (M.err) body = h('p', { class: 'flash flash--err', text: /does not exist|Could not find|function/i.test(M.err.message || '') ? 'بخش پایش هنوز در پایگاه‌داده نصب نشده است (migration-08).' : explain(M.err) });
+    else body = M.sub === 'overview' ? mOverview(M) : M.sub === 'logins' ? mLogins(M) : mActivity(M);
+    if (M.sub === 'overview' ? M.kpi !== undefined : M.sub === 'logins' ? M.people !== undefined : M.log !== undefined) M.loaded = true;
+    return h('div', null, bar, body);
+  }
+
+  function tile(label, value, note, cls) {
+    return h('div', { class: 'tilekpi' + (cls ? ' ' + cls : '') }, h('b', { text: value }), h('span', { text: label }), note ? h('small', { text: note }) : null);
+  }
+  function mOverview(M) {
+    var k = M.kpi || {};
+    var sessions30 = (k.done_30 || 0) + (k.noshow_30 || 0);
+    var rate = sessions30 ? Math.round((k.noshow_30 || 0) * 100 / sessions30) : 0;
+    var tiles = h('div', { class: 'kpis' },
+      tile('جلسهٔ امروز', n(k.today || 0)), tile('جلسهٔ ۷ روز آینده', n(k.upcoming_7d || 0)),
+      tile('انجام‌شده، ۳۰ روز', n(k.done_30 || 0)), tile('غیبت مراجع، ۳۰ روز', n(k.noshow_30 || 0), sessions30 ? n(rate) + '٪ از جلسه‌های برگزارشده' : null, (k.noshow_30 || 0) ? 'warn' : ''),
+      tile('لغو، ۳۰ روز', n(k.cancelled_30 || 0)), tile('پیش‌مشاورهٔ رایگان، ۳۰ روز', n(k.intro_30 || 0)),
+      tile('اتاق باز', n(k.open_rooms || 0), null, (k.open_rooms || 0) ? 'live' : ''), tile('مشاور فعال', n(k.counselors || 0)),
+      tile('هنوز وارد نشده', n(k.never_logged_in || 0), 'مشاور فعال با حساب', (k.never_logged_in || 0) ? 'warn' : ''));
+    var d = M.daily || [], max = Math.max.apply(null, d.map(function (x) { return x.total; }).concat([1]));
+    var chart = h('div', { class: 'bars', role: 'img', 'aria-label': 'جلسه‌ها در ۱۴ روز گذشته' }, d.map(function (x) {
+      var dt = new Date(x.day + 'T12:00:00Z'), j = toJalali(dt.getUTCFullYear(), dt.getUTCMonth() + 1, dt.getUTCDate());
+      return h('div', { class: 'bar', title: np(j.jd) + ' ' + J_MONTHS[j.jm - 1] + ': ' + n(x.total) + ' جلسه' },
+        h('i', { style: 'height:' + Math.round(x.total * 100 / max) + '%' }, h('u', { style: 'height:' + (x.total ? Math.round(x.done * 100 / x.total) : 0) + '%' })),
+        h('span', { text: np(j.jd) }), h('em', { text: x.total ? n(x.total) : '' }));
+    }));
+    var rows = (M.stats || []).map(function (p) {
+      var state = p.no_login ? ['chip chip--warn', 'بدون حساب ورود'] : (!p.last_sign_in_at ? ['chip chip--warn', 'هنوز وارد نشده'] : ['chip chip--ok', 'ورود: ' + ago(p.last_sign_in_at)]);
+      return h('div', { class: 's' },
+        h('div', { class: 's__head' }, h('div', { class: 's__time' }, p.full_name || 'بدون نام', h('small', { text: (ROLE_FA[p.role] || '') + (p.active ? '' : ' · غیرفعال') })),
+          h('div', { class: 'chips' }, h('span', { class: state[0], text: state[1] }), h('span', { class: 'chip ' + (p.meet_set ? 'chip--ok' : 'chip--warn'), text: p.meet_set ? 'لینک اتاق دارد' : 'لینک اتاق ندارد' }),
+            p.push_devices ? h('span', { class: 'chip chip--ok', text: 'اعلان گوشی ✓' }) : h('span', { class: 'chip', text: 'اعلان گوشی ندارد' }))),
+        h('div', { class: 'nums' }, num('پیش‌رو', p.upcoming), num('انجام‌شده ۳۰ر', p.done_30), num('غیبت مراجع', p.noshow_30), num('لغو', p.cancelled_30),
+          h('div', null, h('b', { text: p.last_room_at ? ago(p.last_room_at) : '—' }), h('span', { text: 'آخرین باز کردن اتاق' }))));
+    });
+    return h('div', null, tiles,
+      h('section', { class: 'card' }, h('h2', { text: 'جلسه‌ها در ۱۴ روز گذشته' }), h('p', { class: 'hint', text: 'ستون روشن: همهٔ جلسه‌ها. بخش تیره: انجام‌شده.' }), chart),
+      h('section', { class: 'card' }, h('h2', { text: 'مشاورها' }), h('p', { class: 'hint', text: 'وضعیت هر مشاور: ورود، لینک اتاق، اعلان گوشی و آمار ۳۰ روز اخیر.' }), rows.length ? rows : h('p', { class: 'empty', text: 'هنوز مشاوری نیست.' })));
+  }
+  function num(label, v) { return h('div', null, h('b', { text: n(v || 0) }), h('span', { text: label })); }
+
+  function mLogins(M) {
+    var people = (M.people || []).map(function (u) {
+      var st = u.last_sign_in_at ? ['chip chip--ok', 'وارد شده'] : (u.confirmed ? ['chip chip--warn', 'ورود نکرده'] : ['chip chip--warn', 'دعوت‌شده، رمز نگذاشته']);
+      return h('div', { class: 's' }, h('div', { class: 's__head' },
+        h('div', { class: 's__time' }, u.full_name || 'بدون نام', h('small', null, ltr(u.email || ''), ' · ' + (ROLE_FA[u.role] || '—') + (u.active ? '' : ' · غیرفعال'))),
+        h('div', { class: 'chips' }, h('span', { class: st[0], text: st[1] }))),
+        h('div', { class: 'hint' }, u.last_sign_in_at ? ['آخرین ورود: ', stamp(u.last_sign_in_at), ' — ' + ago(u.last_sign_in_at)] : ['دعوت: ', u.invited_at ? stamp(u.invited_at) : '—']));
+    });
+    var ev = (M.signins || []).map(function (e) {
+      return h('div', { class: 'logrow' }, stamp(e.at), h('b', { text: SIGN_LABEL[e.action] || e.action }), ltr(e.email || ''), e.ip ? h('small', null, ltr(e.ip)) : null);
+    });
+    var exp = ev.length ? h('button', { class: 'btn btn--small', type: 'button', text: 'خروجی CSV', onclick: function () {
+      csvDownload('hamnavaa-signins.csv', [['زمان (UTC)', 'رویداد', 'ایمیل', 'IP']].concat((M.signins || []).map(function (e) { return [e.at, SIGN_LABEL[e.action] || e.action, e.email, e.ip]; })));
+    } }) : null;
+    return h('div', null,
+      h('section', { class: 'card' }, h('h2', { text: 'افراد و آخرین ورود' }), people.length ? people : h('p', { class: 'empty', text: 'کسی نیست.' })),
+      h('section', { class: 'card' }, h('h2', { text: 'رویدادهای ورود' }),
+        h('p', { class: 'hint', text: 'ورود، خروج و دعوت‌ها، از گزارش داخلی سامانهٔ احراز هویت. ساعت‌ها به وقت ایران است.' }), exp,
+        M.signinErr ? h('p', { class: 'hint', text: 'گزارش رویدادها در دسترس نیست؛ فقط «آخرین ورود» بالا نمایش داده می‌شود.' }) : (ev.length ? ev : h('p', { class: 'empty', text: 'رویدادی ثبت نشده.' }))));
+  }
+
+  function mActivity(M) {
+    var group = h('select', { class: 'select', 'aria-label': 'نوع' }, Object.keys(ACTION_GROUPS).map(function (k) { return h('option', { value: k, text: ACTION_GROUPS[k], selected: M.group === k }); }));
+    var q = h('input', { class: 'input', type: 'search', placeholder: 'جست‌وجو در شرح (نام مشاور، مراجع…)', value: M.q || '', 'aria-label': 'جست‌وجو' });
+    var go = function () { M.group = group.value; M.q = q.value.trim(); M.limit = 200; loadMonitor(); render(); };
+    group.addEventListener('change', go);
+    q.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); go(); } });
+    var rows = (M.log || []).map(function (e) {
+      var when = e.meta && e.meta.starts_at ? ['برای ', stamp(e.meta.starts_at)] : null;
+      return h('div', { class: 'logrow logrow--act' }, stamp(e.at), h('span', { class: 'chip', text: ACTIONS[e.action] || e.action }),
+        h('div', { class: 'logtxt' }, e.summary, when ? h('small', null, when) : null, h('small', { text: 'توسط ' + (e.actor_name || '—') })));
+    });
+    var more = (M.log || []).length >= M.limit ? h('div', { class: 'actions' }, h('button', { class: 'btn btn--small', type: 'button', text: 'نمایش قدیمی‌تر', onclick: function () { M.limit += 200; loadMonitor(); render(); } })) : null;
+    return h('section', { class: 'card' }, h('h2', { text: 'گزارش فعالیت' }),
+      h('p', { class: 'hint', text: 'هر کار مهم خودکار ثبت می‌شود و قابل ویرایش یا حذف نیست: جلسه‌ها، اتاق‌ها، تغییر افراد و اعلان‌ها. شمارهٔ مراجع در این گزارش نیست.' }),
+      h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'نوع' }), group), h('div', { class: 'field' }, h('label', { text: 'جست‌وجو' }), q)),
+      h('div', { class: 'actions' }, h('button', { class: 'btn btn--primary btn--small', type: 'button', text: 'اعمال', onclick: go }),
+        (M.log || []).length ? h('button', { class: 'btn btn--small', type: 'button', text: 'خروجی CSV', onclick: function () {
+          csvDownload('hamnavaa-activity.csv', [['زمان (UTC)', 'نوع', 'شرح', 'توسط']].concat((M.log || []).map(function (e) { return [e.at, ACTIONS[e.action] || e.action, e.summary, e.actor_name]; })));
+        } }) : null),
+      rows.length ? rows : h('p', { class: 'empty', text: 'موردی پیدا نشد.' }), more);
   }
 
   /* ───────────── شروع ───────────── */
