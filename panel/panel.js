@@ -215,7 +215,41 @@
     if (S.flash) nodes.push(h('div', { class: 'flash flash--' + S.flash.type, role: 'status', text: S.flash.text }));
     S.flash = null;
     (Array.isArray(children) ? children : [children]).forEach(function (c) { if (c) nodes.push(c); });
+    var inst = installCard();
+    if (inst) nodes.push(inst);
     app.replaceChildren.apply(app, nodes);
+  }
+
+  /* ───────────── نصب روی گوشی (مثل یک اپ) ───────────── */
+  var deferredInstall = null;
+  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferredInstall = e; if (S.view !== 'loading') render(); });
+  window.addEventListener('appinstalled', function () { deferredInstall = null; try { localStorage.setItem('hn_install_hide', '1'); } catch (x) { /* ok */ } render(); });
+  function isStandalone() {
+    return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+  }
+  function installCard() {
+    if (isStandalone()) return null;
+    try { if (localStorage.getItem('hn_install_hide') === '1') return null; } catch (x) { /* ok */ }
+    var ua = navigator.userAgent || '';
+    var ios = /iphone|ipad|ipod/i.test(ua), android = /android/i.test(ua);
+    if (!ios && !android && !(window.matchMedia && window.matchMedia('(max-width:700px)').matches)) return null;
+    var body;
+    if (deferredInstall) {
+      body = [h('p', { class: 'hint', text: 'با یک لمس، پنل مثل یک اپ روی صفحهٔ اصلی گوشی‌تان می‌نشیند.' }),
+        h('div', { class: 'actions' }, h('button', { class: 'btn btn--primary', type: 'button', text: 'نصب روی گوشی', onclick: function () {
+          var d = deferredInstall; deferredInstall = null; d.prompt();
+          if (d.userChoice) d.userChoice.then(function () { render(); });
+        } }))];
+    } else if (ios) {
+      body = [h('p', { class: 'hint', text: 'در Safari: دکمهٔ «اشتراک‌گذاری» (مربع با فلش رو به بالا) ← «Add to Home Screen» (افزودن به صفحهٔ آغاز) ← «Add».' })];
+    } else {
+      body = [h('p', { class: 'hint', text: 'در Chrome: منوی ⋮ بالای صفحه ← «Install app» (نصب برنامه) یا «Add to Home screen» ← «Install».' })];
+    }
+    return h('section', { class: 'card install' }, h('h3', { text: 'پنل را روی گوشی نصب کنید' }), body,
+      h('div', { class: 'actions' }, h('button', { class: 'btn btn--small', type: 'button', text: 'بعداً', onclick: function () {
+        try { localStorage.setItem('hn_install_hide', '1'); } catch (x) { /* ok */ }
+        render();
+      } })));
   }
 
   function render() {
@@ -781,4 +815,5 @@
     } else boot();
   }
   start();
+  if ('serviceWorker' in navigator && !MOCK) navigator.serviceWorker.register('sw.js').catch(function () { /* the panel works without it */ });
 })();
