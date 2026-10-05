@@ -283,7 +283,8 @@
       h('p', { class: 'hint', text: 'ثبت‌نام آزاد وجود ندارد. حساب شما را هم‌نوا می‌سازد و دعوت‌نامه به ایمیلتان می‌رسد.' }),
       h('p', { class: 'hint center' }, h('a', { href: '../', text: '← بازگشت به سایت هم‌نوا' })));
     S.flash = null;
-    app.replaceChildren(form);
+    var inst = installCard();
+    if (inst) { inst.classList.add('login'); app.replaceChildren(form, inst); } else app.replaceChildren(form);
   }
 
   function vSetPw() {
