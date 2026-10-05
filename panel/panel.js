@@ -200,7 +200,7 @@
       S.profile = r.data;
       if (!r.data || !r.data.active) { S.view = 'pending'; return render(); }
       S.view = (r.data.role === 'counselor') ? 'counselor' : 'staff';
-      if (S.view === 'counselor') loadCounselor();
+      if (S.view === 'counselor') { loadCounselor(); refreshPush(); }
       else { S.tab = 'board'; startRealtime(); loadStaff(); refreshPush(); }
     });
   }
@@ -273,13 +273,16 @@
   }
   function pushCard() {
     var st = (S.push && S.push.state) || 'checking';
+    var counselorView = S.view === 'counselor';
     var msg = {
       unsupported: 'این مرورگر اعلان نمی‌دهد. در اندروید از Chrome و در آیفون از Safari (پنل نصب‌شده) استفاده کنید.',
       'need-install': 'در آیفون اعلان فقط برای پنلِ نصب‌شده کار می‌کند: پنل را با «Add to Home Screen» به صفحهٔ اصلی اضافه کنید و از همان آیکون باز کنید؛ بعد این دکمه فعال می‌شود.',
       denied: 'اعلان برای هم‌نوا بسته است. در تنظیمات گوشی یا مرورگر، اعلان‌های این سایت را روشن کنید و صفحه را دوباره باز کنید.',
       checking: 'در حال بررسی…', busy: 'لطفاً صبر کنید…',
-      off: 'وقتی مشاوری وارد اتاق شود، حتی اگر پنل بسته باشد، روی همین گوشی اعلان می‌آید.',
-      on: 'اعلان روی این گوشی فعال است. وقتی مشاوری وارد اتاق شود، حتی با بسته بودن پنل، خبر می‌رسد.'
+      off: counselorView ? 'وقتی برایتان جلسه‌ای ثبت شود، زمانش عوض شود یا مراجع لغو کند، حتی با بسته بودن پنل، روی همین گوشی اعلان (با صدای گوشی) می‌آید.'
+        : 'وقتی مشاوری وارد اتاق شود، حتی اگر پنل بسته باشد، روی همین گوشی اعلان (با صدای گوشی) می‌آید.',
+      on: counselorView ? 'اعلان روی این گوشی فعال است. جلسهٔ تازه، تغییر زمان و لغو جلسه را حتی با بسته بودن پنل، با اعلان می‌گیرید.'
+        : 'اعلان روی این گوشی فعال است. وقتی مشاوری وارد اتاق شود، حتی با بسته بودن پنل، خبر می‌رسد.'
     }[st];
     var acts = h('div', { class: 'actions' });
     if (st === 'off') acts.appendChild(h('button', { class: 'btn btn--primary', type: 'button', text: 'فعال‌سازی اعلان روی گوشی', onclick: enablePush }));
@@ -480,7 +483,7 @@
         h('button', { class: 'btn btn--small', type: 'button', text: 'بستن', onclick: function () { S.room = null; render(); } })));
     }
 
-    shell([hero, roomLinkCard(hasLink),
+    shell([hero, roomLinkCard(hasLink), pushCard(),
       h('section', { class: 'card' }, h('h2', { text: 'جلسه‌های پیش‌رو' }),
         upcoming.length ? upcoming.map(function (s) { return sessionCard(s, true); }) : h('p', { class: 'empty', text: 'جلسه‌ای در پیش نیست.' })),
       h('section', { class: 'card' }, h('h2', { text: 'جلسه‌های گذشته' }),
