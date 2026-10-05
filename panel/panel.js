@@ -46,10 +46,80 @@
   function ltr(t) { return h('bdi', { dir: 'ltr', text: t }); }  // عبارت انگلیسی میان متن فارسی به‌هم نریزد
   function svgEl(markup) { var d = document.createElement('span'); d.innerHTML = markup; return d.firstChild; }
 
-  var fmtDay = new Intl.DateTimeFormat('fa-IR', { timeZone: 'Asia/Tehran', weekday: 'long', day: 'numeric', month: 'long' });
   var fmtTime = new Intl.DateTimeFormat('fa-IR', { timeZone: 'Asia/Tehran', hour: '2-digit', minute: '2-digit', hour12: false });
-  var dayOf = function (ts) { return fmtDay.format(new Date(ts)); };
   var timeOf = function (ts) { return fmtTime.format(new Date(ts)); };
+
+  /* ───────────── تقویم شمسی ↔ میلادی ─────────────
+     الگوریتم jalaali-js (MIT). درستی‌اش با Intl مقایسه و آزمون شده است. */
+  var npf = new Intl.NumberFormat('fa-IR', { useGrouping: false });
+  function np(x) { return npf.format(x); }                       // رقم فارسی بدون جداکنندهٔ هزارگان
+  function pad2(x) { return (x < 10 ? '۰' : '') + np(x); }
+  var J_MONTHS = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+  var J_WEEK = ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه'];
+  var G_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  function div(a, b) { return ~~(a / b); }
+  function mod(a, b) { return a - ~~(a / b) * b; }
+  var BREAKS = [-61, 9, 38, 199, 426, 686, 756, 818, 1111, 1181, 1210, 1635, 2060, 2097, 2192, 2262, 2324, 2394, 2456, 3178];
+  function jalCal(jy) {
+    var gy = jy + 621, leapJ = -14, jp = BREAKS[0], jm, jump = 0, leap, leapG, march, k, i;
+    for (i = 1; i < BREAKS.length; i += 1) {
+      jm = BREAKS[i]; jump = jm - jp;
+      if (jy < jm) break;
+      leapJ = leapJ + div(jump, 33) * 8 + div(mod(jump, 33), 4); jp = jm;
+    }
+    k = jy - jp;
+    leapJ = leapJ + div(k, 33) * 8 + div(mod(k, 33) + 3, 4);
+    if (mod(jump, 33) === 4 && jump - k === 4) leapJ += 1;
+    leapG = div(gy, 4) - div((div(gy, 100) + 1) * 3, 4) - 150;
+    march = 20 + leapJ - leapG;
+    if (jump - k < 6) k = k - jump + div(jump + 4, 33) * 33;
+    leap = mod(mod(k + 1, 33) - 1, 4);
+    if (leap === -1) leap = 4;
+    return { leap: leap, gy: gy, march: march };
+  }
+  function g2d(gy, gm, gd) {
+    var d = div((gy + div(gm - 8, 6) + 100100) * 1461, 4) + div(153 * mod(gm + 9, 12) + 2, 5) + gd - 34840408;
+    return d - div(div(gy + 100100 + div(gm - 8, 6), 100) * 3, 4) + 752;
+  }
+  function d2g(jdn) {
+    var j = 4 * jdn + 139361631;
+    j = j + div(div(4 * jdn + 183187720, 146097) * 3, 4) * 4 - 3908;
+    var i = div(mod(j, 1461), 4) * 5 + 308;
+    var gd = div(mod(i, 153), 5) + 1, gm = mod(div(i, 153), 12) + 1;
+    return { gy: div(j, 1461) - 100100 + div(8 - gm, 6), gm: gm, gd: gd };
+  }
+  function j2d(jy, jm, jd) {
+    var r = jalCal(jy);
+    return g2d(r.gy, 3, r.march) + (jm - 1) * 31 - div(jm, 7) * (jm - 7) + jd - 1;
+  }
+  function d2j(jdn) {
+    var gy = d2g(jdn).gy, jy = gy - 621, r = jalCal(jy), jdn1f = g2d(gy, 3, r.march), k = jdn - jdn1f, jm, jd;
+    if (k >= 0) {
+      if (k <= 185) return { jy: jy, jm: 1 + div(k, 31), jd: mod(k, 31) + 1 };
+      k -= 186;
+    } else {
+      jy -= 1; k += 179;
+      if (r.leap === 1) k += 1;
+    }
+    jm = 7 + div(k, 30); jd = mod(k, 30) + 1;
+    return { jy: jy, jm: jm, jd: jd };
+  }
+  function toJalali(gy, gm, gd) { return d2j(g2d(gy, gm, gd)); }
+  function toGregorian(jy, jm, jd) { return d2g(j2d(jy, jm, jd)); }
+  function jMonthLen(jy, jm) { return jm <= 6 ? 31 : (jm <= 11 ? 30 : (jalCal(jy).leap === 0 ? 30 : 29)); }
+  window.__panelCal = { toJalali: toJalali, toGregorian: toGregorian, jMonthLen: jMonthLen };   // برای آزمون
+
+  function isoOf(gy, gm, gd) { return gy + '-' + (gm < 10 ? '0' : '') + gm + '-' + (gd < 10 ? '0' : '') + gd; }
+  function tehranDate(ts) {
+    var t = new Date(new Date(ts).getTime() + TEHRAN_MIN * 60000);
+    return { gy: t.getUTCFullYear(), gm: t.getUTCMonth() + 1, gd: t.getUTCDate(), wd: t.getUTCDay() };
+  }
+  function dayJ(ts) {                       // «یکشنبه ۱۲ مهر ۱۴۰۵»
+    var d = tehranDate(ts), j = toJalali(d.gy, d.gm, d.gd);
+    return J_WEEK[(d.wd + 1) % 7] + ' ' + np(j.jd) + ' ' + J_MONTHS[j.jm - 1] + ' ' + np(j.jy);
+  }
+  function dayG(ts) { var d = tehranDate(ts); return G_MONTHS[d.gm - 1] + ' ' + d.gd + ', ' + d.gy; }   // «Oct 4, 2026»
+  var dayOf = function (ts) { return dayJ(ts) + ' (' + dayG(ts) + ')'; };       // برای متن پیام‌ها
 
   /* «۲۰۲۶-۱۰-۰۴T۱۸:۳۰» که منشی به وقت تهران می‌نویسد ← لحظهٔ UTC */
   function tehranToUtc(local) {
@@ -254,7 +324,7 @@
     var ok = s.status === 'done';
     var card = h('div', { class: 's' + (live ? ' s--live' : '') },
       h('div', { class: 's__head' },
-        h('div', { class: 's__time' }, dayOf(s.starts_at), h('small', { text: 'ساعت ' + timeOf(s.starts_at) + ' — ' + n(s.duration_min) + ' دقیقه (به وقت ایران)' })),
+        h('div', { class: 's__time' }, dayJ(s.starts_at), h('small', null, ltr(dayG(s.starts_at)), ' · ساعت ' + timeOf(s.starts_at) + ' — ' + n(s.duration_min) + ' دقیقه (به وقت ایران)')),
         h('div', { class: 'chips' },
           h('span', { class: 'chip chip--gold', text: KIND[s.kind] }), h('span', { class: 'chip', text: MODE[s.mode] }),
           h('span', { class: 'chip ' + (ok ? 'chip--ok' : (s.status === 'scheduled' ? '' : 'chip--warn')), text: STATUS[s.status] }))),
@@ -325,6 +395,103 @@
         });
       } })));
     return card;
+  }
+
+  /* ───────────── انتخاب تاریخ (شمسی + میلادی) و ساعت ۲۴ساعته ───────────── */
+  var CAL_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>';
+  var CHEV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+  function parseIso(iso) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || ''); return m ? { gy: +m[1], gm: +m[2], gd: +m[3] } : null; }
+
+  function dateField(initial, onChange) {
+    var st = { iso: initial || '', jy: 0, jm: 0, open: false };
+    var wrap = h('div', { class: 'picker' });
+    var btn = h('button', { class: 'input picker__btn', type: 'button', 'aria-haspopup': 'dialog', 'aria-expanded': 'false' });
+    var pop = h('div', { class: 'picker__pop', role: 'dialog', 'aria-label': 'انتخاب تاریخ', hidden: true });
+    wrap.appendChild(btn); wrap.appendChild(pop);
+
+    function label() {
+      var g = parseIso(st.iso);
+      btn.textContent = '';
+      if (!g) btn.appendChild(h('span', { class: 'picker__ph', text: 'انتخاب تاریخ' }));
+      else {
+        var j = toJalali(g.gy, g.gm, g.gd);
+        btn.appendChild(h('span', { class: 'picker__j', text: np(j.jd) + ' ' + J_MONTHS[j.jm - 1] + ' ' + np(j.jy) }));
+        btn.appendChild(h('span', { class: 'picker__g' }, ltr(g.gd + ' ' + G_MONTHS[g.gm - 1] + ' ' + g.gy)));
+      }
+      btn.appendChild(svgEl(CAL_ICON));
+    }
+    function shift(dm) {
+      st.jm += dm;
+      if (st.jm < 1) { st.jm = 12; st.jy -= 1; } else if (st.jm > 12) { st.jm = 1; st.jy += 1; }
+      draw();
+    }
+    function draw() {
+      pop.textContent = '';
+      var first = toGregorian(st.jy, st.jm, 1), len = jMonthLen(st.jy, st.jm), last = toGregorian(st.jy, st.jm, len);
+      var off = (new Date(Date.UTC(first.gy, first.gm - 1, first.gd)).getUTCDay() + 1) % 7;
+      var sub = G_MONTHS[first.gm - 1] + (first.gm !== last.gm ? ' – ' + G_MONTHS[last.gm - 1] : '') + ' ' + last.gy;
+      var today = tehranDateInput(0), cells = [];
+      pop.appendChild(h('div', { class: 'picker__head' },
+        h('button', { class: 'picker__nav', type: 'button', 'aria-label': 'ماه قبل', onclick: function () { shift(-1); } }, svgEl(CHEV)),
+        h('div', { class: 'picker__title' }, h('b', { text: J_MONTHS[st.jm - 1] + ' ' + np(st.jy) }), h('small', null, ltr(sub))),
+        h('button', { class: 'picker__nav picker__nav--next', type: 'button', 'aria-label': 'ماه بعد', onclick: function () { shift(1); } }, svgEl(CHEV))));
+      var week = h('div', { class: 'picker__week', 'aria-hidden': 'true' });
+      ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'].forEach(function (w, i) { week.appendChild(h('span', { class: i === 6 ? 'is-fri' : '', text: w })); });
+      pop.appendChild(week);
+      var grid = h('div', { class: 'picker__grid', role: 'grid' });
+      for (var i = 0; i < off; i++) grid.appendChild(h('span', { class: 'picker__pad' }));
+      for (var d = 1; d <= len; d++) {
+        (function (d) {
+          var g = toGregorian(st.jy, st.jm, d), iso = isoOf(g.gy, g.gm, g.gd), col = (off + d - 1) % 7;
+          var cls = 'picker__day' + (col === 6 ? ' is-fri' : '') + (iso === today ? ' is-today' : '') + (iso === st.iso ? ' is-sel' : '');
+          var b = h('button', { class: cls, type: 'button', 'aria-pressed': iso === st.iso ? 'true' : 'false',
+            'aria-label': np(d) + ' ' + J_MONTHS[st.jm - 1] + ' ' + np(st.jy) + ' — ' + g.gd + ' ' + G_MONTHS[g.gm - 1] + ' ' + g.gy,
+            onclick: function () { st.iso = iso; label(); close(); if (onChange) onChange(iso); } },
+            h('span', { class: 'picker__jd', text: np(d) }),
+            h('span', { class: 'picker__gd', text: g.gd === 1 ? G_MONTHS[g.gm - 1] + ' 1' : String(g.gd) }));
+          grid.appendChild(b); cells.push(b);
+        })(d);
+      }
+      pop.appendChild(grid);
+      pop.appendChild(h('div', { class: 'picker__foot' },
+        h('button', { class: 'btn btn--small', type: 'button', text: 'امروز', onclick: function () {
+          var g = parseIso(today); st.iso = today; var j = toJalali(g.gy, g.gm, g.gd); st.jy = j.jy; st.jm = j.jm; label(); close(); if (onChange) onChange(today);
+        } }),
+        h('button', { class: 'btn btn--small', type: 'button', text: 'بستن', onclick: function () { close(); } })));
+    }
+    function outside(e) { if ((e.composedPath ? e.composedPath() : []).indexOf(wrap) < 0) close(); }   // composedPath: the clicked button may already be replaced by redraw
+    function key(e) { if (e.key === 'Escape') { close(); btn.focus(); } }
+    function open() {
+      var g = parseIso(st.iso) || parseIso(tehranDateInput(0)), j = toJalali(g.gy, g.gm, g.gd);
+      st.jy = j.jy; st.jm = j.jm; st.open = true; draw();
+      pop.hidden = false; btn.setAttribute('aria-expanded', 'true');
+      setTimeout(function () { document.addEventListener('click', outside); }, 0);
+      document.addEventListener('keydown', key);
+      var sel = pop.querySelector('.is-sel') || pop.querySelector('.is-today') || pop.querySelector('.picker__day');
+      if (sel) sel.focus();
+    }
+    function close() {
+      st.open = false; pop.hidden = true; btn.setAttribute('aria-expanded', 'false');
+      document.removeEventListener('click', outside); document.removeEventListener('keydown', key);
+    }
+    btn.addEventListener('click', function () { if (st.open) close(); else open(); });
+    label();
+    return { el: wrap, value: function () { return st.iso; } };
+  }
+
+  function timeField(onChange) {
+    function opts(count, step, ph) {
+      var o = [h('option', { value: '', text: ph })];
+      for (var i = 0; i < count; i += step) o.push(h('option', { value: (i < 10 ? '0' : '') + i, text: pad2(i) }));
+      return o;
+    }
+    var hh = h('select', { class: 'select', 'aria-label': 'ساعت', required: true }, opts(24, 1, 'ساعت'));
+    var mm = h('select', { class: 'select', 'aria-label': 'دقیقه', required: true }, opts(60, 5, 'دقیقه'));
+    var fire = function () { if (onChange) onChange(); };
+    hh.addEventListener('change', fire); mm.addEventListener('change', fire);
+    var wrap = h('div', { class: 'timef', dir: 'ltr' }, hh, h('span', { class: 'timef__sep', text: ':' }), mm,
+      h('span', { class: 'timef__note', dir: 'rtl', text: 'ساعت ۲۴ ساعته' }));
+    return { el: wrap, value: function () { return hh.value && mm.value ? hh.value + ':' + mm.value : ''; } };
   }
 
   /* ───────────── صفحهٔ منشی / مدیر ───────────── */
@@ -474,14 +641,14 @@
 
   function tSessions() {
     var counselors = (S.data.profiles || []).filter(function (p) { return p.role === 'counselor'; });
-    var from = h('input', { class: 'input', type: 'date', value: S.data.from || tehranDateInput(-7) });
-    var to = h('input', { class: 'input', type: 'date', value: S.data.to || tehranDateInput(30) });
+    var from = dateField(S.data.from || tehranDateInput(-7));
+    var to = dateField(S.data.to || tehranDateInput(30));
     var who = h('select', { class: 'select' }, h('option', { value: '', text: 'همهٔ مشاورها' }),
       counselors.map(function (p) { return h('option', { value: p.id, text: p.full_name || 'بدون نام', selected: S.data.who === p.id }); }));
-    var apply = function () { S.data.from = from.value; S.data.to = to.value; S.data.who = who.value || null; loadStaff(); };
+    var apply = function () { S.data.from = from.value(); S.data.to = to.value(); S.data.who = who.value || null; loadStaff(); };
     var list = S.data.sessions || [];
     return h('section', { class: 'card' }, h('h2', { text: 'جلسه‌ها' }),
-      h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'از' }), from), h('div', { class: 'field' }, h('label', { text: 'تا' }), to)),
+      h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'از تاریخ' }), from.el), h('div', { class: 'field' }, h('label', { text: 'تا تاریخ' }), to.el)),
       h('div', { class: 'field' }, h('label', { text: 'مشاور' }), who),
       h('div', { class: 'actions' }, h('button', { class: 'btn btn--primary btn--small', type: 'button', text: 'نمایش', onclick: apply })),
       list.length ? list.map(staffCard) : h('p', { class: 'empty', text: 'جلسه‌ای در این بازه نیست.' }));
@@ -506,7 +673,7 @@
     } }));
     return h('div', { class: 's' },
       h('div', { class: 's__head' },
-        h('div', { class: 's__time' }, dayOf(s.starts_at), h('small', { text: 'ساعت ' + timeOf(s.starts_at) + ' — ' + n(s.duration_min) + ' دقیقه' })),
+        h('div', { class: 's__time' }, dayJ(s.starts_at), h('small', null, ltr(dayG(s.starts_at)), ' · ساعت ' + timeOf(s.starts_at) + ' — ' + n(s.duration_min) + ' دقیقه')),
         h('div', { class: 'chips' }, h('span', { class: 'chip chip--gold', text: KIND[s.kind] }), h('span', { class: 'chip', text: MODE[s.mode] }))),
       h('div', null, h('b', { text: 'مشاور: ' }), nameOf(s.counselor_id), '   ', h('b', { text: 'مراجع: ' }), s.client_label,
         phone ? h('span', { class: 'hint', dir: 'ltr', text: '   ' + phone }) : null),
@@ -520,20 +687,22 @@
         counselors.map(function (p) { return h('option', { value: p.id, text: p.full_name || 'بدون نام', selected: S.lastWho === p.id }); })),
       label: h('input', { class: 'input', maxlength: 60, required: true, placeholder: 'نام کوچک یا یک کد، نه نام کامل' }),
       phone: h('input', { class: 'input', dir: 'ltr', placeholder: '+1 647 000 0000  یا  0912…' }),
-      when: h('input', { class: 'input', type: 'datetime-local', required: true }),
       dur: h('select', { class: 'select' }, [30, 45, 60, 90].map(function (n) { return h('option', { value: n, text: nf.format(n) + ' دقیقه', selected: n === 45 }); })),
       mode: h('select', { class: 'select' }, h('option', { value: 'video', text: 'تصویری' }), h('option', { value: 'audio', text: 'صوتی' })),
       kind: h('select', { class: 'select' }, h('option', { value: 'session', text: 'جلسه' }), h('option', { value: 'intro', text: 'معارفه (رایگان)' }))
     };
     var preview = h('p', { class: 'hint', text: '' });
-    f.when.addEventListener('input', function () {
-      var d = tehranToUtc(f.when.value);
+    var whenLocal = function () { var d = f.date.value(), t = f.time.value(); return d && t ? d + 'T' + t : ''; };
+    var showPreview = function () {
+      var d = tehranToUtc(whenLocal());
       preview.textContent = d ? ('ثبت می‌شود: ' + dayOf(d) + '، ساعت ' + timeOf(d) + ' به وقت ایران') : '';
-    });
+    };
+    f.date = dateField('', showPreview);
+    f.time = timeField(showPreview);
     var submit = h('button', { class: 'btn btn--primary', type: 'submit', text: 'ثبت جلسه' });
     var form = h('form', { class: 'card', onsubmit: function (e) {
       e.preventDefault();
-      var when = tehranToUtc(f.when.value);
+      var when = tehranToUtc(whenLocal());
       if (!f.who.value || !when) { flash('err', 'مشاور و زمان را کامل کنید.'); return render(); }
       submit.disabled = true;
       sb.from('sessions').insert({ counselor_id: f.who.value, client_label: f.label.value.trim(), starts_at: when.toISOString(),
@@ -554,7 +723,10 @@
       h('div', { class: 'field' }, h('label', { text: 'مشاور' }), f.who),
       h('div', { class: 'field' }, h('label', { text: 'مراجع (نام کوچک یا کد)' }), f.label),
       h('div', { class: 'field' }, h('label', { text: 'شمارهٔ مراجع (برای ارسال تأیید با واتساپ؛ فقط منشی و مدیر می‌بینند)' }), f.phone),
-      h('div', { class: 'field' }, h('label', { text: 'زمان (به وقت ایران)' }), f.when, preview),
+      h('div', { class: 'row' },
+        h('div', { class: 'field' }, h('label', { text: 'تاریخ' }), f.date.el),
+        h('div', { class: 'field' }, h('label', { text: 'ساعت (به وقت ایران، ۲۴ ساعته)' }), f.time.el)),
+      preview,
       h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'مدت' }), f.dur), h('div', { class: 'field' }, h('label', { text: 'نوع تماس' }), f.mode)),
       h('div', { class: 'field' }, h('label', { text: 'جلسه یا معارفه' }), f.kind),
       h('p', { class: 'hint', text: 'محتوای جلسه یا یادداشت بالینی را هیچ‌جا این‌جا ننویسید.' }),
