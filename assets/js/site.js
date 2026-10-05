@@ -571,7 +571,7 @@
     { name_fa:"نگار", name_en:"Negar", r:5, fa:"هماهنگی زمان تماس سریع انجام شد و در طول جلسه احساس امنیت و آرامش کامل داشتم.", en:"Scheduling was quick, and throughout the session I felt completely safe and at ease." },
     { name_fa:"سینا", name_en:"Sina", r:5, fa:"بعد از مدت‌ها تونستم درباره‌ی چیزی که اذیتم می‌کرد حرف بزنم. واقعاً سبک شدم.", en:"After a long time, I was finally able to talk about what was bothering me. I felt lighter." },
     { name_fa:"الهام", name_en:"Elham", r:4, fa:"فضای جلسه خیلی محترمانه بود. حس کردم حرف‌هام جدی گرفته می‌شه.", en:"The session felt very respectful. I felt my words were taken seriously." },
-    { name_fa:"رضا", name_en:"Reza", r:5, fa:"جلسه‌ی آشنایی رایگان کمک کرد بدون استرس تصمیم بگیرم ادامه بدم.", en:"The free intro call helped me decide to continue without any pressure." },
+    { name_fa:"رضا", name_en:"Reza", r:5, fa:"جلسه‌ی آشنایی رایگان کمک کرد بدون استرس تصمیم بگیرم ادامه بدم.", en:"The free pre-consultation call helped me decide to continue without any pressure." },
     { name_fa:"شیما", name_en:"Shima", r:5, fa:"اینکه تلفنی بود باعث شد راحت‌تر و صادقانه‌تر صحبت کنم.", en:"Being on the phone made it easier for me to speak openly and honestly." },
     { name_fa:"امیر", name_en:"Amir", r:5, fa:"راهکارهایی که گرفتم خیلی عملی بودن و تو زندگی روزمره‌ام به کار اومدن.", en:"The guidance I received was practical and useful in my daily life." },
     { name_fa:"فاطمه", name_en:"Fatemeh", r:5, fa:"از اولین تماس تا پایان جلسه، همه‌چیز با آرامش و احترام پیش رفت.", en:"From the first call to the end of the session, everything went calmly and respectfully." },
@@ -2008,7 +2008,7 @@
     });
   }
 
-  // free intro session form submit -> open WhatsApp with "Free Intro Session" subject
+  // free pre-consultation session form submit -> open WhatsApp with "Free Pre-Consultation Session" subject
   const introForm = document.getElementById('introForm');
   const introSuccess = document.getElementById('introSuccess');
   if (introForm){
@@ -2025,8 +2025,8 @@
       const counselor = lang === 'en' ? val('introCounselor-en') : val('introCounselor');
 
       const labels = {
-        fa: { head:'درخواست جلسه معارفه رایگان', name:'نام و نام خانوادگی', phone:'شماره تماس', callType:'نوع تماس', counselor:'درمانگر انتخابی', day:'روز مورد نظر', time:'بهترین زمان تماس' },
-        en: { head:'Free Intro Session request', name:'Full Name', phone:'Phone Number', callType:'Call Type', counselor:'Selected counselor', day:'Preferred day', time:'Best Time to Call' }
+        fa: { head:'درخواست جلسهٔ رایگان پیش‌مشاوره', name:'نام و نام خانوادگی', phone:'شماره تماس', callType:'نوع تماس', counselor:'درمانگر انتخابی', day:'روز مورد نظر', time:'بهترین زمان تماس' },
+        en: { head:'Free Pre-Consultation Session request', name:'Full Name', phone:'Phone Number', callType:'Call Type', counselor:'Selected counselor', day:'Preferred day', time:'Best Time to Call' }
       }[lang];
 
       let lines = [];
@@ -2287,7 +2287,7 @@
             ['هر روز یک فعالیت کوچکِ لذت‌بخش را عمداً در برنامه بگذارید، حتی وقتی حسش را ندارید — در افسردگی، انگیزه بعد از عمل می‌آید نه قبل از آن.',
              'خواب را در اولویت بگذارید؛ ثابت‌بودن ساعت خواب و بیداری بیشتر از مدت خواب اهمیت دارد.',
              'موضوع را با یک نفر که به او اعتماد دارید در میان بگذارید.',
-             'یک جلسه معارفه رایگان بگیرید تا ببینید ادامه‌دادن مسیر درمان برایتان مفید هست یا نه.'],
+             'یک جلسه رایگان پیش‌مشاوره بگیرید تا ببینید ادامه‌دادن مسیر درمان برایتان مفید هست یا نه.'],
             ['با یک روان‌شناس وقت بگذارید؛ در این سطح، درمان معمولاً ظرف چند هفته اثر محسوس دارد.',
              'کارها را کوچک کنید و انتظارتان از خودتان را موقتاً پایین بیاورید؛ این تنبلی نیست، مدیریت انرژی است.',
              'بی‌نظمی خواب و مصرف الکل را حذف کنید — هر دو نشانه‌ها را مستقیماً تشدید می‌کنند.',
@@ -3514,7 +3514,7 @@
           'به دو طرحواره بالای فهرست نگاه کنید؛ معمولاً همان‌ها بیشترین توضیح را درباره الگوهای تکراری زندگی‌تان می‌دهند.',
           'به حوزه‌ای توجه کنید که بیشتر طرحواره‌های بالایتان در آن جمع شده‌اند — کار درمانی معمولاً از سطح حوزه شروع می‌شود، نه تک‌تک طرحواره‌ها.',
           'طرحواره را برچسب نبینید. این‌ها راه‌حل‌هایی‌اند که روزی لازم بوده‌اند؛ پرسش این است که امروز کدامشان هنوز به کارتان می‌آید.',
-          'طرحواره‌درمانی از معدود رویکردهایی است که مستقیماً روی همین الگوها کار می‌کند. اگر نتیجه با تجربه‌تان خواند، یک جلسه معارفه رایگان جای خوبی برای شروع است.'
+          'طرحواره‌درمانی از معدود رویکردهایی است که مستقیماً روی همین الگوها کار می‌کند. اگر نتیجه با تجربه‌تان خواند، یک جلسه رایگان پیش‌مشاوره جای خوبی برای شروع است.'
         ],
         questions: [
           'همیشه ته دلم می‌ترسم کسی که دوستش دارم روزی بگذارد و برود.',
@@ -3626,7 +3626,7 @@
           'به سبک اول و دوم با هم نگاه کنید؛ بیشتر آدم‌ها ترکیبی‌اند و همین ترکیب، تصویر دقیق‌تری می‌دهد.',
           'سبک دلبستگی را برچسب نبینید. این الگو در رابطه ساخته شده و در رابطه هم تغییر می‌کند.',
           'اگر شریک زندگی دارید، نتیجه را با هم بخوانید؛ فهمیدن سبک یکدیگر بیشتر از دانستن سبک خود کمک می‌کند.',
-          'اگر الگوی نزدیکی و فاصله زندگی‌تان را سخت کرده، یک جلسه معارفه رایگان جای خوبی برای شروع است.'
+          'اگر الگوی نزدیکی و فاصله زندگی‌تان را سخت کرده، یک جلسه رایگان پیش‌مشاوره جای خوبی برای شروع است.'
         ],
         questions: [
           'در رابطه‌ها نسبتاً راحت و آرامم.',
@@ -3764,7 +3764,7 @@
             ['حوزه‌ای که بالاترین نمره را گرفته، بهترین نقطه شروع گفت‌وگو با روان‌شناس است.',
              'درمان انتخابی وسواس، مواجهه و جلوگیری از پاسخ (ERP) است؛ روشی ساختارمند با اثربخشی بالا.',
              'اجتناب و اطمینان‌جویی کوتاه‌مدت آرام می‌کنند و بلندمدت چرخه را محکم‌تر — این دقیقاً همان چیزی است که در درمان روی آن کار می‌شود.',
-             'یک جلسه معارفه رایگان، بدون هیچ تعهدی، جای خوبی برای شروع است.']
+             'یک جلسه رایگان پیش‌مشاوره، بدون هیچ تعهدی، جای خوبی برای شروع است.']
           ]
         },
         questions: [
