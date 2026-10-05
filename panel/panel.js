@@ -120,6 +120,8 @@
   }
   function dayG(ts) { var d = tehranDate(ts); return G_MONTHS[d.gm - 1] + ' ' + d.gd + ', ' + d.gy; }   // «Oct 4, 2026»
   var dayOf = function (ts) { return dayJ(ts) + ' (' + dayG(ts) + ')'; };       // برای متن پیام‌ها
+  // همان تاریخ برای نمایش در صفحه: بخش لاتین یک تکه می‌ماند و وسط خط شکسته نمی‌شود
+  function dayNode(ts) { var f = document.createDocumentFragment(); f.appendChild(document.createTextNode(dayJ(ts) + ' (')); f.appendChild(ltr(dayG(ts))); f.appendChild(document.createTextNode(')')); return f; }
 
   /* «۲۰۲۶-۱۰-۰۴T۱۸:۳۰» که منشی به وقت تهران می‌نویسد ← لحظهٔ UTC */
   function tehranToUtc(local) {
@@ -360,7 +362,7 @@
 
     var hero = h('section', { class: 'card hero' },
       h('h2', { text: 'اتاق مشاوره' }),
-      h('p', { class: 'hint', text: next ? ('جلسهٔ بعدی: ' + dayOf(next.starts_at) + '، ساعت ' + timeOf(next.starts_at) + ' — ' + next.client_label) : 'جلسهٔ برنامه‌ریزی‌شده‌ای ندارید.' }),
+      h('p', { class: 'hint' }, next ? ['جلسهٔ بعدی: ', dayNode(next.starts_at), '، ساعت ' + timeOf(next.starts_at) + ' — ' + next.client_label] : 'جلسهٔ برنامه‌ریزی‌شده‌ای ندارید.'),
       h('button', { class: 'room-btn', type: 'button', disabled: !hasLink, onclick: function () { openRoom(next); } },
         svgEl(VIDEO_ICON), h('span', { text: 'ورود به اتاق مشاوره' })),
       !hasLink ? h('p', { class: 'hint', text: 'برای فعال شدن، پایین‌تر لینک اتاقتان را ثبت کنید.' }) : null);
@@ -635,7 +637,7 @@
     acts.appendChild(h('button', { class: 'btn btn--small', type: 'button', text: 'انجام شد', onclick: function () { handle(e); } }));
     return h('div', { class: 's s--live' },
       h('div', { class: 's__head' }, h('div', { class: 's__time' }, nameOf(e.counselor_id), h('small', { text: 'اتاق را باز کرد — ساعت ' + timeOf(e.opened_at) }))),
-      s ? h('div', null, h('b', { text: 'مراجع: ' }), s.client_label, ' — ', dayOf(s.starts_at), '، ساعت ', timeOf(s.starts_at))
+      s ? h('div', null, h('b', { text: 'مراجع: ' }), s.client_label, ' — ', dayNode(s.starts_at), '، ساعت ', timeOf(s.starts_at))
         : h('p', { class: 'hint', text: 'این دکمه خارج از ساعت یک جلسهٔ ثبت‌شده زده شد.' }),
       acts);
   }
@@ -696,7 +698,8 @@
     var whenLocal = function () { var d = f.date.value(), t = f.time.value(); return d && t ? d + 'T' + t : ''; };
     var showPreview = function () {
       var d = tehranToUtc(whenLocal());
-      preview.textContent = d ? ('ثبت می‌شود: ' + dayOf(d) + '، ساعت ' + timeOf(d) + ' به وقت ایران') : '';
+      preview.textContent = '';
+      if (d) { preview.appendChild(document.createTextNode('ثبت می‌شود: ')); preview.appendChild(dayNode(d)); preview.appendChild(document.createTextNode('، ساعت ' + timeOf(d) + ' به وقت ایران')); }
     };
     f.date = dateField('', showPreview);
     f.time = timeField(showPreview);
@@ -737,7 +740,7 @@
       var bs = S.booked.s, bp = profileOf(bs.counselor_id);
       done = h('section', { class: 'card hero', role: 'status' },
         h('h2', { text: 'جلسه ثبت شد ✓' }),
-        h('p', { class: 'hint', text: nameOf(bs.counselor_id) + ' — ' + bs.client_label + ' — ' + dayOf(bs.starts_at) + '، ساعت ' + timeOf(bs.starts_at) }),
+        h('p', { class: 'hint' }, nameOf(bs.counselor_id) + ' — ' + bs.client_label + ' — ', dayNode(bs.starts_at), '، ساعت ' + timeOf(bs.starts_at)),
         S.booked.phone
           ? h('button', { class: 'room-btn', type: 'button', onclick: function () { sendConfirm(bs, bp, S.booked.phone); } }, h('span', { text: 'ارسال تأیید به مراجع (واتساپ)' }))
           : h('p', { class: 'hint', text: 'شمارهٔ مراجع ثبت نشد؛ بعداً از تب «جلسه‌ها» می‌توانید تأیید بفرستید.' }),
