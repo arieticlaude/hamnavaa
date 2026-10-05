@@ -137,7 +137,7 @@
   var STATUS = { scheduled: 'برنامه‌ریزی‌شده', done: 'انجام‌شد', client_cancelled: 'لغو توسط مراجع',
     client_no_show: 'غیبت مراجع', counselor_absent: 'غیبت مشاور', counselor_cancelled: 'لغو توسط مشاور' };
   var MODE = { video: 'تصویری', audio: 'صوتی' };
-  var KIND = { intro: 'معارفه', session: 'جلسه' };
+  var KIND = { intro: 'پیش‌مشاوره', session: 'جلسه' };
 
   function phoneDigits(p) {
     var d = String(p || '').replace(/[^\d]/g, '');
@@ -654,7 +654,7 @@
     var lines = ['سلام ' + s.client_label + ' عزیز 🌿', 'جلسهٔ شما در هم‌نوا ثبت شد.',
       'مشاور: ' + ((p && p.full_name) || 'هم‌نوا'),
       'زمان: ' + dayOf(s.starts_at) + '، ساعت ' + timeOf(s.starts_at) + ' (به وقت ایران)',
-      'نوع: ' + (s.kind === 'intro' ? 'جلسهٔ معارفهٔ رایگان' : 'جلسهٔ مشاوره') + ' — ' + (s.mode === 'audio' ? 'تماس صوتی' : 'تماس تصویری')];
+      'نوع: ' + (s.kind === 'intro' ? 'جلسهٔ رایگان پیش‌مشاوره' : 'جلسهٔ مشاوره') + ' — ' + (s.mode === 'audio' ? 'تماس صوتی' : 'تماس تصویری')];
     if (p && p.meet_url) lines.push('لینک اتاق: ' + p.meet_url, 'سر وقت روی لینک بزنید؛ مشاور شما را به اتاق می‌پذیرد.');
     else lines.push('لینک اتاق پیش از جلسه برایتان فرستاده می‌شود.');
     return lines.join('\n');
@@ -805,7 +805,7 @@
       phone: h('input', { class: 'input', dir: 'ltr', placeholder: '+1 647 000 0000  یا  0912…' }),
       dur: h('select', { class: 'select' }, [30, 45, 60, 90].map(function (n) { return h('option', { value: n, text: nf.format(n) + ' دقیقه', selected: n === 45 }); })),
       mode: h('select', { class: 'select' }, h('option', { value: 'video', text: 'تصویری' }), h('option', { value: 'audio', text: 'صوتی' })),
-      kind: h('select', { class: 'select' }, h('option', { value: 'session', text: 'جلسه' }), h('option', { value: 'intro', text: 'معارفه (رایگان)' }))
+      kind: h('select', { class: 'select' }, h('option', { value: 'session', text: 'جلسه' }), h('option', { value: 'intro', text: 'جلسهٔ رایگان پیش‌مشاوره' }))
     };
     var preview = h('p', { class: 'hint', text: '' });
     var whenLocal = function () { var d = f.date.value(), t = f.time.value(); return d && t ? d + 'T' + t : ''; };
@@ -845,7 +845,7 @@
         h('div', { class: 'field' }, h('label', { text: 'ساعت (به وقت ایران، ۲۴ ساعته)' }), f.time.el)),
       preview,
       h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'مدت' }), f.dur), h('div', { class: 'field' }, h('label', { text: 'نوع تماس' }), f.mode)),
-      h('div', { class: 'field' }, h('label', { text: 'جلسه یا معارفه' }), f.kind),
+      h('div', { class: 'field' }, h('label', { text: 'جلسه یا پیش‌مشاوره' }), f.kind),
       h('p', { class: 'hint', text: 'محتوای جلسه یا یادداشت بالینی را هیچ‌جا این‌جا ننویسید.' }),
       h('div', { class: 'actions' }, submit));
     var done = null;
