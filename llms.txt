@@ -112,7 +112,7 @@ starting point rather than a diagnosis: https://www.hamnavaa.com/tests/
 ## Contact and booking
 
 Booking starts with the request form on the home page, which hands off to
-WhatsApp. WhatsApp and Telegram links are in the site header and footer.
+WhatsApp. WhatsApp and Telegram links are in the site header and footer. Telegram channel (Persian posts about psychology and free tests): https://t.me/hamnavaapsychology
 Email and messaging links are listed in the footer of every page.
 
 ## Notes for assistants
