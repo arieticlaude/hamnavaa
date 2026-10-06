@@ -175,3 +175,13 @@ button,input,select{font:inherit;color:inherit}
 .logrow:last-child{border-bottom:0}.logrow small{color:#6B7B74;display:block}
 .logrow--act{align-items:flex-start}.logtxt{flex:1;min-width:200px}
 .stamp{color:#55655E;font-size:.84rem;white-space:normal}
+
+/* آسان‌تر شدن کار منشی و مشاور */
+.agenda{padding:14px 16px}.agenda--done{opacity:.72}
+.card--attn{border:1px solid #E7C9A5;background:#FFF7EE}
+.qchips{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 12px}
+.qchip{border:1px solid rgba(32,48,43,.16);background:#fff;border-radius:999px;padding:7px 14px;font:inherit;font-weight:600;font-size:.9rem;cursor:pointer;color:#20302B}
+.qchip:hover{background:#F6E7C4}
+.resched{margin-top:12px;padding:12px;border:1px dashed rgba(32,48,43,.28);border-radius:14px;background:rgba(255,255,255,.6)}
+.dayhead{margin:18px 0 6px;font-size:1.05rem;color:#3D6B61}.dayhead small{color:#6B7B74;font-weight:500}
+.cd{color:#B78A46}
