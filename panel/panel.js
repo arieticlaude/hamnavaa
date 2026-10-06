@@ -158,7 +158,7 @@
     if (/failed to fetch|network|load failed/i.test(m)) return 'اتصال به سرور برقرار نشد. اینترنت را بررسی کنید.';
     return 'خطایی رخ داد. دوباره امتحان کنید.';
   }
-  function flash(type, text) { S.flash = { type: type, text: text }; }
+  function flash(type, text) { S.flash = { type: type, text: text }; S.flashUntil = Date.now() + 3500; }   // چند بازنقاشی پشت‌سرهم پیام را نمی‌بلعد
 
   /* ───────────── اتصال ───────────── */
   function connect() {
@@ -214,7 +214,7 @@
         h('button', { class: 'btn btn--small', type: 'button', onclick: signOut, text: 'خروج' })) : null);
     var nodes = [head];
     if (S.flash) nodes.push(h('div', { class: 'flash flash--' + S.flash.type, role: 'status', text: S.flash.text }));
-    S.flash = null;
+    if (Date.now() > (S.flashUntil || 0)) S.flash = null;
     (Array.isArray(children) ? children : [children]).forEach(function (c) { if (c) nodes.push(c); });
     var inst = installCard();
     if (inst) nodes.push(inst);
@@ -469,12 +469,12 @@
     var now = Date.now();
     var upcoming = all.filter(function (s) { return s.status === 'scheduled' && endOf(s) + JOIN_AFTER_MIN * 60000 >= now; });
     var past = all.filter(function (s) { return upcoming.indexOf(s) < 0; }).reverse();
-    var next = upcoming[0];
+    var next = upcoming.filter(function (s) { return endOf(s) > now; })[0] || upcoming[0];
     var hasLink = !!S.profile.meet_url;
 
     var hero = h('section', { class: 'card hero' },
       h('h2', { text: 'اتاق مشاوره' }),
-      h('p', { class: 'hint' }, next ? ['جلسهٔ بعدی: ', dayNode(next.starts_at), '، ساعت ' + timeOf(next.starts_at) + ' — ' + next.client_label] : 'جلسهٔ برنامه‌ریزی‌شده‌ای ندارید.'),
+      h('p', { class: 'hint' }, next ? ['جلسهٔ بعدی: ', dayLabel(next.starts_at) + '، ساعت ' + timeOf(next.starts_at) + ' — ' + next.client_label + ' — ', h('b', { class: 'cd', text: countdown(next) })] : 'جلسهٔ برنامه‌ریزی‌شده‌ای ندارید.'),
       h('button', { class: 'room-btn', type: 'button', disabled: !hasLink, onclick: function () { openRoom(next); } },
         svgEl(VIDEO_ICON), h('span', { text: 'ورود به اتاق مشاوره' })),
       !hasLink ? h('p', { class: 'hint', text: 'برای فعال شدن، پایین‌تر لینک اتاقتان را ثبت کنید.' }) : null);
@@ -488,11 +488,21 @@
 
     return [hero, roomLinkCard(hasLink), pushCard(),
       h('section', { class: 'card' }, h('h2', { text: 'جلسه‌های پیش‌رو' }),
-        upcoming.length ? upcoming.map(function (s) { return sessionCard(s, true); }) : h('p', { class: 'empty', text: 'جلسه‌ای در پیش نیست.' })),
+        upcoming.length ? groupByDay(upcoming) : h('p', { class: 'empty', text: 'جلسه‌ای در پیش نیست.' })),
       h('section', { class: 'card' }, h('h2', { text: 'جلسه‌های گذشته' }),
         past.length ? [past.slice(0, S.pastN || 30).map(function (s) { return sessionCard(s, true); }),
           past.length > (S.pastN || 30) ? h('div', { class: 'actions' }, h('button', { class: 'btn btn--small', type: 'button', text: 'نمایش جلسه‌های قدیمی‌تر (' + n(past.length - (S.pastN || 30)) + ')', onclick: function () { S.pastN = (S.pastN || 30) + 30; render(); } })) : null]
           : h('p', { class: 'empty', text: 'هنوز جلسه‌ای ثبت نشده.' }))];
+  }
+
+  function groupByDay(list) {
+    var out = [], last = null;
+    list.forEach(function (s) {
+      var d = tehranISO(s.starts_at);
+      if (d !== last) { out.push(h('h3', { class: 'dayhead' }, dayLabel(s.starts_at), d === tehranDateInput(0) || d === tehranDateInput(1) ? h('small', { text: ' · ' + dayJ(s.starts_at) }) : null)); last = d; }
+      out.push(sessionCard(s, true));
+    });
+    return out;
   }
 
   function roomLinkCard(hasLink) {
@@ -594,7 +604,7 @@
     return { el: wrap, value: function () { return st.iso; } };
   }
 
-  function timeField(onChange) {
+  function timeField(onChange, initial) {
     function opts(count, step, ph) {
       var o = [h('option', { value: '', text: ph })];
       for (var i = 0; i < count; i += step) o.push(h('option', { value: (i < 10 ? '0' : '') + i, text: pad2(i) }));
@@ -606,11 +616,101 @@
     hh.addEventListener('change', fire); mm.addEventListener('change', fire);
     var wrap = h('div', { class: 'timef', dir: 'ltr' }, hh, h('span', { class: 'timef__sep', text: ':' }), mm,
       h('span', { class: 'timef__note', dir: 'rtl', text: 'ساعت ۲۴ ساعته' }));
+    if (initial && /^\d\d:\d\d$/.test(initial)) {
+      hh.value = initial.slice(0, 2);
+      var mi = initial.slice(3);
+      if (![].some.call(mm.options, function (o) { return o.value === mi; })) mm.appendChild(h('option', { value: mi, text: pad2(+mi) }));
+      mm.value = mi;
+    }
     return { el: wrap, value: function () { return hh.value && mm.value ? hh.value + ':' + mm.value : ''; } };
+  }
+
+
+  /* ───────────── ابزارهای تازه: امروز، رسیدگی، تداخل، جابه‌جایی ───────────── */
+  function tehranISO(ts) { var d = tehranDate(ts); return isoOf(d.gy, d.gm, d.gd); }
+  function tehranHM(ts) { var t = new Date(new Date(ts).getTime() + TEHRAN_MIN * 60000); return (t.getUTCHours() < 10 ? '0' : '') + t.getUTCHours() + ':' + (t.getUTCMinutes() < 10 ? '0' : '') + t.getUTCMinutes(); }
+  function dayLabel(ts) {
+    var d = tehranISO(ts);
+    if (d === tehranDateInput(0)) return 'امروز';
+    if (d === tehranDateInput(1)) return 'فردا';
+    return dayJ(ts);
+  }
+  function countdown(s) {
+    var m = Math.round((new Date(s.starts_at).getTime() - Date.now()) / 60000);
+    if (m <= 0) return Date.now() <= endOf(s) ? 'الان در جریان است' : 'زمانش گذشته';
+    if (m < 60) return n(m) + ' دقیقه دیگر';
+    if (m < 60 * 24) return 'حدود ' + n(Math.round(m / 60)) + ' ساعت دیگر';
+    return n(Math.round(m / 1440)) + ' روز دیگر';
+  }
+  function findConflict(counselorId, start, durMin, exceptId) {
+    var a = start.getTime(), b = a + durMin * 60000;
+    return sb.from('sessions').select('*').eq('counselor_id', counselorId).eq('status', 'scheduled')
+      .gte('starts_at', new Date(a - 3 * 3600000).toISOString()).lte('starts_at', new Date(b).toISOString()).then(function (r) {
+        return ((r && r.data) || []).filter(function (x) {
+          if (exceptId && x.id === exceptId) return false;
+          var xa = new Date(x.starts_at).getTime(), xb = xa + x.duration_min * 60000;
+          return xa < b && xb > a;
+        })[0] || null;
+      });
+  }
+  function conflictText(c) {
+    return 'این مشاور در همین ساعت جلسهٔ دیگری دارد (مراجع «' + c.client_label + '»، ' + dayLabel(c.starts_at) + ' ساعت ' + timeOf(c.starts_at) + ').\nباز هم ثبت شود؟';
+  }
+
+  function loadToday() {
+    var from = tehranToUtc(tehranDateInput(0) + 'T00:00'), to = tehranToUtc(tehranDateInput(0) + 'T23:59');
+    var aFrom = new Date(Date.now() - 14 * 86400000).toISOString(), aTo = new Date(Date.now() - 45 * 60000).toISOString();
+    Promise.all([
+      sb.from('sessions').select('*').gte('starts_at', from.toISOString()).lte('starts_at', to.toISOString()).order('starts_at', { ascending: true }).limit(200),
+      sb.from('sessions').select('*').eq('status', 'scheduled').gte('starts_at', aFrom).lte('starts_at', aTo).order('starts_at', { ascending: false }).limit(100)
+    ]).then(function (r) {
+      S.data.today = (r[0] && r[0].data) || [];
+      S.data.attention = ((r[1] && r[1].data) || []).filter(function (s) { return endOf(s) < Date.now() - 15 * 60000; });
+      var ids = S.data.today.concat(S.data.attention).map(function (s) { return s.id; });
+      S.data.tc = {};
+      if (!ids.length) { if (S.view === 'staff') render(); return; }
+      sb.from('session_contacts').select('*').in('session_id', ids).then(function (c) {
+        ((c && c.data) || []).forEach(function (x) { S.data.tc[x.session_id] = x.client_phone; });
+        if (S.view === 'staff') render();
+      });
+    });
+  }
+  function setStatus(s, status) {
+    sb.from('sessions').update({ status: status, updated_at: new Date().toISOString() }).eq('id', s.id).then(function (r) {
+      flash(r.error ? 'err' : 'ok', r.error ? explain(r.error) : 'ثبت شد.'); loadStaff();
+    });
+  }
+  function agendaRow(s, mode) {
+    var p = profileOf(s.counselor_id), phone = (S.data.tc && S.data.tc[s.id]) || (S.data.contacts && S.data.contacts[s.id]);
+    var acts = h('div', { class: 'actions' });
+    if (mode === 'attention') {
+      acts.appendChild(h('button', { class: 'btn btn--primary btn--small', type: 'button', text: 'انجام شد', onclick: function () { if (window.confirm('این جلسه انجام شد؟')) setStatus(s, 'done'); } }));
+      acts.appendChild(h('button', { class: 'btn btn--danger btn--small', type: 'button', text: 'غیبت مراجع', onclick: function () { if (window.confirm('مراجع در این جلسه حاضر نشد؟')) setStatus(s, 'client_no_show'); } }));
+    } else if (s.status === 'scheduled' && phone) {
+      acts.appendChild(h('button', { class: 'btn btn--wa btn--small', type: 'button', text: 'یادآوری به مراجع', onclick: function () { sendReminder(s, p, phone); } }));
+    }
+    return h('div', { class: 's agenda' + (s.status === 'scheduled' ? '' : ' agenda--done') },
+      h('div', { class: 's__head' },
+        h('div', { class: 's__time' }, mode === 'attention' ? [dayJ(s.starts_at), h('small', null, 'ساعت ' + timeOf(s.starts_at))] : [timeOf(s.starts_at), h('small', { text: n(s.duration_min) + ' دقیقه · ' + KIND[s.kind] + ' · ' + MODE[s.mode] })]),
+        h('span', { class: 'chip ' + (s.status === 'done' ? 'chip--ok' : (s.status === 'scheduled' ? '' : 'chip--warn')), text: STATUS[s.status] })),
+      h('div', null, h('b', { text: nameOf(s.counselor_id) }), ' — ' + s.client_label), acts);
+  }
+  function attentionCard() {
+    var list = S.data.attention || [];
+    if (!list.length) return null;
+    return h('section', { class: 'card card--attn' }, h('h2', null, 'نیاز به رسیدگی ', h('span', { class: 'chip chip--warn', text: n(list.length) })),
+      h('p', { class: 'hint', text: 'جلسه‌هایی که تمام شده‌اند ولی هنوز «برنامه‌ریزی‌شده» مانده‌اند. وضعیتشان را مشخص کنید تا آمار درست بماند.' }),
+      list.map(function (s) { return agendaRow(s, 'attention'); }));
+  }
+  function todayCard() {
+    var list = S.data.today || [];
+    return h('section', { class: 'card' }, h('h2', null, 'جلسه‌های امروز ', h('small', { class: 'hint', text: dayJ(Date.now()) })),
+      list.length ? list.map(function (s) { return agendaRow(s, 'today'); }) : h('p', { class: 'empty', text: 'امروز جلسه‌ای ثبت نشده.' }));
   }
 
   /* ───────────── صفحهٔ منشی / مدیر ───────────── */
   function loadStaff() {
+    loadToday();
     var from = tehranToUtc((S.data.from || tehranDateInput(-7)) + 'T00:00');
     var to = tehranToUtc((S.data.to || tehranDateInput(30)) + 'T23:59');
     var q = sb.from('sessions').select('*').gte('starts_at', from.toISOString()).lte('starts_at', to.toISOString()).order('starts_at', { ascending: true }).limit(500);
@@ -740,7 +840,7 @@
       h('p', { class: 'hint', text: 'وقتی مشاوری دکمهٔ «ورود به اتاق مشاوره» را می‌زند، همین‌جا ظاهر می‌شود. این صفحه را باز نگه دارید.' }),
       h('div', { class: 'actions' }, h('button', { class: 'btn btn--small', type: 'button', disabled: !!S.alerts, onclick: enableAlerts,
         text: S.alerts ? 'صدا و اعلان فعال است ✓' : 'فعال‌سازی صدا و اعلان' })),
-      B.events.length ? B.events.map(function (e) { return eventCard(e, B); }) : h('p', { class: 'empty', text: 'الان اتاق بازی نیست.' })));
+      B.events.length ? B.events.map(function (e) { return eventCard(e, B); }) : h('p', { class: 'empty', text: 'الان اتاق بازی نیست.' })), attentionCard(), todayCard());
   }
   function eventCard(e, B) {
     var p = profileOf(e.counselor_id), s = e.session_id && B.sessions[e.session_id], phone = s && B.contacts[s.id];
@@ -763,12 +863,36 @@
     var who = h('select', { class: 'select' }, h('option', { value: '', text: 'همهٔ مشاورها' }),
       counselors.map(function (p) { return h('option', { value: p.id, text: p.full_name || 'بدون نام', selected: S.data.who === p.id }); }));
     var apply = function () { S.data.from = from.value(); S.data.to = to.value(); S.data.who = who.value || null; loadStaff(); };
-    var list = S.data.sessions || [];
-    return h('section', { class: 'card' }, h('h2', { text: 'جلسه‌ها' }),
+    var quick = [['امروز', 0, 0], ['فردا', 1, 1], ['۷ روز آینده', 0, 7], ['۳۰ روز آینده', 0, 30], ['۷ روز گذشته', -7, 0]];
+    var chips = h('div', { class: 'qchips' }, quick.map(function (q) {
+      return h('button', { class: 'qchip', type: 'button', text: q[0], onclick: function () { S.data.from = tehranDateInput(q[1]); S.data.to = tehranDateInput(q[2]); S.data.who = who.value || null; loadStaff(); } });
+    }));
+    var qin = h('input', { class: 'input', type: 'search', placeholder: 'جست‌وجو: نام مراجع، مشاور یا شماره', value: S.data.q || '', 'aria-label': 'جست‌وجو',
+      oninput: function (e) { S.data.q = e.target.value; clearTimeout(S.qt); S.qt = setTimeout(render, 250); } });
+    var stSel = h('select', { class: 'select', 'aria-label': 'وضعیت', onchange: function (e) { S.data.st = e.target.value; render(); } },
+      h('option', { value: '', text: 'همهٔ وضعیت‌ها' }), Object.keys(STATUS).map(function (k) { return h('option', { value: k, text: STATUS[k], selected: S.data.st === k }); }));
+    var list = (S.data.sessions || []).filter(function (s) {
+      var q = (S.data.q || '').trim().toLowerCase(), phone = (S.data.contacts && S.data.contacts[s.id]) || '';
+      if (S.data.st && s.status !== S.data.st) return false;
+      return !q || (s.client_label || '').toLowerCase().indexOf(q) >= 0 || nameOf(s.counselor_id).toLowerCase().indexOf(q) >= 0 || phone.indexOf(q) >= 0;
+    });
+    var moved = null;
+    if (S.moved) {
+      var mp = profileOf(S.moved.s.counselor_id);
+      moved = h('section', { class: 'card hero', role: 'status' }, h('h2', { text: 'زمان جلسه عوض شد ✓' }),
+        h('p', { class: 'hint' }, nameOf(S.moved.s.counselor_id) + ' — ' + S.moved.s.client_label + ' — ', dayNode(S.moved.s.starts_at), '، ساعت ' + timeOf(S.moved.s.starts_at)),
+        S.moved.phone ? h('button', { class: 'room-btn', type: 'button', onclick: function () { sendConfirm(S.moved.s, mp, S.moved.phone); } }, h('span', { text: 'اطلاع زمان تازه به مراجع (واتساپ)' }))
+          : h('p', { class: 'hint', text: 'شمارهٔ مراجع ثبت نشده؛ زمان تازه را خودتان به او خبر بدهید.' }),
+        h('div', { class: 'actions' }, h('button', { class: 'btn btn--small', type: 'button', text: 'بستن', onclick: function () { S.moved = null; render(); } })));
+    }
+    return h('div', null, moved, h('section', { class: 'card' }, h('h2', { text: 'جلسه‌ها' }),
+      chips,
       h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'از تاریخ' }), from.el), h('div', { class: 'field' }, h('label', { text: 'تا تاریخ' }), to.el)),
       h('div', { class: 'field' }, h('label', { text: 'مشاور' }), who),
       h('div', { class: 'actions' }, h('button', { class: 'btn btn--primary btn--small', type: 'button', text: 'نمایش', onclick: apply })),
-      list.length ? list.map(staffCard) : h('p', { class: 'empty', text: 'جلسه‌ای در این بازه نیست.' }));
+      h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'جست‌وجو' }), qin), h('div', { class: 'field' }, h('label', { text: 'وضعیت' }), stSel)),
+      h('p', { class: 'hint', text: n(list.length) + ' جلسه' + ((S.data.q || S.data.st) ? ' (با فیلتر)' : '') }),
+      list.length ? list.map(staffCard) : h('p', { class: 'empty', text: 'جلسه‌ای پیدا نشد.' })));
   }
 
   function staffCard(s) {
@@ -784,6 +908,7 @@
       if (s.status === 'scheduled') acts.appendChild(h('button', { class: 'btn btn--wa btn--small', type: 'button', text: 'یادآوری', onclick: function () { sendReminder(s, p, phone); } }));
     } else acts.appendChild(h('span', { class: 'chip', text: 'شمارهٔ مراجع ثبت نشده' }));
     if (!p || !p.meet_url) acts.appendChild(h('span', { class: 'chip chip--warn', text: 'مشاور هنوز لینک اتاق ثبت نکرده' }));
+    if (s.status === 'scheduled') acts.appendChild(h('button', { class: 'btn btn--small', type: 'button', text: S.resched === s.id ? 'بستن' : 'تغییر زمان', onclick: function () { S.resched = S.resched === s.id ? null : s.id; render(); } }));
     acts.appendChild(h('button', { class: 'btn btn--danger btn--small', type: 'button', text: 'حذف', onclick: function () {
       if (!window.confirm('این جلسه حذف شود؟')) return;
       sb.from('sessions').delete().eq('id', s.id).then(function (r) { flash(r.error ? 'err' : 'ok', r.error ? explain(r.error) : 'حذف شد.'); loadStaff(); });
@@ -794,7 +919,27 @@
         h('div', { class: 'chips' }, h('span', { class: 'chip chip--gold', text: KIND[s.kind] }), h('span', { class: 'chip', text: MODE[s.mode] }))),
       h('div', null, h('b', { text: 'مشاور: ' }), nameOf(s.counselor_id), '   ', h('b', { text: 'مراجع: ' }), s.client_label,
         phone ? h('span', { class: 'hint', dir: 'ltr', text: '   ' + phone }) : null),
-      h('div', { class: 'field' }, sel), acts);
+      h('div', { class: 'field' }, sel), acts, S.resched === s.id ? reschedForm(s, phone) : null);
+  }
+  function reschedForm(s, phone) {
+    var d = dateField(tehranISO(s.starts_at)), t = timeField(null, tehranHM(s.starts_at));
+    var save = h('button', { class: 'btn btn--primary btn--small', type: 'button', text: 'ذخیرهٔ زمان تازه' });
+    save.addEventListener('click', function () {
+      var when = tehranToUtc(d.value() && t.value() ? d.value() + 'T' + t.value() : '');
+      if (!when) { flash('err', 'تاریخ و ساعت را کامل کنید.'); return render(); }
+      if (when.getTime() === new Date(s.starts_at).getTime()) { flash('info', 'زمان تغییری نکرده است.'); return render(); }
+      save.disabled = true;
+      findConflict(s.counselor_id, when, s.duration_min, s.id).then(function (c) {
+        if (c && !window.confirm(conflictText(c))) { save.disabled = false; return; }
+        sb.from('sessions').update({ starts_at: when.toISOString(), updated_at: new Date().toISOString() }).eq('id', s.id).then(function (r) {
+          if (r.error) { save.disabled = false; flash('err', explain(r.error)); return render(); }
+          S.resched = null; S.moved = { s: Object.assign({}, s, { starts_at: when.toISOString() }), phone: phone || '' }; loadStaff();
+        });
+      });
+    });
+    return h('div', { class: 'resched' }, h('p', { class: 'hint', text: 'زمان تازه (به وقت ایران، ۲۴ ساعته):' }),
+      h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'تاریخ' }), d.el), h('div', { class: 'field' }, h('label', { text: 'ساعت' }), t.el)),
+      h('div', { class: 'actions' }, save));
   }
 
   function tNew() {
@@ -805,7 +950,7 @@
         counselors.map(function (p) { return h('option', { value: p.id, text: p.full_name || 'بدون نام', selected: S.lastWho === p.id }); })),
       label: h('input', { class: 'input', maxlength: 60, required: true, placeholder: 'نام کوچک یا یک کد، نه نام کامل' }),
       phone: h('input', { class: 'input', dir: 'ltr', placeholder: '+1 647 000 0000  یا  0912…' }),
-      dur: h('select', { class: 'select' }, [30, 45, 60, 90].map(function (n) { return h('option', { value: n, text: nf.format(n) + ' دقیقه', selected: n === 45 }); })),
+      dur: h('select', { class: 'select' }, [15, 30, 45, 60, 90].map(function (n) { return h('option', { value: n, text: nf.format(n) + ' دقیقه', selected: n === 45 }); })),
       mode: h('select', { class: 'select' }, h('option', { value: 'video', text: 'تصویری' }), h('option', { value: 'audio', text: 'صوتی' })),
       kind: h('select', { class: 'select' }, h('option', { value: 'session', text: 'جلسه' }), h('option', { value: 'intro', text: 'جلسهٔ رایگان پیش‌مشاوره' }))
     };
@@ -819,11 +964,14 @@
     f.date = dateField('', showPreview);
     f.time = timeField(showPreview);
     var submit = h('button', { class: 'btn btn--primary', type: 'submit', text: 'ثبت جلسه' });
+    f.kind.addEventListener('change', function () { f.dur.value = f.kind.value === 'intro' ? '15' : '45'; });
     var form = h('form', { class: 'card', onsubmit: function (e) {
       e.preventDefault();
       var when = tehranToUtc(whenLocal());
       if (!f.who.value || !when) { flash('err', 'مشاور و زمان را کامل کنید.'); return render(); }
       submit.disabled = true;
+      findConflict(f.who.value, when, +f.dur.value).then(function (cf) {
+      if (cf && !window.confirm(conflictText(cf))) { submit.disabled = false; return; }
       sb.from('sessions').insert({ counselor_id: f.who.value, client_label: f.label.value.trim(), starts_at: when.toISOString(),
         duration_min: +f.dur.value, mode: f.mode.value, kind: f.kind.value, created_by: S.user.id }).select().single().then(function (r) {
         if (r.error) { submit.disabled = false; flash('err', explain(r.error)); return render(); }
@@ -835,6 +983,7 @@
           if (c.error) flash('err', 'جلسه ثبت شد ولی شمارهٔ مراجع ذخیره نشد.');
           booked(!c.error);
         });
+      });
       });
     } },
       h('h2', { text: 'جلسهٔ جدید' }),
