@@ -211,6 +211,7 @@
     var head = h('header', { class: 'top' },
       h('div', { class: 'brand' }, svgEl(MARK), h('div', null, h('b', { text: 'هم‌نوا' }), h('br'), h('span', { text: 'پنل مشاور' }))),
       S.user ? h('div', { class: 'who' }, h('span', { text: (S.profile && S.profile.full_name) || S.user.email }),
+        S.profile ? h('button', { class: 'btn btn--small', type: 'button', text: 'تغییر رمز', onclick: function () { S.view = 'setpw'; S.canCancel = true; render(); } }) : null,
         h('button', { class: 'btn btn--small', type: 'button', onclick: signOut, text: 'خروج' })) : null);
     var nodes = [head];
     if (S.flash) nodes.push(h('div', { class: 'flash flash--' + S.flash.type, role: 'status', text: S.flash.text }));
@@ -315,6 +316,10 @@
           var d = deferredInstall; deferredInstall = null; d.prompt();
           if (d.userChoice) d.userChoice.then(function () { render(); });
         } }))];
+    } else if (ios && /crios|fxios|edgios/i.test(ua)) {
+      // Chrome/Firefox/Edge on iPhone have no «Install app» item and no ⋮ menu; Safari is the reliable route
+      body = [h('p', { class: 'hint', text: 'در آیفون بهترین راه Safari است: همین آدرس (hamnavaa.com/panel) را در Safari باز کنید ← دکمهٔ «اشتراک‌گذاری» (مربع با فلش رو به بالا) ← «Add to Home Screen» ← «Add».' }),
+        h('p', { class: 'hint', text: 'اگر در همین Chrome می‌مانید: دکمهٔ «اشتراک‌گذاری» کنار نوار آدرس را بزنید و «Add to Home Screen» را پیدا کنید. اگر نبود، با Safari باز کنید.' })];
     } else if (ios) {
       body = [h('p', { class: 'hint', text: 'در Safari: دکمهٔ «اشتراک‌گذاری» (مربع با فلش رو به بالا) ← «Add to Home Screen» (افزودن به صفحهٔ آغاز) ← «Add».' })];
     } else {
@@ -372,17 +377,18 @@
       sb.auth.updateUser({ password: p1.value }).then(function (r) {
         if (r.error) { flash('err', explain(r.error)); return vSetPw(); }
         history.replaceState(null, '', location.pathname + location.search);
-        LINK_TYPE = null; S.view = 'ready'; S.profile = null;
+        LINK_TYPE = null; S.view = 'ready'; S.profile = null; S.canCancel = false;
         flash('ok', 'رمز شما ثبت شد.');
         loadProfile();
       });
     } },
       h('div', { class: 'brand' }, svgEl(MARK), h('b', { text: 'هم‌نوا' })),
-      h('h2', { class: 'center', text: 'رمز عبور خود را بسازید' }),
+      h('h2', { class: 'center', text: S.canCancel ? 'رمز عبور تازه' : 'رمز عبور خود را بسازید' }),
       S.flash ? h('div', { class: 'flash flash--' + S.flash.type, text: S.flash.text }) : null,
       h('div', { class: 'field' }, h('label', { text: 'رمز جدید (دست‌کم ۱۰ نویسه)' }), p1),
       h('div', { class: 'field' }, h('label', { text: 'تکرار رمز' }), p2),
-      h('div', { class: 'actions' }, h('button', { class: 'btn btn--primary', type: 'submit', text: 'ذخیره و ورود' })));
+      h('div', { class: 'actions' }, h('button', { class: 'btn btn--primary', type: 'submit', text: 'ذخیره و ورود' }),
+        S.canCancel ? h('button', { class: 'btn', type: 'button', text: 'انصراف', onclick: function () { S.canCancel = false; S.view = 'ready'; S.profile = null; loadProfile(); } }) : null));
     S.flash = null;
     app.replaceChildren(form);
   }
