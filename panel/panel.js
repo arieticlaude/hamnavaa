@@ -516,6 +516,8 @@
     var card = h('section', { class: 'card' }, h('h2', { text: 'لینک اتاق من' }),
       h('p', { class: 'hint' }, 'در ', ltr('meet.google.com'), ' گزینهٔ ', ltr('New meeting'), ' و سپس ', ltr('Create a meeting for later'),
         ' را بزنید و لینک را این‌جا بگذارید. مراجع با همین لینک می‌آید و شما او را می‌پذیرید.'),
+      h('p', { class: 'hint' }, 'اگر آن گزینه را نمی‌بینید: در ', ltr('meet.google.com'), ' روی ', ltr('New meeting'), ' ← ', ltr('Start an instant meeting'),
+        ' بزنید، همان لحظه آدرس بالای مرورگر (شبیه ', ltr('meet.google.com/abc-defg-hij'), ') را کپی کنید و از جلسه بیرون بیایید. این لینک بعداً هم کار می‌کند و تا یک سال پس از آخرین استفاده معتبر می‌ماند. راه دوم: در ', ltr('Google Calendar'), ' یک رویداد بسازید، ', ltr('Add Google Meet video conferencing'), ' را بزنید و لینک را کپی کنید.'),
       h('div', { class: 'sp' }), input,
       h('div', { class: 'actions' }, h('button', { class: 'btn btn--primary', type: 'button', text: hasLink ? 'به‌روزرسانی لینک' : 'ثبت لینک', onclick: function () {
         var v = input.value.trim().split('?')[0];
