@@ -207,10 +207,35 @@
   }
 
   /* ───────────── صفحه‌ها ───────────── */
+  /* ───────────── عکس کنار نام (همان پرتره‌های صفحهٔ مشاورهای سایت) ───────────── */
+  function nkey(s) {   // «دکتر»، فاصله، نیم‌فاصله و ی/ک عربی نادیده گرفته می‌شود
+    return String(s || '').replace(/[يى]/g, 'ی').replace(/ك/g, 'ک').replace(/^\s*دکتر\s*/, '').replace(/[\s‌]+/g, '');
+  }
+  var PORTRAIT = {};
+  [['آرمان سلیمی‌کوچی', 'arman-salimi-kouchi'], ['آناهیتا بهداروند', 'anahita-behdarvand'], ['ابوالفضل زارعی', 'abolfazl-zarei'],
+   ['الناز زرین‌فر', 'elnaz-zarinfar'], ['حسین مختاری', 'hossein-mokhtari'], ['سارا فتاحی', 'sara-fattahi'],
+   ['سارا منصفی', 'sara-monsefi'], ['ساناز زرین‌فر', 'sanaz-zarinfar'], ['سپیده وحید هرندی', 'sepideh-vahid-harandi'],
+   ['صفا مصطفی‌زاده', 'safa-mostafazadeh'], ['لیلی اسماعیل‌زاده', 'leili-esmailzadeh'], ['محسن شاه ولی', 'mohsen-shahvali'],
+   ['مرجان علی‌محمدی', 'marjan-alimohammadi'], ['مژگان سپاه‌منصور', 'mojgan-sepahmansour'], ['مهدی قنبری', 'mahdi-ghanbari'],
+   ['نشاط غلامی‌پور', 'neshat-gholamipour'], ['نگار تیموری', 'negar-teymouri'], ['نورا دهقان‌پور', 'nora-dehghanpour']
+  ].forEach(function (p) { PORTRAIT[nkey(p[0])] = p[1]; });
+
+  function avatar(name) {
+    var f = PORTRAIT[nkey(name)], ini = nkey(name).charAt(0) || '؟';
+    var box = h('span', { class: 'avatar', 'aria-hidden': 'true' });
+    if (f) {
+      var img = h('img', { src: '../assets/img/' + f + '-portrait.webp', alt: '', width: '40', height: '40', decoding: 'async' });
+      img.addEventListener('error', function () { img.remove(); box.textContent = ini; });   // عکس نیامد: حرف اول اسم
+      box.appendChild(img);
+    } else box.textContent = ini;
+    return box;
+  }
+
   function shell(children) {
+    var who = S.user ? ((S.profile && S.profile.full_name) || S.user.email) : '';
     var head = h('header', { class: 'top' },
       h('div', { class: 'brand' }, svgEl(MARK), h('div', null, h('b', { text: 'هم‌نوا' }), h('br'), h('span', { text: 'پنل مشاور' }))),
-      S.user ? h('div', { class: 'who' }, h('span', { text: (S.profile && S.profile.full_name) || S.user.email }),
+      S.user ? h('div', { class: 'who' }, avatar(who), h('span', { class: 'who__name', text: who }),
         S.profile ? h('button', { class: 'btn btn--small', type: 'button', text: 'تغییر رمز', onclick: function () { S.view = 'setpw'; S.canCancel = true; render(); } }) : null,
         h('button', { class: 'btn btn--small', type: 'button', onclick: signOut, text: 'خروج' })) : null);
     var nodes = [head];
