@@ -218,7 +218,7 @@
    ['صفا مصطفی‌زاده', 'safa-mostafazadeh'], ['لیلی اسماعیل‌زاده', 'leili-esmailzadeh'], ['محسن شاه ولی', 'mohsen-shahvali'],
    ['مرجان علی‌محمدی', 'marjan-alimohammadi'], ['مژگان سپاه‌منصور', 'mojgan-sepahmansour'], ['مهدی قنبری', 'mahdi-ghanbari'],
    ['نشاط غلامی‌پور', 'neshat-gholamipour'], ['نگار تیموری', 'negar-teymouri'], ['نورا دهقان‌پور', 'nora-dehghanpour'],
-   ['مدیر هم‌نوا', 'arash-modir'], ['منشی هم‌نوا', 'nazanin-monshi'], ['آرش', 'arash-modir'], ['نازنین فتاحی', 'nazanin-monshi']
+   ['مدیر هم‌نوا', 'arash-modir'], ['منشی هم‌نوا', 'nazanin-monshi'], ['آرش', 'arash-modir'], ['نازنین', 'nazanin-monshi'], ['نازنین فتاحی', 'nazanin-monshi']
   ].forEach(function (p) { PORTRAIT[nkey(p[0])] = p[1]; });
 
   function avatar(name) {
