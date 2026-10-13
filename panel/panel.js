@@ -41,6 +41,27 @@
 
   var MARK = '<svg viewBox="0 0 84 84" fill="none" aria-hidden="true"><path d="M14 18 h56 a8 8 0 0 1 8 8 v28 a8 8 0 0 1 -8 8 h-30 l-16 14 v-14 h-10 a8 8 0 0 1 -8 -8 v-28 a8 8 0 0 1 8 -8 Z" fill="#3D6B61"/><rect x="28" y="34" width="6" height="14" rx="3" fill="#F1F4EF"/><rect x="39" y="28" width="6" height="26" rx="3" fill="#C2A06B"/><rect x="50" y="34" width="6" height="14" rx="3" fill="#FDFBF5"/></svg>';
   var VIDEO_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="14" height="12" rx="3"/><path d="M16 10l6-3v10l-6-3z"/></svg>';
+  var MARK_LIGHT = MARK.replace('fill="#3D6B61"', 'fill="#F5F1E6"').replace('fill="#F1F4EF"', 'fill="#3D6B61"').replace('fill="#C2A06B"', 'fill="#B78A46"').replace('fill="#FDFBF5"', 'fill="#3D6B61"');
+  var ICONS = {
+    mail: '<rect x="2" y="4" width="20" height="16" rx="3"/><path d="m22 7-10 6L2 7"/>',
+    lock: '<rect x="4" y="11" width="16" height="10" rx="3"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+    eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+    eyeoff: '<path d="M3 3l18 18"/><path d="M10.6 5.1A9.8 9.8 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.6 6.6C3.7 8.4 2 12 2 12s3.6 7 10 7a9.7 9.7 0 0 0 4-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
+    video: '<rect x="2" y="6" width="14" height="12" rx="3"/><path d="M16 10l6-3v10l-6-3z"/>',
+    calendar: '<rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+    plus: '<circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>',
+    users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>',
+    activity: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+    user: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+    logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+    key: '<circle cx="8" cy="15" r="4"/><path d="M10.8 12.2 21 2M16 7l3 3M14 9l2 2"/>',
+    bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',
+    check: '<path d="M20 6 9 17l-5-5"/>',
+    clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>'
+  };
+  function ico(name, cls) {
+    return svgEl('<svg class="ico' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONS[name] || '') + '</svg>');
+  }
   var nf = new Intl.NumberFormat('fa-IR');
   function n(x) { return nf.format(x); }                       // رقم فارسی
   function ltr(t) { return h('bdi', { dir: 'ltr', text: t }); }  // عبارت انگلیسی میان متن فارسی به‌هم نریزد
@@ -232,20 +253,42 @@
     return box;
   }
 
+  /* سلام، تاریخ شمسی و نقش — بالای صفحه، کنار عکس بزرگ */
+  function salute() {
+    try {
+      var hr = +new Intl.DateTimeFormat('en-US', { hour: 'numeric', hourCycle: 'h23', timeZone: 'Asia/Tehran' }).format(new Date());
+      return hr < 5 ? 'شب بخیر' : hr < 12 ? 'صبح بخیر' : hr < 17 ? 'ظهر بخیر' : hr < 20 ? 'عصر بخیر' : 'شب بخیر';
+    } catch (e) { return 'سلام'; }
+  }
+  function dateFa() {
+    try { return new Intl.DateTimeFormat('fa-IR-u-ca-persian', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Tehran' }).format(new Date()); }
+    catch (e) { return ''; }
+  }
+  function welcome(who) {
+    var role = S.profile && S.profile.role;
+    return h('section', { class: 'welcome' }, avatar(who),
+      h('div', { class: 'welcome__txt' },
+        h('p', { class: 'welcome__hi', text: salute() }),
+        h('h1', { class: 'welcome__name', text: who }),
+        h('p', { class: 'welcome__meta' }, role && ROLE_FA[role] ? h('span', { class: 'role', text: ROLE_FA[role] }) : null)),
+      h('div', { class: 'welcome__date' }, ico('calendar'), h('span', { text: dateFa() })));
+  }
+
   function shell(children) {
     var who = S.user ? ((S.profile && S.profile.full_name) || S.user.email) : '';
-    var head = h('header', { class: 'top' },
-      h('div', { class: 'brand' }, svgEl(MARK), h('div', null, h('b', { text: 'هم‌نوا' }), h('br'), h('span', { text: 'پنل مشاور' }))),
-      S.user ? h('div', { class: 'who' }, avatar(who), h('span', { class: 'who__name', text: who }),
-        S.profile ? h('button', { class: 'btn btn--small', type: 'button', text: 'تغییر رمز', onclick: function () { S.view = 'setpw'; S.canCancel = true; render(); } }) : null,
-        h('button', { class: 'btn btn--small', type: 'button', onclick: signOut, text: 'خروج' })) : null);
-    var nodes = [head];
+    var head = h('header', { class: 'top' }, h('div', { class: 'top__in' },
+      h('div', { class: 'brand' }, svgEl(MARK), h('div', null, h('b', { text: 'هم‌نوا' }), h('span', { text: 'پنل مشاور' }))),
+      S.user ? h('div', { class: 'top__acts' },
+        S.profile ? h('button', { class: 'ibtn', type: 'button', title: 'تغییر رمز', 'aria-label': 'تغییر رمز', onclick: function () { S.view = 'setpw'; S.canCancel = true; render(); } }, ico('key'), h('span', { class: 'ibtn__t', text: 'تغییر رمز' })) : null,
+        h('button', { class: 'ibtn ibtn--out', type: 'button', title: 'خروج', 'aria-label': 'خروج', onclick: signOut }, ico('logout'), h('span', { class: 'ibtn__t', text: 'خروج' }))) : null));
+    var nodes = [];
+    if (S.profile && S.profile.active) nodes.push(welcome(who));
     if (S.flash) nodes.push(h('div', { class: 'flash flash--' + S.flash.type, role: 'status', text: S.flash.text }));
     if (Date.now() > (S.flashUntil || 0)) S.flash = null;
     (Array.isArray(children) ? children : [children]).forEach(function (c) { if (c) nodes.push(c); });
     var inst = installCard();
     if (inst) nodes.push(inst);
-    app.replaceChildren.apply(app, nodes);
+    app.replaceChildren(head, h('div', { class: 'wrap' }, nodes));
   }
 
   /* ───────────── اعلان روی گوشی (Web Push) ───────────── */
@@ -361,42 +404,73 @@
   function render() {
     ({ loading: vLoading, login: vLogin, setpw: vSetPw, pending: vPending, counselor: vCounselor, staff: vStaff }[S.view] || vLoading)();
   }
-  function vLoading() { app.replaceChildren(h('p', { class: 'boot', text: 'در حال بارگذاری…' })); }
+  function vLoading() { app.replaceChildren(h('div', { class: 'boot' }, svgEl(MARK), h('p', { text: 'در حال بارگذاری…' }))); }
+
+  /* ───────────── ورود و ساخت رمز: چیدمان دو ستونی (روی گوشی: بنر بالا، فرم زیر) ───────────── */
+  var DECO = '<svg class="auth__deco" viewBox="0 0 400 400" fill="none" aria-hidden="true"><g stroke="#FDFBF5" stroke-opacity=".10"><circle cx="200" cy="200" r="60"/><circle cx="200" cy="200" r="110"/><circle cx="200" cy="200" r="160"/><circle cx="200" cy="200" r="210"/></g><g fill="#E8C486" fill-opacity=".55"><rect x="168" y="176" width="14" height="48" rx="7"/><rect x="193" y="150" width="14" height="100" rx="7"/><rect x="218" y="176" width="14" height="48" rx="7"/></g></svg>';
+  function authLayout(card, extra) {
+    var side = h('aside', { class: 'auth__side' },
+      svgEl(DECO),
+      h('div', { class: 'auth__brand' }, svgEl(MARK_LIGHT), h('b', { text: 'هم‌نوا' })),
+      h('div', { class: 'auth__copy' },
+        h('h1', { text: 'فضای کاری مشاوران هم‌نوا' }),
+        h('p', { text: 'جلسه‌ها، اتاق‌های مشاوره و هماهنگی تیم؛ همه در یک‌جا، ساده و امن.' }),
+        h('ul', { class: 'auth__points' }, [['video', 'ورود به اتاق مشاوره با یک لمس'], ['calendar', 'برنامهٔ جلسه‌ها و یادآوری به‌موقع'], ['bell', 'اعلان فوری روی گوشی برای منشی']].map(function (x) {
+          return h('li', null, h('span', { class: 'pt' }, ico(x[0])), x[1]);
+        }))),
+      h('p', { class: 'auth__foot', text: 'مشاورهٔ روان‌شناسی آنلاین ویژهٔ ایرانیان خارج از کشور' }));
+    app.replaceChildren(h('div', { class: 'auth' }, h('main', { class: 'auth__main' }, h('div', { class: 'auth__col' }, card, extra || null)), side));
+  }
+  function inpField(id, label, icon, input, toggle) {
+    return h('div', { class: 'field' }, h('label', { for: id, text: label }),
+      h('div', { class: 'inp' + (toggle ? ' inp--tg' : '') }, ico(icon, 'inp__ico'), input, toggle || null));
+  }
+  function pwToggle(input) {
+    var on = false, b = h('button', { class: 'pwtoggle', type: 'button', 'aria-label': 'نمایش رمز', 'aria-pressed': 'false' }, ico('eye'));
+    b.addEventListener('click', function () {
+      on = !on; input.type = on ? 'text' : 'password';
+      b.setAttribute('aria-pressed', on ? 'true' : 'false'); b.setAttribute('aria-label', on ? 'پنهان کردن رمز' : 'نمایش رمز');
+      b.replaceChildren(ico(on ? 'eyeoff' : 'eye')); input.focus();
+    });
+    return b;
+  }
 
   function vLogin() {
-    var email = h('input', { class: 'input', type: 'email', id: 'em', dir: 'ltr', autocomplete: 'username', required: true });
-    var pass = h('input', { class: 'input', type: 'password', id: 'pw', dir: 'ltr', autocomplete: 'current-password', required: true });
-    var btn = h('button', { class: 'btn btn--primary', type: 'submit', text: 'ورود' });
-    var form = h('form', { class: 'card login', onsubmit: function (e) {
-      e.preventDefault(); btn.disabled = true;
+    var email = h('input', { class: 'input', type: 'email', id: 'em', dir: 'ltr', autocomplete: 'username', required: true, placeholder: 'name@example.com', value: S.lastEmail || '' });
+    var pass = h('input', { class: 'input', type: 'password', id: 'pw', dir: 'ltr', autocomplete: 'current-password', required: true, placeholder: '••••••••••' });
+    var btn = h('button', { class: 'btn btn--primary btn--block', type: 'submit', text: 'ورود' });
+    var form = h('form', { class: 'authcard', onsubmit: function (e) {
+      e.preventDefault(); btn.disabled = true; btn.textContent = 'در حال ورود…'; S.lastEmail = email.value.trim();
       sb.auth.signInWithPassword({ email: email.value.trim(), password: pass.value }).then(function (r) {
         if (r.error) { btn.disabled = false; flash('err', explain(r.error)); return vLogin(); }
       });
     } },
-      h('div', { class: 'brand' }, svgEl(MARK), h('b', { text: 'هم‌نوا' })),
-      h('h2', { class: 'center', text: 'ورود مشاورها' }),
-      S.flash ? h('div', { class: 'flash flash--' + S.flash.type, text: S.flash.text }) : null,
-      h('div', { class: 'field' }, h('label', { for: 'em', text: 'ایمیل' }), email),
-      h('div', { class: 'field' }, h('label', { for: 'pw', text: 'رمز عبور' }), pass),
-      h('div', { class: 'actions' }, btn,
-        h('button', { class: 'btn btn--small', type: 'button', text: 'رمزم را فراموش کرده‌ام', onclick: function () {
-          if (!email.value.trim()) { flash('info', 'اول ایمیل را بنویسید.'); return vLogin(); }
-          sb.auth.resetPasswordForEmail(email.value.trim(), { redirectTo: location.origin + location.pathname }).then(function (r) {
-            flash(r.error ? 'err' : 'ok', r.error ? explain(r.error) : 'اگر این ایمیل ثبت شده باشد، لینک تغییر رمز برایش فرستاده شد. پوشهٔ اسپم را هم نگاه کنید.');
-            vLogin();
-          });
-        } })),
-      h('p', { class: 'hint', text: 'ثبت‌نام آزاد وجود ندارد. حساب شما را هم‌نوا می‌سازد و دعوت‌نامه به ایمیلتان می‌رسد.' }),
-      h('p', { class: 'hint center' }, h('a', { href: '../', text: '← بازگشت به سایت هم‌نوا' })));
+      h('div', { class: 'authcard__head' }, h('h2', { text: 'ورود به پنل' }), h('p', { class: 'hint', text: 'با ایمیل و رمز عبور خود وارد شوید.' })),
+      S.flash ? h('div', { class: 'flash flash--' + S.flash.type, role: 'status', text: S.flash.text }) : null,
+      inpField('em', 'ایمیل', 'mail', email),
+      inpField('pw', 'رمز عبور', 'lock', pass, pwToggle(pass)),
+      h('div', { class: 'authcard__row' }, h('button', { class: 'linkbtn', type: 'button', text: 'رمزم را فراموش کرده‌ام', onclick: function () {
+        if (!email.value.trim()) { flash('info', 'اول ایمیل را بنویسید.'); return vLogin(); }
+        S.lastEmail = email.value.trim();
+        sb.auth.resetPasswordForEmail(email.value.trim(), { redirectTo: location.origin + location.pathname }).then(function (r) {
+          flash(r.error ? 'err' : 'ok', r.error ? explain(r.error) : 'اگر این ایمیل ثبت شده باشد، لینک تغییر رمز برایش فرستاده شد. پوشهٔ اسپم را هم نگاه کنید.');
+          vLogin();
+        });
+      } })),
+      btn,
+      h('p', { class: 'hint authcard__note', text: 'ثبت‌نام آزاد وجود ندارد. حساب شما را هم‌نوا می‌سازد و دعوت‌نامه به ایمیلتان می‌رسد.' }),
+      h('p', { class: 'authcard__back' }, h('a', { href: '../', text: '← بازگشت به سایت هم‌نوا' })));
     S.flash = null;
     var inst = installCard();
-    if (inst) { inst.classList.add('login'); app.replaceChildren(form, inst); } else app.replaceChildren(form);
+    if (inst) inst.classList.add('install--auth');
+    authLayout(form, inst);
+    if (window.innerWidth >= 860 && !S.lastEmail) email.focus();
   }
 
   function vSetPw() {
-    var p1 = h('input', { class: 'input', type: 'password', dir: 'ltr', autocomplete: 'new-password', minlength: 10, required: true });
-    var p2 = h('input', { class: 'input', type: 'password', dir: 'ltr', autocomplete: 'new-password', minlength: 10, required: true });
-    var form = h('form', { class: 'card login', onsubmit: function (e) {
+    var p1 = h('input', { class: 'input', type: 'password', id: 'np1', dir: 'ltr', autocomplete: 'new-password', minlength: 10, required: true, placeholder: 'دست‌کم ۱۰ نویسه' });
+    var p2 = h('input', { class: 'input', type: 'password', id: 'np2', dir: 'ltr', autocomplete: 'new-password', minlength: 10, required: true });
+    var form = h('form', { class: 'authcard', onsubmit: function (e) {
       e.preventDefault();
       if (p1.value !== p2.value) { flash('err', 'دو رمز یکی نیستند.'); return vSetPw(); }
       if (p1.value.length < 10) { flash('err', 'رمز باید دست‌کم ۱۰ نویسه باشد.'); return vSetPw(); }
@@ -408,15 +482,15 @@
         loadProfile();
       });
     } },
-      h('div', { class: 'brand' }, svgEl(MARK), h('b', { text: 'هم‌نوا' })),
-      h('h2', { class: 'center', text: S.canCancel ? 'رمز عبور تازه' : 'رمز عبور خود را بسازید' }),
-      S.flash ? h('div', { class: 'flash flash--' + S.flash.type, text: S.flash.text }) : null,
-      h('div', { class: 'field' }, h('label', { text: 'رمز جدید (دست‌کم ۱۰ نویسه)' }), p1),
-      h('div', { class: 'field' }, h('label', { text: 'تکرار رمز' }), p2),
-      h('div', { class: 'actions' }, h('button', { class: 'btn btn--primary', type: 'submit', text: 'ذخیره و ورود' }),
-        S.canCancel ? h('button', { class: 'btn', type: 'button', text: 'انصراف', onclick: function () { S.canCancel = false; S.view = 'ready'; S.profile = null; loadProfile(); } }) : null));
+      h('div', { class: 'authcard__head' }, h('h2', { text: S.canCancel ? 'رمز عبور تازه' : 'رمز عبور خود را بسازید' }),
+        h('p', { class: 'hint', text: S.canCancel ? 'رمز تازه جایگزین رمز فعلی می‌شود.' : 'این رمز را برای ورودهای بعدی نگه دارید.' })),
+      S.flash ? h('div', { class: 'flash flash--' + S.flash.type, role: 'status', text: S.flash.text }) : null,
+      inpField('np1', 'رمز جدید (دست‌کم ۱۰ نویسه)', 'lock', p1, pwToggle(p1)),
+      inpField('np2', 'تکرار رمز', 'lock', p2, pwToggle(p2)),
+      h('button', { class: 'btn btn--primary btn--block', type: 'submit', text: 'ذخیره و ورود' }),
+      S.canCancel ? h('button', { class: 'btn btn--block btn--ghost', type: 'button', text: 'انصراف', onclick: function () { S.canCancel = false; S.view = 'ready'; S.profile = null; loadProfile(); } }) : null);
     S.flash = null;
-    app.replaceChildren(form);
+    authLayout(form);
   }
 
   function vPending() {
@@ -468,7 +542,7 @@
     var live = s.status === 'scheduled' && inWindow(s);
     var due = s.status === 'scheduled' && new Date(s.starts_at).getTime() <= Date.now() + 15 * 60000;
     var ok = s.status === 'done';
-    var card = h('div', { class: 's' + (live ? ' s--live' : '') },
+    var card = h('div', { class: 's' + (live ? ' s--live' : '') + (ok ? ' s--done' : (!live && s.status !== 'scheduled' ? ' s--warn' : '')) },
       h('div', { class: 's__head' },
         h('div', { class: 's__time' }, dayJ(s.starts_at), h('small', null, ltr(dayG(s.starts_at)), ' · ساعت ' + timeOf(s.starts_at) + ' — ' + n(s.duration_min) + ' دقیقه (به وقت ایران)')),
         h('div', { class: 'chips' },
@@ -518,7 +592,14 @@
         h('button', { class: 'btn btn--small', type: 'button', text: 'بستن', onclick: function () { S.room = null; render(); } })));
     }
 
-    return [hero, roomLinkCard(hasLink), pushCard(),
+    var today = tehranDateInput(0), cut = now - 30 * 86400000;
+    var stats = h('div', { class: 'stats' }, [
+      ['clock', all.filter(function (s) { return s.status === 'scheduled' && tehranISO(s.starts_at) === today; }).length, 'جلسهٔ امروز'],
+      ['calendar', upcoming.length, 'جلسهٔ پیش‌رو'],
+      ['check', all.filter(function (s) { return s.status === 'done' && new Date(s.starts_at).getTime() >= cut; }).length, 'انجام‌شده، ۳۰ روز اخیر']
+    ].map(function (x) { return h('div', { class: 'stat' }, h('span', { class: 'stat__ic' }, ico(x[0])), h('div', null, h('b', { text: n(x[1]) }), h('span', { text: x[2] }))); }));
+
+    return [hero, stats, roomLinkCard(hasLink), pushCard(),
       h('section', { class: 'card' }, h('h2', { text: 'جلسه‌های پیش‌رو' }),
         upcoming.length ? groupByDay(upcoming) : h('p', { class: 'empty', text: 'جلسه‌ای در پیش نیست.' })),
       h('section', { class: 'card' }, h('h2', { text: 'جلسه‌های گذشته' }),
@@ -773,10 +854,16 @@
     if (S.profile.takes_sessions) tabList.push(['mine', 'جلسه‌های من']);
     var tabs = h('div', { class: 'tabs', role: 'tablist' }, tabList.map(function (t) {
       return h('button', { class: 'tab', role: 'tab', 'aria-selected': S.tab === t[0] ? 'true' : 'false', onclick: function () { S.tab = t[0]; if (t[0] !== 'new') S.booked = null; if (t[0] === 'mine') loadCounselor(); if (t[0] === 'monitor') loadMonitor(); render(); } },
-        t[1], t[0] === 'board' ? h('span', { class: 'badge', id: 'boardBadge', text: open ? n(open) : '' }) : null);
+        ico({ board: 'video', sessions: 'calendar', 'new': 'plus', people: 'users', monitor: 'activity', mine: 'user' }[t[0]] || 'calendar'),
+        h('span', { text: t[1] }), t[0] === 'board' ? h('span', { class: 'badge', id: 'boardBadge', text: open ? n(open) : '' }) : null);
     }));
     var body = S.tab === 'board' ? tBoard() : S.tab === 'new' ? tNew() : S.tab === 'people' ? tPeople() : S.tab === 'mine' ? h('div', null, counselorBody()) : S.tab === 'monitor' ? tMonitor() : tSessions();
     shell([tabs, body]);
+    // روی گوشی نوار تب‌ها افقی اسکرول می‌شود؛ تب انتخاب‌شده باید دیده شود
+    setTimeout(function () {
+      var sel = document.querySelector('.tab[aria-selected="true"]');
+      if (sel && sel.scrollIntoView) sel.scrollIntoView({ inline: 'center', block: 'nearest' });
+    }, 0);
   }
 
   /* ───────────── اتاق‌های باز: مشاور دکمه را می‌زند، منشی همان لحظه می‌بیند ───────────── */
