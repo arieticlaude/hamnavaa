@@ -174,6 +174,7 @@
     if (/not confirmed/i.test(m)) return 'ایمیل هنوز تأیید نشده است.';
     if (/rate limit|too many/i.test(m)) return 'تلاش‌ها زیاد بود. چند دقیقه بعد دوباره امتحان کنید.';
     if (/not due yet|not found/i.test(m)) return 'جلسه پیدا نشد یا هنوز وقتش نشده است.';
+    if (/profiles_phone_check/i.test(m)) return 'شماره معتبر نیست. فقط رقم، فاصله و + بنویسید.';
     if (/invalid meet/i.test(m)) return 'لینک Meet معتبر نیست. باید شبیه meet.google.com/abc-defg-hij باشد.';
     if (/weak|at least/i.test(m)) return 'رمز عبور باید قوی‌تر باشد.';
     if (/failed to fetch|network|load failed/i.test(m)) return 'اتصال به سرور برقرار نشد. اینترنت را بررسی کنید.';
@@ -887,6 +888,24 @@
     if (p && p.meet_url) lines.push(p.meet_url);
     return lines.join('\n');
   }
+  function counselorText(s, p, moved) {
+    var lines = ['سلام ' + ((p && p.full_name) || '') + ' 🌿', moved ? 'زمان یکی از جلسه‌های شما عوض شد:' : 'یک جلسهٔ تازه برای شما رزرو شد:',
+      'زمان: ' + dayOf(s.starts_at) + '، ساعت ' + timeOf(s.starts_at) + ' (به وقت ایران)',
+      'مدت: ' + n(s.duration_min) + ' دقیقه',
+      'نوع: ' + (s.kind === 'intro' ? 'جلسهٔ رایگان پیش‌مشاوره' : 'جلسهٔ مشاوره') + ' — ' + (s.mode === 'audio' ? 'تماس صوتی' : 'تماس تصویری'),
+      'مراجع: ' + s.client_label];
+    lines.push(p && !p.no_login ? 'سر وقت از دکمهٔ «ورود به اتاق مشاوره» در پنل هم‌نوا وارد شوید.' : 'سر وقت لینک اتاق خودتان را باز کنید و مراجع را بپذیرید.');
+    return lines.join('\n');
+  }
+  function sendToCounselor(s, p, moved) { window.open(waLink(phoneDigits(p.phone), counselorText(s, p, moved)), '_blank', 'noopener'); }
+  // ستون phone با migration-10 اضافه می‌شود؛ تا آن موقع هیچ دکمه یا فیلدی دربارهٔ آن نشان داده نمی‌شود
+  function phoneCol() { return (S.data.profiles || []).some(function (x) { return 'phone' in x; }); }
+  function counselorBtns(s, p, moved, big) {
+    if (!phoneCol() || !p) return null;
+    return p.phone
+      ? h('button', { class: big ? 'btn btn--wa btn--block' : 'btn btn--wa btn--small', type: 'button', text: big ? 'خبر دادن به مشاور (واتساپ)' : 'خبر به مشاور', onclick: function () { sendToCounselor(s, p, moved); } })
+      : (big ? h('p', { class: 'hint', text: 'شمارهٔ واتساپ این مشاور ثبت نشده؛ در تب «مشاورها» ثبتش کنید تا پیام آماده برایش بفرستید.' }) : null);
+  }
   function sendConfirm(s, p, phone) { window.open(waLink(phoneDigits(phone), confirmText(s, p)), '_blank', 'noopener'); }
   function sendReminder(s, p, phone) { window.open(waLink(phoneDigits(phone), reminderText(s, p)), '_blank', 'noopener'); }
   function sendToClient(s, p, phone) { window.open(waLink(phoneDigits(phone), clientText(s, p)), '_blank', 'noopener'); }
@@ -1004,6 +1023,7 @@
         h('p', { class: 'hint' }, nameOf(S.moved.s.counselor_id) + ' — ' + S.moved.s.client_label + ' — ', dayNode(S.moved.s.starts_at), '، ساعت ' + timeOf(S.moved.s.starts_at)),
         S.moved.phone ? h('button', { class: 'room-btn', type: 'button', onclick: function () { sendConfirm(S.moved.s, mp, S.moved.phone); } }, h('span', { text: 'اطلاع زمان تازه به مراجع (واتساپ)' }))
           : h('p', { class: 'hint', text: 'شمارهٔ مراجع ثبت نشده؛ زمان تازه را خودتان به او خبر بدهید.' }),
+        counselorBtns(S.moved.s, mp, true, true),
         h('div', { class: 'actions' }, h('button', { class: 'btn btn--small', type: 'button', text: 'بستن', onclick: function () { S.moved = null; render(); } })));
     }
     return h('div', null, moved, h('section', { class: 'card' }, h('h2', { text: 'جلسه‌ها' }),
@@ -1028,6 +1048,7 @@
       acts.appendChild(h('button', { class: 'btn btn--wa btn--small', type: 'button', text: 'ارسال تأیید', onclick: function () { sendConfirm(s, p, phone); } }));
       if (s.status === 'scheduled') acts.appendChild(h('button', { class: 'btn btn--wa btn--small', type: 'button', text: 'یادآوری', onclick: function () { sendReminder(s, p, phone); } }));
     } else acts.appendChild(h('span', { class: 'chip', text: 'شمارهٔ مراجع ثبت نشده' }));
+    if (s.status === 'scheduled') { var cb = counselorBtns(s, p, false, false); if (cb) acts.appendChild(cb); }
     if (!p || !p.meet_url) acts.appendChild(h('span', { class: 'chip chip--warn', text: 'مشاور هنوز لینک اتاق ثبت نکرده' }));
     if (s.status === 'scheduled') acts.appendChild(h('button', { class: 'btn btn--small', type: 'button', text: S.resched === s.id ? 'بستن' : 'تغییر زمان', onclick: function () { S.resched = S.resched === s.id ? null : s.id; render(); } }));
     acts.appendChild(h('button', { class: 'btn btn--danger btn--small', type: 'button', text: 'حذف', onclick: function () {
@@ -1133,6 +1154,7 @@
         S.booked.phone
           ? h('button', { class: 'room-btn', type: 'button', onclick: function () { sendConfirm(bs, bp, S.booked.phone); } }, h('span', { text: 'ارسال تأیید به مراجع (واتساپ)' }))
           : h('p', { class: 'hint', text: 'شمارهٔ مراجع ثبت نشد؛ بعداً از تب «جلسه‌ها» می‌توانید تأیید بفرستید.' }),
+        counselorBtns(bs, bp, false, true),
         bp && bp.meet_url ? null : h('p', { class: 'hint', text: 'توجه: این مشاور هنوز لینک اتاق ثبت نکرده؛ پیام بدون لینک می‌رود.' }),
         h('div', { class: 'actions' }, h('button', { class: 'btn btn--small', type: 'button', text: 'ثبت جلسهٔ دیگر', onclick: function () { S.booked = null; render(); } })));
     }
@@ -1148,10 +1170,14 @@
         [['counselor', 'مشاور'], ['secretary', 'منشی'], ['admin', 'مدیر']].map(function (r) { return h('option', { value: r[0], text: r[1], selected: p.role === r[0] }); }));
       var name = h('input', { class: 'input', value: p.full_name || '', disabled: !isAdmin, 'aria-label': 'نام', onchange: function (e) { upd(p.id, { full_name: e.target.value.trim() }); } });
       var guest = p.no_login ? guestBlock(p, isAdmin) : null;
+      var wa = isProvider(p) && phoneCol() ? h('div', { class: 'field' }, h('label', { text: 'شمارهٔ واتساپ (برای خبر دادن جلسهٔ تازه؛ فقط منشی و مدیر می‌بینند)' }),
+        h('input', { class: 'input', dir: 'ltr', value: p.phone || '', placeholder: '+1 647 000 0000  یا  0912…', disabled: !isAdmin, 'aria-label': 'شمارهٔ واتساپ',
+          onchange: function (e) { upd(p.id, { phone: e.target.value.trim() || null }); } })) : null;
       var takes = p.role === 'counselor' ? null : h('label', null, h('input', { type: 'checkbox', checked: !!p.takes_sessions, disabled: !isAdmin, 'aria-label': 'جلسه می‌گیرد', onchange: function (e) { upd(p.id, { takes_sessions: e.target.checked }); } }), ' خودش هم جلسه می‌گیرد (مشاور است)');
       return h('div', { class: 's' }, name,
-        h('div', { class: 'row' }, role, h('label', null, active, ' فعال')), takes, guest,
-        h('div', { class: 'chips' }, h('span', { class: 'chip ' + (p.meet_url ? 'chip--ok' : 'chip--warn'), text: p.meet_url ? 'لینک اتاق ثبت شده' : 'لینک اتاق ندارد' })));
+        h('div', { class: 'row' }, role, h('label', null, active, ' فعال')), takes, wa, guest,
+        h('div', { class: 'chips' }, h('span', { class: 'chip ' + (p.meet_url ? 'chip--ok' : 'chip--warn'), text: p.meet_url ? 'لینک اتاق ثبت شده' : 'لینک اتاق ندارد' }),
+          isProvider(p) && phoneCol() ? h('span', { class: 'chip ' + (p.phone ? 'chip--ok' : 'chip--warn'), text: p.phone ? 'شمارهٔ واتساپ ثبت شده' : 'شمارهٔ واتساپ ندارد' }) : null));
     });
     return h('section', { class: 'card' }, h('h2', { text: 'مشاورها و کارکنان' }),
       h('p', { class: 'hint' }, 'برای دعوت یک مشاور جدید: در داشبورد ', ltr('Supabase'), ' بخش ', ltr('Authentication'), ' ← ', ltr('Users'), ' ← ', ltr('Invite user'), ' را بزنید. بعد از اولین ورودش، این‌جا فعالش کنید. اگر مدیر یا منشی خودش مشاور هم هست، گزینهٔ «خودش هم جلسه می‌گیرد» را بزنید تا در فهرست مشاورهای ثبت جلسه بیاید.'),
