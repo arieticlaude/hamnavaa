@@ -225,7 +225,7 @@
     var f = PORTRAIT[nkey(name)], ini = nkey(name).charAt(0) || '؟';
     var box = h('span', { class: 'avatar', 'aria-hidden': 'true' });
     if (f) {
-      var img = h('img', { src: '../assets/img/' + f + '-portrait.webp', alt: '', width: '40', height: '40', decoding: 'async' });
+      var img = h('img', { src: '../assets/img/' + f + '-portrait.webp', alt: '', width: '64', height: '64', decoding: 'async' });
       img.addEventListener('error', function () { img.remove(); box.textContent = ini; });   // عکس نیامد: حرف اول اسم
       box.appendChild(img);
     } else box.textContent = ini;
