@@ -337,3 +337,4 @@ button,input,select{font:inherit;color:inherit}
 .logrow{border-bottom-color:var(--line)}
 .agenda{padding:16px 18px}
 ::selection{background:rgba(183,138,70,.3)}
+.hero .btn--block{margin-top:12px}
