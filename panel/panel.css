@@ -338,3 +338,7 @@ button,input,select{font:inherit;color:inherit}
 .agenda{padding:16px 18px}
 ::selection{background:rgba(183,138,70,.3)}
 .hero .btn--block{margin-top:12px}
+
+.sendpair{display:grid;gap:12px;margin-top:16px}
+.sendpair .room-btn{margin-top:0;animation:none;font-size:20px;padding:18px}
+.sendpair .is-sent{min-height:56px;font-size:16px}
