@@ -277,8 +277,8 @@
         h('p', { class: 'welcome__meta' },
           role && ROLE_FA[role] ? h('span', { class: 'role', text: ROLE_FA[role] }) : null,
           h('span', { class: 'welcome__date welcome__date--in' }, ico('calendar'), h('span', { text: dateFa() })))),
-      h('p', { class: 'welcome__tag', text: 'مشاورهٔ روان‌شناسی آنلاین ویژهٔ ایرانیان خارج از کشور' }),
-      h('div', { class: 'welcome__art', 'aria-hidden': 'true' }, h('div', { class: 'auth__glow' }), h('div', { class: 'auth__orbit auth__orbit--a' }), h('div', { class: 'auth__orbit auth__orbit--b' }), logo));
+      h('div', { class: 'welcome__art', 'aria-hidden': 'true' }, h('div', { class: 'auth__glow' }), h('div', { class: 'auth__orbit auth__orbit--a' }), h('div', { class: 'auth__orbit auth__orbit--b' }), logo),
+      h('p', { class: 'welcome__tag', text: 'مشاورهٔ روان‌شناسی آنلاین ویژهٔ ایرانیان خارج از کشور' }));
     sec.appendChild(h('span', { class: 'welcome__date welcome__date--row' }, ico('calendar'), h('span', { text: dateFa() })));
     tilt3d(logo, sec);
     return sec;
