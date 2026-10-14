@@ -72,11 +72,10 @@ button,input,select{font:inherit;color:inherit}
 .welcome .avatar{width:84px;height:84px;font-size:34px;border:3px solid rgba(232,196,134,.95);box-shadow:0 0 0 6px rgba(255,255,255,.07),0 16px 34px -14px rgba(0,0,0,.65)}
 .welcome__hi{font-size:14px;color:var(--gold-light);font-weight:600}
 .welcome__name{font-family:'Markazi Text',serif;font-size:40px;line-height:1.1;font-weight:600;margin:2px 0 8px}
-.welcome__date{margin-inline-start:auto;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:12px;font-size:13.5px;font-weight:600;color:rgba(253,251,245,.92);background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16)}
-.welcome__date .ico{width:17px;height:17px;color:var(--gold-light)}
+.welcome__date{display:inline-flex;align-items:center;gap:8px;padding:3px 12px;border-radius:999px;font-size:13px;font-weight:600;color:rgba(253,251,245,.92);background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16)}
+.welcome__date .ico{width:15px;height:15px;color:var(--gold-light)}
 .welcome__meta{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:13.5px;color:rgba(253,251,245,.84)}
 .role{display:inline-flex;align-items:center;border-radius:999px;padding:1px 13px;font-size:12.5px;font-weight:700;background:rgba(232,196,134,.16);border:1px solid rgba(232,196,134,.45);color:var(--gold-light)}
-@media (max-width:560px){.welcome{flex-wrap:wrap;padding:18px;gap:14px;border-radius:20px;margin:0 0 14px}.welcome__date{margin-inline-start:0;flex-basis:100%;justify-content:flex-start;padding:7px 12px}.welcome .avatar{width:68px;height:68px;font-size:28px}.welcome__name{font-size:30px}}
 
 /* ───────── surfaces ───────── */
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:22px;box-shadow:var(--shadow);margin-bottom:18px}
@@ -381,3 +380,23 @@ button,input,select{font:inherit;color:inherit}
 .sendpair{display:grid;gap:12px;margin-top:16px}
 .sendpair .room-btn{margin-top:0;animation:none;font-size:20px;padding:18px}
 .sendpair .is-sent{min-height:56px;font-size:16px}
+
+/* لوگوی سه‌بعدی داخل بنر خوش‌آمد */
+.welcome{min-height:176px}
+.welcome::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.55;background-image:linear-gradient(rgba(253,251,245,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(253,251,245,.05) 1px,transparent 1px);background-size:38px 38px;-webkit-mask-image:radial-gradient(ellipse at 22% 50%,#000 10%,transparent 70%);mask-image:radial-gradient(ellipse at 22% 50%,#000 10%,transparent 70%)}
+.welcome__txt{min-width:0}
+.welcome__tag{flex:1;align-self:center;text-align:center;max-width:340px;margin-inline:auto;padding-inline:24px;font-family:'Markazi Text',serif;font-size:27px;line-height:1.25;font-weight:500;color:rgba(253,251,245,.82);text-wrap:balance;border-inline:1px solid rgba(232,196,134,.28)}
+.welcome__art{--s:168px;position:relative;flex:none;width:var(--s);height:var(--s);margin-block:-10px;margin-inline-end:6px;display:grid;place-items:center;perspective:760px}
+.welcome__art .auth__orbit--a{width:calc(var(--s)*1.5);height:calc(var(--s)*1.5)}
+.welcome__art .auth__orbit--b{width:calc(var(--s)*2.1);height:calc(var(--s)*2.1)}
+.welcome__date--row{display:none}
+@media (max-width:900px){.welcome__tag{display:none}.welcome__art{margin-inline-start:auto}}
+@media (max-width:560px){
+  .welcome{flex-wrap:wrap;padding:18px 16px 16px;gap:12px;border-radius:20px;margin:0 0 14px;min-height:0}
+  .welcome .avatar{width:64px;height:64px;font-size:26px}
+  .welcome__name{font-size:28px;margin-bottom:0}
+  .welcome__date--in{display:none}
+  .welcome__date--row{display:inline-flex;flex-basis:100%;justify-content:flex-start;border-radius:12px;padding:6px 12px}
+  .welcome__art{--s:104px;position:absolute;inset-inline-end:6px;top:6px;margin:0}
+  .welcome__txt{padding-inline-end:100px;flex:1}
+}

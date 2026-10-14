@@ -262,17 +262,26 @@
     } catch (e) { return 'سلام'; }
   }
   function dateFa() {
-    try { return new Intl.DateTimeFormat('fa-IR-u-ca-persian', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Tehran' }).format(new Date()); }
-    catch (e) { return ''; }
+    try {
+      var parts = new Intl.DateTimeFormat('fa-IR-u-ca-persian', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Tehran' }).formatToParts(new Date()), o = {};
+      parts.forEach(function (x) { o[x.type] = x.value; });
+      return o.weekday + ' ' + o.day + ' ' + o.month + ' ' + o.year;
+    } catch (e) { return ''; }
   }
   function welcome(who) {
-    var role = S.profile && S.profile.role;
-    return h('section', { class: 'welcome' }, avatar(who),
+    var role = S.profile && S.profile.role, logo = logo3d();
+    var sec = h('section', { class: 'welcome' }, avatar(who),
       h('div', { class: 'welcome__txt' },
         h('p', { class: 'welcome__hi', text: salute() }),
         h('h1', { class: 'welcome__name', text: who }),
-        h('p', { class: 'welcome__meta' }, role && ROLE_FA[role] ? h('span', { class: 'role', text: ROLE_FA[role] }) : null)),
-      h('div', { class: 'welcome__date' }, ico('calendar'), h('span', { text: dateFa() })));
+        h('p', { class: 'welcome__meta' },
+          role && ROLE_FA[role] ? h('span', { class: 'role', text: ROLE_FA[role] }) : null,
+          h('span', { class: 'welcome__date welcome__date--in' }, ico('calendar'), h('span', { text: dateFa() })))),
+      h('p', { class: 'welcome__tag', text: 'مشاورهٔ روان‌شناسی آنلاین ویژهٔ ایرانیان خارج از کشور' }),
+      h('div', { class: 'welcome__art', 'aria-hidden': 'true' }, h('div', { class: 'auth__glow' }), h('div', { class: 'auth__orbit auth__orbit--a' }), h('div', { class: 'auth__orbit auth__orbit--b' }), logo));
+    sec.appendChild(h('span', { class: 'welcome__date welcome__date--row' }, ico('calendar'), h('span', { text: dateFa() })));
+    tilt3d(logo, sec);
+    return sec;
   }
 
   function shell(children) {
@@ -458,14 +467,14 @@
     scope.addEventListener('pointermove', move);
     scope.addEventListener('pointerdown', move);
     scope.addEventListener('pointerleave', function () { has = false; });
-    (function tick(now) {
+    requestAnimationFrame(function tick(now) {
       if (!root.isConnected) return;
       var t = (now - t0) / 1000, ty, tx;
       if (has) { ty = -30 + Math.max(-.5, Math.min(.5, px - .5)) * 52; tx = -10 - (py - .5) * 38; }
       else { ty = -30 + Math.sin(t * .75) * 20; tx = -10 + Math.sin(t * .95 + 1) * 5; }
       cx += (tx - cx) * .07; cy += (ty - cy) * .07; pose();
       requestAnimationFrame(tick);
-    })(t0);
+    });
   }
   var AUTH_SPARKS = [[12, 22, 7, 0], [84, 16, 5, 1.4], [20, 74, 6, 2.2], [78, 70, 8, .7], [50, 8, 4, 3], [92, 46, 4, 2.6], [6, 50, 5, 1.9]];
   function authLayout(card, extra) {
