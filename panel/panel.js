@@ -277,7 +277,7 @@
         h('p', { class: 'welcome__meta' },
           role && ROLE_FA[role] ? h('span', { class: 'role', text: ROLE_FA[role] }) : null,
           h('span', { class: 'welcome__date welcome__date--in' }, ico('calendar'), h('span', { text: dateFa() })))),
-      h('div', { class: 'welcome__art', 'aria-hidden': 'true' }, h('div', { class: 'auth__glow' }), h('div', { class: 'auth__orbit auth__orbit--a' }), h('div', { class: 'auth__orbit auth__orbit--b' }), logo),
+      h('div', { class: 'welcome__art', 'aria-hidden': 'true' }, h('div', { class: 'auth__glow', 'data-per': '6' }), h('div', { class: 'auth__orbit auth__orbit--a', 'data-per': '26' }), h('div', { class: 'auth__orbit auth__orbit--b', 'data-per': '40' }), logo),
       h('p', { class: 'welcome__tag', text: 'مشاورهٔ روان‌شناسی آنلاین ویژهٔ ایرانیان خارج از کشور' }));
     sec.appendChild(h('span', { class: 'welcome__date welcome__date--row' }, ico('calendar'), h('span', { text: dateFa() })));
     tilt3d(logo, sec);
@@ -442,37 +442,47 @@
     }
     // رویهٔ حباب + لبهٔ براق + جلوهٔ نور
     out.push(ly(0, DEFS + '<path d="' + L3_BUB + '" fill="url(#l3Face)"/><path d="' + L3_BUB + '" stroke="url(#l3Rim)" stroke-width="1.1" stroke-linejoin="round"/>'
-      + '<g clip-path="url(#l3Clip)"><g transform="rotate(24 42 42)"><rect class="l3d__sheen" x="-30" y="-20" width="26" height="130" fill="url(#l3Sheen)"/></g></g>'));
+      + '<g clip-path="url(#l3Clip)"><g transform="rotate(24 42 42)"><rect x="6" y="-20" width="12" height="130" fill="url(#l3Sheen)" opacity=".5"/></g></g>'));
     // سایهٔ نرم میله‌ها روی رویهٔ حباب
-    out.push(ly(0.4, '<g filter="url(#l3Blur)" fill="#163932" fill-opacity=".34"><rect x="29.4" y="36" width="6" height="14" rx="3"/><rect x="40.4" y="30" width="6" height="26" rx="3"/><rect x="51.4" y="36" width="6" height="14" rx="3"/></g>'));
+    out.push(ly(0.9, '<g filter="url(#l3Blur)" fill="#163932" fill-opacity=".34"><rect x="29.4" y="36" width="6" height="14" rx="3"/><rect x="40.4" y="30" width="6" height="26" rx="3"/><rect x="51.4" y="36" width="6" height="14" rx="3"/></g>'));
     // میله‌ها: چند لایه، بالاترین لایه با گرادیان
     for (var j = 1; j <= LIFT; j++) {
       var top = j === LIFT, t = (j - 1) / (LIFT - 1);
       var ct = top ? 'url(#l3Teal)' : mix('#1D463F', '#2F6359', t), cg = top ? 'url(#l3Gold)' : mix('#8A6B39', '#C2994F', t);
-      out.push(ly(j + 0.5, '<rect x="28" y="34" width="6" height="14" rx="3" fill="' + ct + '"/><rect x="39" y="28" width="6" height="26" rx="3" fill="' + cg + '"/><rect x="50" y="34" width="6" height="14" rx="3" fill="' + ct + '"/>'));
+      out.push(ly(j + 1.2, '<rect x="28" y="34" width="6" height="14" rx="3" fill="' + ct + '"/><rect x="39" y="28" width="6" height="26" rx="3" fill="' + cg + '"/><rect x="50" y="34" width="6" height="14" rx="3" fill="' + ct + '"/>'));
     }
     var root = document.createElement('div');
     root.className = 'l3d';
     root.setAttribute('role', 'img');
     root.setAttribute('aria-label', 'لوگوی هم‌نوا');
-    root.innerHTML = '<div class="l3d__shadow"></div><div class="l3d__body">' + out.join('') + '</div>';
+    root.setAttribute('data-per', '6');
+    root.innerHTML = '<div class="l3d__shadow" data-per="6"></div><div class="l3d__body">' + out.join('') + '</div>';
     return root;
   }
+  /* حالتِ چرخش بین بازسازی‌های صفحه حفظ می‌شود (پنل هر چند ثانیه صفحه را تازه می‌کند)؛
+     وگرنه لوگو هر بار به حالت اول می‌پرید. فاز انیمیشن‌های CSS هم از ساعت مشترک می‌آید. */
+  var POSE = { cx: -10, cy: -30, px: .5, py: .5, has: false }, PHASE0 = performance.now();
+  function phase(root, period) { return '-' + (((performance.now() - PHASE0) / 1000) % period).toFixed(2) + 's'; }
+  function syncPhases(root) {
+    root.querySelectorAll('[data-per]').forEach(function (el) { el.style.animationDelay = phase(root, parseFloat(el.getAttribute('data-per'))); });
+  }
   function tilt3d(root, scope) {
-    var body = root.querySelector('.l3d__body'), cx = -10, cy = -30, px = .5, py = .5, has = false, t0 = performance.now();
-    function pose() { body.style.transform = 'rotateX(' + cx.toFixed(2) + 'deg) rotateY(' + cy.toFixed(2) + 'deg)'; }
+    var body = root.querySelector('.l3d__body');
+    function pose() { body.style.transform = 'rotateX(' + POSE.cx.toFixed(2) + 'deg) rotateY(' + POSE.cy.toFixed(2) + 'deg)'; }
     pose();
+    var host = scope.querySelector('.welcome__art, .auth__stage') || scope;
+    syncPhases(host); syncPhases(root); root.style.animationDelay = phase(root, 6);
     if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    function move(e) { var r = scope.getBoundingClientRect(); px = (e.clientX - r.left) / r.width; py = (e.clientY - r.top) / r.height; has = true; }
+    function move(e) { var r = scope.getBoundingClientRect(); POSE.px = (e.clientX - r.left) / r.width; POSE.py = (e.clientY - r.top) / r.height; POSE.has = true; }
     scope.addEventListener('pointermove', move);
     scope.addEventListener('pointerdown', move);
-    scope.addEventListener('pointerleave', function () { has = false; });
+    scope.addEventListener('pointerleave', function () { POSE.has = false; });
     requestAnimationFrame(function tick(now) {
       if (!root.isConnected) return;
-      var t = (now - t0) / 1000, ty, tx;
-      if (has) { ty = -30 + Math.max(-.5, Math.min(.5, px - .5)) * 52; tx = -10 - (py - .5) * 38; }
+      var t = (now - PHASE0) / 1000, ty, tx;
+      if (POSE.has) { ty = -30 + Math.max(-.5, Math.min(.5, POSE.px - .5)) * 52; tx = -10 - (POSE.py - .5) * 38; }
       else { ty = -30 + Math.sin(t * .75) * 20; tx = -10 + Math.sin(t * .95 + 1) * 5; }
-      cx += (tx - cx) * .07; cy += (ty - cy) * .07; pose();
+      POSE.cx += (tx - POSE.cx) * .06; POSE.cy += (ty - POSE.cy) * .06; pose();
       requestAnimationFrame(tick);
     });
   }
@@ -480,9 +490,9 @@
   function authLayout(card, extra) {
     var logo = logo3d();
     var stage = h('div', { class: 'auth__stage' },
-      h('div', { class: 'auth__glow' }),
-      h('div', { class: 'auth__orbit auth__orbit--a' }), h('div', { class: 'auth__orbit auth__orbit--b' }), h('div', { class: 'auth__orbit auth__orbit--c' }),
-      AUTH_SPARKS.map(function (s) { return h('i', { class: 'spark', style: 'left:' + s[0] + '%;top:' + s[1] + '%;width:' + s[2] + 'px;height:' + s[2] + 'px;animation-delay:' + s[3] + 's' }); }),
+      h('div', { class: 'auth__glow', 'data-per': '6' }),
+      h('div', { class: 'auth__orbit auth__orbit--a', 'data-per': '26' }), h('div', { class: 'auth__orbit auth__orbit--b', 'data-per': '40' }), h('div', { class: 'auth__orbit auth__orbit--c' }),
+      AUTH_SPARKS.map(function (s) { return h('i', { class: 'spark', 'data-per': (5 + s[3] * .5).toFixed(1), style: 'left:' + s[0] + '%;top:' + s[1] + '%;width:' + s[2] + 'px;height:' + s[2] + 'px' }); }),
       logo);
     var side = h('aside', { class: 'auth__side' },
       stage,
