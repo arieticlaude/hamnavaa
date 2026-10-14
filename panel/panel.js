@@ -900,6 +900,24 @@
   function sendToCounselor(s, p, moved) { window.open(waLink(phoneDigits(p.phone), counselorText(s, p, moved)), '_blank', 'noopener'); }
   // ستون phone با migration-10 اضافه می‌شود؛ تا آن موقع هیچ دکمه یا فیلدی دربارهٔ آن نشان داده نمی‌شود
   function phoneCol() { return (S.data.profiles || []).some(function (x) { return 'phone' in x; }); }
+  function counselorStep(s, p, moved) {
+    return phoneCol() && p && p.phone ? { label: 'خبر دادن به مشاور (واتساپ)', run: function () { sendToCounselor(s, p, moved); } } : null;
+  }
+  // یک دکمهٔ مرحله‌ای: هر لمس یک چت واتساپ را باز می‌کند و دکمه خودش به مرحلهٔ بعد می‌رود
+  // (مرورگر اجازهٔ باز کردن دو پنجره با یک لمس را نمی‌دهد، و واتساپ پیام را خودکار نمی‌فرستد)
+  function guidedSend(state, steps) {
+    steps = steps.filter(Boolean);
+    if (!steps.length) return null;
+    var st = state.step || 0;
+    if (st >= steps.length) {
+      return h('div', null,
+        h('p', { class: 'hint', role: 'status', text: steps.length > 1 ? 'چت مراجع و مشاور هر دو باز شد. در واتساپ «ارسال» را زده باشید ✓' : 'چت واتساپ باز شد ✓' }),
+        h('div', { class: 'actions' }, h('button', { class: 'btn btn--small', type: 'button', text: 'دوباره از اول', onclick: function () { state.step = 0; render(); } })));
+    }
+    var cur = steps[st];
+    return h('button', { class: 'room-btn', type: 'button', onclick: function () { state.step = st + 1; cur.run(); render(); } },
+      h('span', { text: (steps.length > 1 ? n(st + 1) + ' از ' + n(steps.length) + ' — ' : '') + cur.label }));
+  }
   function counselorBtns(s, p, moved, big) {
     if (!phoneCol() || !p) return null;
     return p.phone
@@ -1021,9 +1039,9 @@
       var mp = profileOf(S.moved.s.counselor_id);
       moved = h('section', { class: 'card hero', role: 'status' }, h('h2', { text: 'زمان جلسه عوض شد ✓' }),
         h('p', { class: 'hint' }, nameOf(S.moved.s.counselor_id) + ' — ' + S.moved.s.client_label + ' — ', dayNode(S.moved.s.starts_at), '، ساعت ' + timeOf(S.moved.s.starts_at)),
-        S.moved.phone ? h('button', { class: 'room-btn', type: 'button', onclick: function () { sendConfirm(S.moved.s, mp, S.moved.phone); } }, h('span', { text: 'اطلاع زمان تازه به مراجع (واتساپ)' }))
-          : h('p', { class: 'hint', text: 'شمارهٔ مراجع ثبت نشده؛ زمان تازه را خودتان به او خبر بدهید.' }),
-        counselorBtns(S.moved.s, mp, true, true),
+        guidedSend(S.moved, [S.moved.phone ? { label: 'اطلاع زمان تازه به مراجع (واتساپ)', run: function () { sendConfirm(S.moved.s, mp, S.moved.phone); } } : null, counselorStep(S.moved.s, mp, true)]),
+        S.moved.phone ? null : h('p', { class: 'hint', text: 'شمارهٔ مراجع ثبت نشده؛ زمان تازه را خودتان به او خبر بدهید.' }),
+        phoneCol() && mp && !mp.phone ? h('p', { class: 'hint', text: 'شمارهٔ واتساپ این مشاور ثبت نشده؛ در تب «مشاورها» ثبتش کنید.' }) : null,
         h('div', { class: 'actions' }, h('button', { class: 'btn btn--small', type: 'button', text: 'بستن', onclick: function () { S.moved = null; render(); } })));
     }
     return h('div', null, moved, h('section', { class: 'card' }, h('h2', { text: 'جلسه‌ها' }),
@@ -1151,10 +1169,9 @@
       done = h('section', { class: 'card hero', role: 'status' },
         h('h2', { text: 'جلسه ثبت شد ✓' }),
         h('p', { class: 'hint' }, nameOf(bs.counselor_id) + ' — ' + bs.client_label + ' — ', dayNode(bs.starts_at), '، ساعت ' + timeOf(bs.starts_at)),
-        S.booked.phone
-          ? h('button', { class: 'room-btn', type: 'button', onclick: function () { sendConfirm(bs, bp, S.booked.phone); } }, h('span', { text: 'ارسال تأیید به مراجع (واتساپ)' }))
-          : h('p', { class: 'hint', text: 'شمارهٔ مراجع ثبت نشد؛ بعداً از تب «جلسه‌ها» می‌توانید تأیید بفرستید.' }),
-        counselorBtns(bs, bp, false, true),
+        guidedSend(S.booked, [S.booked.phone ? { label: 'ارسال تأیید به مراجع (واتساپ)', run: function () { sendConfirm(bs, bp, S.booked.phone); } } : null, counselorStep(bs, bp, false)]),
+        S.booked.phone ? null : h('p', { class: 'hint', text: 'شمارهٔ مراجع ثبت نشد؛ بعداً از تب «جلسه‌ها» می‌توانید تأیید بفرستید.' }),
+        phoneCol() && bp && !bp.phone ? h('p', { class: 'hint', text: 'شمارهٔ واتساپ این مشاور ثبت نشده؛ در تب «مشاورها» ثبتش کنید تا پیام آماده برایش بفرستید.' }) : null,
         bp && bp.meet_url ? null : h('p', { class: 'hint', text: 'توجه: این مشاور هنوز لینک اتاق ثبت نکرده؛ پیام بدون لینک می‌رود.' }),
         h('div', { class: 'actions' }, h('button', { class: 'btn btn--small', type: 'button', text: 'ثبت جلسهٔ دیگر', onclick: function () { S.booked = null; render(); } })));
     }
