@@ -61,7 +61,7 @@ button,input,select{font:inherit;color:inherit}
 
 /* ───────── welcome banner ───────── */
 .welcome{position:relative;overflow:hidden;display:flex;align-items:center;gap:20px;margin:0 0 18px;padding:22px 26px;border-radius:24px;color:#FDFBF5;
-  background:radial-gradient(520px 260px at 96% -20%,rgba(232,196,134,.34),transparent 60%),radial-gradient(420px 260px at 0% 120%,rgba(77,124,113,.6),transparent 60%),linear-gradient(135deg,#0F2B26,#163932 55%,#25504A);
+  background:radial-gradient(480px 320px at var(--lx,54%) 52%,rgba(120,196,174,.36),rgba(120,196,174,.1) 55%,transparent 72%),radial-gradient(520px 260px at 100% -20%,rgba(232,196,134,.24),transparent 60%),radial-gradient(420px 260px at 0% 120%,rgba(77,124,113,.5),transparent 60%),linear-gradient(135deg,#0D2823,#153630 55%,#25504A);
   box-shadow:var(--shadow-lg)}
 .welcome::after{content:"";position:absolute;inset-inline-end:-50px;top:-60px;width:210px;height:210px;border-radius:50%;border:1px solid rgba(255,255,255,.10);
   box-shadow:0 0 0 28px rgba(255,255,255,.035),0 0 0 58px rgba(255,255,255,.025);pointer-events:none}
@@ -383,20 +383,22 @@ button,input,select{font:inherit;color:inherit}
 
 /* لوگوی سه‌بعدی داخل بنر خوش‌آمد */
 .welcome{min-height:176px}
-.welcome::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.55;background-image:linear-gradient(rgba(253,251,245,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(253,251,245,.05) 1px,transparent 1px);background-size:38px 38px;-webkit-mask-image:radial-gradient(ellipse at 22% 50%,#000 10%,transparent 70%);mask-image:radial-gradient(ellipse at 22% 50%,#000 10%,transparent 70%)}
+.welcome::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.55;background-image:linear-gradient(rgba(253,251,245,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(253,251,245,.05) 1px,transparent 1px);background-size:38px 38px;-webkit-mask-image:radial-gradient(ellipse at var(--lx,54%) 50%,#000 10%,transparent 70%);mask-image:radial-gradient(ellipse at var(--lx,54%) 50%,#000 10%,transparent 70%)}
 .welcome__txt{min-width:0}
-.welcome__tag{flex:1;align-self:center;text-align:center;max-width:340px;margin-inline:auto;padding-inline:24px;font-family:'Markazi Text',serif;font-size:27px;line-height:1.25;font-weight:500;color:rgba(253,251,245,.82);text-wrap:balance;border-inline:1px solid rgba(232,196,134,.28)}
-.welcome__art{--s:168px;position:relative;flex:none;width:var(--s);height:var(--s);margin-block:-10px;margin-inline-end:6px;display:grid;place-items:center;perspective:760px}
+.welcome__tag{flex:1;align-self:center;text-align:start;max-width:330px;margin-inline-start:auto;padding-inline:26px 8px;font-family:'Markazi Text',serif;font-size:27px;line-height:1.25;font-weight:500;color:rgba(253,251,245,.82);text-wrap:balance;border-inline-start:1px solid rgba(232,196,134,.28)}
+.welcome__art{--s:168px;position:relative;flex:none;width:var(--s);height:var(--s);margin-block:-10px;margin-inline:26px 8px;display:grid;place-items:center;perspective:760px}
 .welcome__art .auth__orbit--a{width:calc(var(--s)*1.5);height:calc(var(--s)*1.5)}
 .welcome__art .auth__orbit--b{width:calc(var(--s)*2.1);height:calc(var(--s)*2.1)}
 .welcome__date--row{display:none}
-@media (max-width:900px){.welcome__tag{display:none}.welcome__art{margin-inline-start:auto}}
+@media (max-width:900px){.welcome{--lx:50%}.welcome__tag{display:none}.welcome__art{margin-inline:auto}}
+.welcome__art .auth__glow{width:calc(var(--s)*2.6);height:calc(var(--s)*2.1);background:radial-gradient(closest-side,rgba(170,226,206,.34),rgba(232,196,134,.12) 58%,transparent)}
 @media (max-width:560px){
   .welcome{flex-wrap:wrap;padding:18px 16px 16px;gap:12px;border-radius:20px;margin:0 0 14px;min-height:0}
   .welcome .avatar{width:64px;height:64px;font-size:26px}
   .welcome__name{font-size:28px;margin-bottom:0}
   .welcome__date--in{display:none}
   .welcome__date--row{display:inline-flex;flex-basis:100%;justify-content:flex-start;border-radius:12px;padding:6px 12px}
-  .welcome__art{--s:104px;position:absolute;inset-inline-end:6px;top:6px;margin:0}
-  .welcome__txt{padding-inline-end:100px;flex:1}
+  .welcome{--lx:20%}
+  .welcome__art{--s:108px;position:absolute;inset-inline-end:22px;top:4px;margin:0}
+  .welcome__txt{padding-inline-end:128px;flex:1}
 }
