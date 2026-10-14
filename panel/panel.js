@@ -408,19 +408,86 @@
   function vLoading() { app.replaceChildren(h('div', { class: 'boot' }, svgEl(MARK), h('p', { text: 'در حال بارگذاری…' }))); }
 
   /* ───────────── ورود و ساخت رمز: چیدمان دو ستونی (روی گوشی: بنر بالا، فرم زیر) ───────────── */
-  var DECO = '<svg class="auth__deco" viewBox="0 0 400 400" fill="none" aria-hidden="true"><g stroke="#FDFBF5" stroke-opacity=".10"><circle cx="200" cy="200" r="60"/><circle cx="200" cy="200" r="110"/><circle cx="200" cy="200" r="160"/><circle cx="200" cy="200" r="210"/></g><g fill="#E8C486" fill-opacity=".55"><rect x="168" y="176" width="14" height="48" rx="7"/><rect x="193" y="150" width="14" height="100" rx="7"/><rect x="218" y="176" width="14" height="48" rx="7"/></g></svg>';
+  /* لوگوی سه‌بعدی: حباب و سه میله از لایه‌های SVG روی هم در فضای CSS-3D ساخته می‌شود (ضخامت واقعی)،
+     با چرخش نرم دنبال ماوس/لمس و چرخش آرام وقتی کسی دست نمی‌زند. */
+  var L3_BUB = 'M14 18 h56 a8 8 0 0 1 8 8 v28 a8 8 0 0 1 -8 8 h-30 l-16 14 v-14 h-10 a8 8 0 0 1 -8 -8 v-28 a8 8 0 0 1 8 -8 Z';
+  function mix(c1, c2, t) {
+    var a = [1, 3, 5].map(function (i) { return parseInt(c1.substr(i, 2), 16); }), b = [1, 3, 5].map(function (i) { return parseInt(c2.substr(i, 2), 16); });
+    return '#' + a.map(function (v, i) { var x = Math.round(v + (b[i] - v) * t); return (x < 16 ? '0' : '') + x.toString(16); }).join('');
+  }
+  function logo3d() {
+    var DEPTH = 24, LIFT = 7, out = [];
+    var DEFS = '<defs>'
+      + '<linearGradient id="l3Face" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFEFA"/><stop offset=".55" stop-color="#F6EEDA"/><stop offset="1" stop-color="#E4D4AE"/></linearGradient>'
+      + '<linearGradient id="l3Rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#B78A46" stop-opacity=".55"/></linearGradient>'
+      + '<linearGradient id="l3Teal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5E9C8E"/><stop offset="1" stop-color="#2D5D53"/></linearGradient>'
+      + '<linearGradient id="l3Gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FBE7B8"/><stop offset=".5" stop-color="#E2B66C"/><stop offset="1" stop-color="#B78A46"/></linearGradient>'
+      + '<linearGradient id="l3Sheen" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".75"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>'
+      + '<clipPath id="l3Clip"><path d="' + L3_BUB + '"/></clipPath>'
+      + '<filter id="l3Blur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.1"/></filter></defs>';
+    function ly(z, inner) { return '<i class="l3d__ly" style="--z:' + z + '"><svg viewBox="0 0 84 84" fill="none" aria-hidden="true">' + inner + '</svg></i>'; }
+    // ضخامتِ حباب (از پشت به جلو): پایین‌ترین لایه تیره‌تر
+    for (var i = DEPTH; i >= 1; i--) {
+      var c = mix('#B8924B', '#4F3C1C', i / DEPTH);
+      out.push(ly(-i, '<path d="' + L3_BUB + '" fill="' + c + '" stroke="' + c + '" stroke-width=".7" stroke-linejoin="round"/>'));
+    }
+    // رویهٔ حباب + لبهٔ براق + جلوهٔ نور
+    out.push(ly(0, DEFS + '<path d="' + L3_BUB + '" fill="url(#l3Face)"/><path d="' + L3_BUB + '" stroke="url(#l3Rim)" stroke-width="1.1" stroke-linejoin="round"/>'
+      + '<g clip-path="url(#l3Clip)"><g transform="rotate(24 42 42)"><rect class="l3d__sheen" x="-30" y="-20" width="26" height="130" fill="url(#l3Sheen)"/></g></g>'));
+    // سایهٔ نرم میله‌ها روی رویهٔ حباب
+    out.push(ly(0.4, '<g filter="url(#l3Blur)" fill="#163932" fill-opacity=".34"><rect x="29.4" y="36" width="6" height="14" rx="3"/><rect x="40.4" y="30" width="6" height="26" rx="3"/><rect x="51.4" y="36" width="6" height="14" rx="3"/></g>'));
+    // میله‌ها: چند لایه، بالاترین لایه با گرادیان
+    for (var j = 1; j <= LIFT; j++) {
+      var top = j === LIFT, t = (j - 1) / (LIFT - 1);
+      var ct = top ? 'url(#l3Teal)' : mix('#1D463F', '#2F6359', t), cg = top ? 'url(#l3Gold)' : mix('#8A6B39', '#C2994F', t);
+      out.push(ly(j + 0.5, '<rect x="28" y="34" width="6" height="14" rx="3" fill="' + ct + '"/><rect x="39" y="28" width="6" height="26" rx="3" fill="' + cg + '"/><rect x="50" y="34" width="6" height="14" rx="3" fill="' + ct + '"/>'));
+    }
+    var root = document.createElement('div');
+    root.className = 'l3d';
+    root.setAttribute('role', 'img');
+    root.setAttribute('aria-label', 'لوگوی هم‌نوا');
+    root.innerHTML = '<div class="l3d__shadow"></div><div class="l3d__body">' + out.join('') + '</div>';
+    return root;
+  }
+  function tilt3d(root, scope) {
+    var body = root.querySelector('.l3d__body'), cx = -10, cy = -30, px = .5, py = .5, has = false, t0 = performance.now();
+    function pose() { body.style.transform = 'rotateX(' + cx.toFixed(2) + 'deg) rotateY(' + cy.toFixed(2) + 'deg)'; }
+    pose();
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    function move(e) { var r = scope.getBoundingClientRect(); px = (e.clientX - r.left) / r.width; py = (e.clientY - r.top) / r.height; has = true; }
+    scope.addEventListener('pointermove', move);
+    scope.addEventListener('pointerdown', move);
+    scope.addEventListener('pointerleave', function () { has = false; });
+    (function tick(now) {
+      if (!root.isConnected) return;
+      var t = (now - t0) / 1000, ty, tx;
+      if (has) { ty = -30 + Math.max(-.5, Math.min(.5, px - .5)) * 52; tx = -10 - (py - .5) * 38; }
+      else { ty = -30 + Math.sin(t * .75) * 20; tx = -10 + Math.sin(t * .95 + 1) * 5; }
+      cx += (tx - cx) * .07; cy += (ty - cy) * .07; pose();
+      requestAnimationFrame(tick);
+    })(t0);
+  }
+  var AUTH_SPARKS = [[12, 22, 7, 0], [84, 16, 5, 1.4], [20, 74, 6, 2.2], [78, 70, 8, .7], [50, 8, 4, 3], [92, 46, 4, 2.6], [6, 50, 5, 1.9]];
   function authLayout(card, extra) {
+    var logo = logo3d();
+    var stage = h('div', { class: 'auth__stage' },
+      h('div', { class: 'auth__glow' }),
+      h('div', { class: 'auth__orbit auth__orbit--a' }), h('div', { class: 'auth__orbit auth__orbit--b' }), h('div', { class: 'auth__orbit auth__orbit--c' }),
+      AUTH_SPARKS.map(function (s) { return h('i', { class: 'spark', style: 'left:' + s[0] + '%;top:' + s[1] + '%;width:' + s[2] + 'px;height:' + s[2] + 'px;animation-delay:' + s[3] + 's' }); }),
+      logo);
     var side = h('aside', { class: 'auth__side' },
-      svgEl(DECO),
-      h('div', { class: 'auth__brand' }, svgEl(MARK_LIGHT), h('b', { text: 'هم‌نوا' })),
+      stage,
       h('div', { class: 'auth__copy' },
+        h('p', { class: 'auth__kicker', text: 'پنل مشاوران' }),
         h('h1', { text: 'فضای کاری مشاوران هم‌نوا' }),
-        h('p', { text: 'جلسه‌ها، اتاق‌های مشاوره و هماهنگی تیم؛ همه در یک‌جا، ساده و امن.' }),
+        h('p', { class: 'auth__lead', text: 'جلسه‌ها، اتاق‌های مشاوره و هماهنگی تیم؛ همه در یک‌جا، ساده و امن.' }),
         h('ul', { class: 'auth__points' }, [['video', 'ورود به اتاق مشاوره با یک لمس'], ['calendar', 'برنامهٔ جلسه‌ها و یادآوری به‌موقع'], ['bell', 'اعلان فوری روی گوشی برای منشی']].map(function (x) {
           return h('li', null, h('span', { class: 'pt' }, ico(x[0])), x[1]);
         }))),
       h('p', { class: 'auth__foot', text: 'مشاورهٔ روان‌شناسی آنلاین ویژهٔ ایرانیان خارج از کشور' }));
-    app.replaceChildren(h('div', { class: 'auth' }, h('main', { class: 'auth__main' }, h('div', { class: 'auth__col' }, card, extra || null)), side));
+    var foot = h('p', { class: 'auth__secure' }, ico('lock'), 'ورود امن · اطلاعات مراجعان محرمانه می‌ماند');
+    app.replaceChildren(h('div', { class: 'auth' }, h('main', { class: 'auth__main' }, h('div', { class: 'auth__col' }, card, extra || null, foot)), side));
+    tilt3d(logo, side);
   }
   function inpField(id, label, icon, input, toggle) {
     return h('div', { class: 'field' }, h('label', { for: id, text: label }),
