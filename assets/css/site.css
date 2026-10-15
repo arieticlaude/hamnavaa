@@ -288,11 +288,7 @@
   .nav__login-btn svg{width:18px; height:18px; flex:none;}
   .nav__login-btn:hover{transform:translateY(-1px); background:linear-gradient(135deg,#FFFBEF,#E8C486); box-shadow:0 14px 26px -14px rgba(138,107,57,.85);}
   .nav__login-btn:focus-visible{outline:3px solid var(--gold); outline-offset:2px;}
-  /* the full pill needs 1300px next to nine nav links; below that it is the icon alone */
-  @media (max-width:1299px){
-    .nav__login-btn{padding:0; width:42px; height:42px; justify-content:center;}
-    .nav__login-btn span{display:none !important;}
-  }
+  /* login pill: label rules live in the header v2 block below */
 
   .wrap{max-width:var(--maxw); margin:0 auto; padding:0 28px;}
 
@@ -2664,8 +2660,13 @@
 .brand__mark{width:44px;height:44px;filter:drop-shadow(0 8px 10px rgba(22,57,50,.28))}
 .brand__name{font-size:2rem;line-height:1}
 .nav__right{display:flex;align-items:center;gap:10px}
-.nav__login-btn{padding:0;width:42px;height:42px;justify-content:center}
-.nav__login-btn span{display:none !important}
+.nav__login-btn{gap:9px;padding:0 17px 0 7px;height:44px;width:auto;white-space:nowrap;justify-content:flex-start}
+.nav__login-ic{width:30px;height:30px;border-radius:50%;background:#fff;display:grid;place-items:center;flex:none;box-shadow:0 5px 10px -5px rgba(138,107,57,.75),inset 0 0 0 1px rgba(183,138,70,.35)}
+.nav__login-ic svg{width:17px;height:17px;color:var(--teal-deep)}
+.nav__login-t{font-weight:800;font-size:.9rem;color:var(--teal-deep)}
+.nav__login-t .lbl-long{display:none}
+@media (min-width:1400px){.nav__login-t .lbl-long{display:inline}.nav__login-t .lbl-short{display:none}}
+.nav__login-m{display:none}
 .lang-toggle{background:rgba(27,43,38,.06);border:1px solid rgba(27,43,38,.06)}
 .nav__cta{padding:11px 22px;font-size:.92rem;white-space:nowrap}
 .nav__cta-m{display:none !important}
@@ -2706,6 +2707,11 @@
   .nav__more-btn{display:none}
   .nav__menu{display:contents !important}
   .nav__links .btn{margin:8px 0 0;width:100%}
+  .nav__links .nav__login-m{display:flex;align-items:center;gap:12px;width:100%;margin:8px 0 0;padding:12px 14px;border-radius:16px;border:1px solid rgba(183,138,70,.5);background:linear-gradient(135deg,#FFF9E8,#F6E6BF)}
+  .nav__login-m .nav__login-ic{width:38px;height:38px}
+  .nav__login-m .nav__login-ic svg{width:21px;height:21px}
+  .nav__login-m b{display:block;font-size:1rem;color:var(--teal-deep);line-height:1.5}
+  .nav__login-m small{display:block;font-size:.8rem;color:var(--muted);line-height:1.5}
 }
 @media (max-width:560px){
   .nav.wrap{padding:0 14px}
@@ -2714,6 +2720,10 @@
   .brand__mark{width:36px;height:36px}
   .brand__name{font-size:1.65rem}
   .nav__right{gap:8px}
-  .nav__login-btn{width:38px;height:38px}
+  .nav__links>a:not(.btn),.nav__menu a{padding:10px 14px}
+  .nav__links.is-open{max-height:82vh}
+  .nav__login-btn{height:38px;padding:0 12px 0 5px;gap:7px}
+  .nav__login-ic{width:28px;height:28px}
+  .nav__login-t{font-size:.84rem}
   .lang-toggle__btn{padding:6px 10px}
 }
