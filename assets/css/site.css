@@ -2731,6 +2731,16 @@
   .nav__login-m b{display:block;font-size:1rem;color:#FDFBF5;line-height:1.5;text-shadow:0 1px 0 rgba(0,0,0,.25)}
   .nav__login-m small{display:block;font-size:.8rem;color:rgba(253,251,245,.82);line-height:1.5}
 }
+/* 3D brand logo (same build as the counselor panel), teal-faced for the light header */
+.brand__logo3d{--s:62px;width:var(--s);height:var(--s);display:grid;place-items:center;perspective:420px;flex:none}
+.brand__logo3d .l3d{position:relative;width:var(--s);height:var(--s);transform-style:preserve-3d;animation:brandFloat 5s ease-in-out infinite}
+.brand__logo3d .l3d__body{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform}
+.brand__logo3d .l3d__ly{position:absolute;inset:0;display:block;transform:translateZ(calc(var(--z)*var(--s)*.0085))}
+.brand__logo3d .l3d__ly svg{width:100%;height:100%;display:block;overflow:visible}
+.brand__logo3d .l3d__shadow{display:none}
+@keyframes brandFloat{0%,100%{transform:translateY(-1px)}50%{transform:translateY(2px)}}
+@media (max-width:560px){.brand__logo3d{--s:50px}}
+@media (prefers-reduced-motion:reduce){.brand__logo3d .l3d{animation:none}}
 @media (max-width:560px){
   .nav.wrap{padding:0 14px}
   .nav{gap:8px;padding:10px 0}

@@ -504,6 +504,78 @@
     box.querySelectorAll('a').forEach(a => a.addEventListener('click', () => set(false)));
   });
 
+  // header 3D logo (same build as the counselor panel, teal-faced for the light header)
+  (function () {
+    const slot = document.querySelector('.site-header .brand__mark');
+    if (!slot) return;
+    var L3_BUB = 'M14 18 h56 a8 8 0 0 1 8 8 v28 a8 8 0 0 1 -8 8 h-30 l-16 14 v-14 h-10 a8 8 0 0 1 -8 -8 v-28 a8 8 0 0 1 8 -8 Z';
+    function mix(c1, c2, t) {
+      var a = [1, 3, 5].map(function (i) { return parseInt(c1.substr(i, 2), 16); }), b = [1, 3, 5].map(function (i) { return parseInt(c2.substr(i, 2), 16); });
+      return '#' + a.map(function (v, i) { var x = Math.round(v + (b[i] - v) * t); return (x < 16 ? '0' : '') + x.toString(16); }).join('');
+    }
+    function logo3d() {
+      var DEPTH = 24, LIFT = 7, out = [];
+      var DEFS = '<defs>'
+        + '<linearGradient id="l3Face" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#78B3A3"/><stop offset=".55" stop-color="#3F7568"/><stop offset="1" stop-color="#2A5C51"/></linearGradient>'
+        + '<linearGradient id="l3Rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#B78A46" stop-opacity=".55"/></linearGradient>'
+        + '<linearGradient id="l3Teal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#E7DCBF"/></linearGradient>'
+        + '<linearGradient id="l3Gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FBE7B8"/><stop offset=".5" stop-color="#E2B66C"/><stop offset="1" stop-color="#B78A46"/></linearGradient>'
+        + '<linearGradient id="l3Sheen" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".75"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>'
+        + '<clipPath id="l3Clip"><path d="' + L3_BUB + '"/></clipPath>'
+        + '<filter id="l3Blur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.1"/></filter></defs>';
+      function ly(z, inner) { return '<i class="l3d__ly" style="--z:' + z + '"><svg viewBox="0 0 84 84" fill="none" aria-hidden="true">' + inner + '</svg></i>'; }
+      // ضخامتِ حباب (از پشت به جلو): پایین‌ترین لایه تیره‌تر
+      for (var i = DEPTH; i >= 1; i--) {
+        var c = mix('#3F7568', '#0F2B25', i / DEPTH);
+        out.push(ly(-i, '<path d="' + L3_BUB + '" fill="' + c + '" stroke="' + c + '" stroke-width=".7" stroke-linejoin="round"/>'));
+      }
+      // رویهٔ حباب + لبهٔ براق + جلوهٔ نور
+      out.push(ly(0, DEFS + '<path d="' + L3_BUB + '" fill="url(#l3Face)"/><path d="' + L3_BUB + '" stroke="url(#l3Rim)" stroke-width="1.1" stroke-linejoin="round"/>'
+        + '<g clip-path="url(#l3Clip)"><g transform="rotate(24 42 42)"><rect x="6" y="-20" width="12" height="130" fill="url(#l3Sheen)" opacity=".5"/></g></g>'));
+      // سایهٔ نرم میله‌ها روی رویهٔ حباب
+      out.push(ly(0.9, '<g filter="url(#l3Blur)" fill="#163932" fill-opacity=".34"><rect x="29.4" y="36" width="6" height="14" rx="3"/><rect x="40.4" y="30" width="6" height="26" rx="3"/><rect x="51.4" y="36" width="6" height="14" rx="3"/></g>'));
+      // میله‌ها: چند لایه، بالاترین لایه با گرادیان
+      for (var j = 1; j <= LIFT; j++) {
+        var top = j === LIFT, t = (j - 1) / (LIFT - 1);
+        var ct = top ? 'url(#l3Teal)' : mix('#B9AC88', '#EFE6CC', t), cg = top ? 'url(#l3Gold)' : mix('#8A6B39', '#C2994F', t);
+        out.push(ly(j + 1.2, '<rect x="28" y="34" width="6" height="14" rx="3" fill="' + ct + '"/><rect x="39" y="28" width="6" height="26" rx="3" fill="' + cg + '"/><rect x="50" y="34" width="6" height="14" rx="3" fill="' + ct + '"/>'));
+      }
+      var root = document.createElement('div');
+      root.className = 'l3d';
+      root.setAttribute('role', 'img');
+      root.setAttribute('aria-label', 'لوگوی هم‌نوا');
+      root.setAttribute('data-per', '6');
+      root.innerHTML = '<div class="l3d__shadow" data-per="6"></div><div class="l3d__body">' + out.join('') + '</div>';
+      return root;
+    }
+    const wrap = document.createElement('span');
+    wrap.className = 'brand__logo3d';
+    wrap.setAttribute('aria-hidden', 'true');
+    const logo = logo3d();
+    wrap.appendChild(logo);
+    slot.replaceWith(wrap);
+    const body = logo.querySelector('.l3d__body');
+    let cx = -10, cy = -26, tx = -10, ty = -26, hasPtr = false, px = 0, py = 0;
+    const pose = () => { body.style.transform = 'rotateX(' + cx.toFixed(2) + 'deg) rotateY(' + cy.toFixed(2) + 'deg)'; };
+    pose();
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    window.addEventListener('pointermove', e => {
+      const r = wrap.getBoundingClientRect();
+      px = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / (window.innerWidth * 0.45)));
+      py = Math.max(-1, Math.min(1, (e.clientY - (r.top + r.height / 2)) / (window.innerHeight * 0.45)));
+      hasPtr = true;
+    }, { passive: true });
+    document.addEventListener('pointerleave', () => { hasPtr = false; });
+    const t0 = performance.now();
+    (function tick(now) {
+      const t = (now - t0) / 1000;
+      if (hasPtr) { ty = -26 + px * 34; tx = -10 - py * 18; }
+      else { ty = -26 + Math.sin(t * 0.75) * 18; tx = -10 + Math.sin(t * 0.95 + 1) * 4.5; }
+      cx += (tx - cx) * 0.07; cy += (ty - cy) * 0.07; pose();
+      requestAnimationFrame(tick);
+    })(t0);
+  })();
+
   // call timer
   const toPersianDigits = n => n.toString().padStart(2,'0').replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
   const faDigits = n => n.toString().replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
