@@ -250,12 +250,11 @@
     if (!pkgReady()) return null;
     if (!S.cform) {
       return h('section', { class: 'card book' }, h('h2', { text: 'ثبت جلسهٔ جدید' }),
-        h('p', { class: 'hint', text: 'برای مراجعِ خودتان وقت ثبت کنید. منشی همان‌جا در فهرست می‌بیند و پرداخت را ثبت می‌کند.' }),
+        h('p', { class: 'hint', text: 'برای مراجعِ خودتان وقت ثبت کنید. منشی همان‌جا در فهرست می‌بیند، شمارهٔ مراجع را ثبت می‌کند و پرداخت را علامت می‌زند.' }),
         h('div', { class: 'actions' }, h('button', { class: 'btn btn--primary', type: 'button', text: 'ثبت جلسه', onclick: function () { S.cform = true; S.cdone = null; render(); } })));
     }
     var f = {
       label: h('input', { class: 'input', maxlength: 60, required: true, placeholder: 'نام کوچک یا یک کد، نه نام کامل' }),
-      phone: h('input', { class: 'input', dir: 'ltr', placeholder: '+1 647 000 0000  یا  0912…' }),
       dur: h('select', { class: 'select' }, [15, 30, 45, 60, 90].map(function (x) { return h('option', { value: x, text: nf.format(x) + ' دقیقه', selected: x === 45 }); })),
       mode: h('select', { class: 'select' }, h('option', { value: 'video', text: 'تصویری' }), h('option', { value: 'audio', text: 'صوتی' })),
       kind: h('select', { class: 'select' }, h('option', { value: 'session', text: 'جلسه' }), h('option', { value: 'intro', text: 'جلسهٔ رایگان پیش‌مشاوره' }))
@@ -279,19 +278,18 @@
       submit.disabled = true;
       findConflict(S.user.id, when, +f.dur.value).then(function (cf) {
         if (cf && !window.confirm(conflictText(cf))) { submit.disabled = false; return; }
-        var v = pf.values(f.kind.value), phone = f.phone.value.trim();
+        var v = pf.values(f.kind.value);
         sb.rpc('counselor_create_session', { p_label: f.label.value.trim(), p_starts: when.toISOString(), p_duration: +f.dur.value, p_mode: f.mode.value, p_kind: f.kind.value,
-          p_package_id: v.package_id, p_package_group: v.package_group, p_package_no: v.package_no, p_package_total: v.package_total, p_phone: phone || null }).then(function (r) {
+          p_package_id: v.package_id, p_package_group: v.package_group, p_package_no: v.package_no, p_package_total: v.package_total }).then(function (r) {
           if (r.error) { submit.disabled = false; flash('err', explain(r.error)); return render(); }
           S.cform = false;
-          S.cdone = { s: { id: r.data, counselor_id: S.user.id, client_label: f.label.value.trim(), starts_at: when.toISOString(), duration_min: +f.dur.value, mode: f.mode.value, kind: f.kind.value }, phone: phone };
+          S.cdone = { s: { id: r.data, counselor_id: S.user.id, client_label: f.label.value.trim(), starts_at: when.toISOString(), duration_min: +f.dur.value, mode: f.mode.value, kind: f.kind.value } };
           loadCounselor(); loadPackages();
         });
       });
     } },
       h('h2', { text: 'ثبت جلسهٔ جدید' }),
       h('div', { class: 'field' }, h('label', { text: 'مراجع (نام کوچک یا کد)' }), f.label),
-      h('div', { class: 'field' }, h('label', { text: 'شمارهٔ مراجع (اختیاری؛ فقط برای فرستادن پیام تأیید با واتساپ و فقط منشی و مدیر می‌بینند)' }), f.phone),
       h('div', { class: 'row' },
         h('div', { class: 'field' }, h('label', { text: 'تاریخ' }), f.date.el),
         h('div', { class: 'field' }, h('label', { text: 'ساعت (به وقت ایران، ۲۴ ساعته)' }), f.time.el)),
@@ -307,7 +305,7 @@
     var ds = S.cdone.s;
     return h('section', { class: 'card hero', role: 'status' }, h('h2', { text: 'جلسه ثبت شد ✓' }),
       h('p', { class: 'hint' }, ds.client_label + ' — ', dayNode(ds.starts_at), '، ساعت ' + timeOf(ds.starts_at) + '. منشی آن را در فهرست می‌بیند.'),
-      S.cdone.phone ? guidedSend(S.cdone, [{ label: 'ارسال تأیید به مراجع (واتساپ)', run: function () { sendConfirm(ds, S.profile, S.cdone.phone); } }]) : h('p', { class: 'hint', text: 'شمارهٔ مراجع را نگذاشتید؛ اگر خواستید خودتان به او خبر بدهید.' }),
+      h('p', { class: 'hint', text: 'شمارهٔ مراجع را فقط منشی ثبت می‌کند و تأیید را برای او می‌فرستد؛ مشاورها شماره‌ای نمی‌بینند و نمی‌نویسند.' }),
       h('div', { class: 'actions' }, h('button', { class: 'btn btn--small', type: 'button', text: 'بستن', onclick: function () { S.cdone = null; render(); } })));
   }
 
