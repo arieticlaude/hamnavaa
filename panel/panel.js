@@ -160,6 +160,157 @@
   var MODE = { video: 'تصویری', audio: 'صوتی' };
   var KIND = { intro: 'پیش‌مشاوره', session: 'جلسه' };
 
+  /* ───────────── بسته و پرداخت (با migration-11) ───────────── */
+  var PACKS = [['single', 'تک جلسه', 1], ['pack3', 'بستهٔ ۳ جلسه‌ای', 3], ['pack5', 'بستهٔ ۵ جلسه‌ای', 5],
+               ['stu1', 'تک‌جلسهٔ دانشجویی', 1], ['stu3', 'بستهٔ ۳ جلسهٔ دانشجویی', 3]];
+  function packOf(id) { return PACKS.filter(function (p) { return p[0] === id; })[0]; }
+  function pkgReady() { return S.pkgCol === true; }
+  function newGroupId() {
+    try { return crypto.randomUUID(); } catch (e) {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) { var r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); });
+    }
+  }
+  function packLabel(s) {
+    var p = packOf(s.package_id);
+    if (!p) return '';
+    return p[1] + (s.package_total > 1 ? ' — جلسهٔ ' + n(s.package_no) + ' از ' + n(s.package_total) : '');
+  }
+  // چیپ‌های «کدام بسته» و «پرداخت»؛ تا مهاجرت اجرا نشده چیزی نشان نمی‌دهد
+  function payChips(s) {
+    if (!pkgReady()) return [];
+    var out = [], pl = s.package_id && s.package_id !== 'intro' ? packLabel(s) : '', st = s.paid || 'unpaid';
+    if (pl) out.push(h('span', { class: 'chip chip--gold', text: pl }));
+    out.push(h('span', { class: 'chip ' + (st === 'paid' ? 'chip--ok' : st === 'free' ? '' : 'chip--warn'), text: st === 'paid' ? 'پرداخت‌شده ✓' : st === 'free' ? 'رایگان' : 'پرداخت نشده' }));
+    return out;
+  }
+  function loadPackages() {
+    sb.from('sessions').select('package_group,package_id,package_no,package_total,client_label,counselor_id,paid').not('package_group', 'is', null).limit(1000).then(function (r) {
+      var g = {};
+      (r.data || []).forEach(function (x) {
+        var e = g[x.package_group] || (g[x.package_group] = { id: x.package_group, pack: x.package_id, total: x.package_total, used: 0, label: x.client_label, counselor_id: x.counselor_id, paid: false });
+        e.used++; if (x.paid === 'paid') e.paid = true;
+      });
+      S.pkgs = Object.keys(g).map(function (k) { return g[k]; });
+      render();
+    });
+  }
+  // انتخاب بسته: نوع بسته، و اگر چندجلسه‌ای است «اولین جلسه» یا «ادامهٔ بستهٔ قبلی همین مراجع»
+  function packFields(getCounselor, withPaid) {
+    var pack = h('select', { class: 'select', 'aria-label': 'بسته' }, PACKS.map(function (p) { return h('option', { value: p[0], text: p[1] }); }));
+    var cont = h('select', { class: 'select', 'aria-label': 'ادامهٔ بسته' });
+    var contField = h('div', { class: 'field' }, h('label', { text: 'این جلسه…' }), cont);
+    var paidBox = withPaid ? h('input', { type: 'checkbox', id: 'pkgPaid' }) : null;
+    var paidField = withPaid ? h('label', { class: 'field', for: 'pkgPaid' }, paidBox, ' پرداخت شده است') : null;
+    var el = h('div', null, h('div', { class: 'field' }, h('label', { text: 'بسته' }), pack), contField, paidField);
+    function openGroups() {
+      var cid = getCounselor();
+      return (S.pkgs || []).filter(function (g) { return g.pack === pack.value && g.total > 1 && g.used < g.total && (!cid || g.counselor_id === cid); });
+    }
+    function refresh() {
+      var p = packOf(pack.value), multi = !!p && p[2] > 1;
+      contField.hidden = !multi;
+      cont.textContent = '';
+      cont.appendChild(h('option', { value: '', text: 'اولین جلسهٔ یک بستهٔ تازه' }));
+      openGroups().forEach(function (g) { cont.appendChild(h('option', { value: g.id, text: 'ادامهٔ بستهٔ ' + g.label + ' — ' + n(g.used) + ' از ' + n(g.total) + ' ثبت‌شده' + (g.paid ? ' (پرداخت‌شده)' : '') })); });
+    }
+    pack.addEventListener('change', refresh);
+    cont.addEventListener('change', function () {
+      var g = openGroups().filter(function (x) { return x.id === cont.value; })[0];
+      if (paidBox) paidBox.checked = !!(g && g.paid);
+    });
+    refresh();
+    return {
+      el: el, refresh: refresh,
+      setKind: function (k) { el.hidden = k === 'intro'; },
+      values: function (kind) {
+        if (kind === 'intro') return { package_id: 'intro', package_group: null, package_no: 1, package_total: 1, paid: 'free' };
+        var p = packOf(pack.value), total = p[2], grp = null, no = 1;
+        if (total > 1) {
+          var g = cont.value ? openGroups().filter(function (x) { return x.id === cont.value; })[0] : null;
+          if (g) { grp = g.id; no = g.used + 1; total = g.total; } else grp = newGroupId();
+        }
+        return { package_id: p[0], package_group: grp, package_no: no, package_total: total, paid: paidBox && paidBox.checked ? 'paid' : 'unpaid' };
+      }
+    };
+  }
+  // منشی/مدیر: پرداخت را برای همان جلسه، یا برای کل بسته ثبت یا لغو می‌کند
+  function payBtn(s) {
+    var isPaid = s.paid === 'paid', grp = !!s.package_group;
+    return h('button', { class: 'btn btn--small' + (isPaid ? '' : ' btn--primary'), type: 'button', text: isPaid ? 'لغو ثبت پرداخت' : (grp ? 'ثبت پرداخت کل بسته' : 'ثبت پرداخت'), onclick: function () {
+      var msg = isPaid ? 'ثبت پرداخت لغو شود؟' : (grp ? 'پرداخت کل این بسته (' + n(s.package_total) + ' جلسه) ثبت شود؟' : 'پرداخت این جلسه ثبت شود؟');
+      if (!window.confirm(msg)) return;
+      var now = new Date().toISOString();
+      var q = sb.from('sessions').update({ paid: isPaid ? 'unpaid' : 'paid', paid_at: isPaid ? null : now, paid_by: isPaid ? null : S.user.id, updated_at: now });
+      q = grp ? q.eq('package_group', s.package_group) : q.eq('id', s.id);
+      q.then(function (r) { flash(r.error ? 'err' : 'ok', r.error ? explain(r.error) : (isPaid ? 'پرداخت لغو شد.' : 'پرداخت ثبت شد ✓')); loadStaff(); loadPackages(); });
+    } });
+  }
+  // مشاور برای خودش جلسه ثبت می‌کند (تابع counselor_create_session؛ پرداخت را فقط منشی عوض می‌کند)
+  function counselorBookCard() {
+    if (!pkgReady()) return null;
+    if (!S.cform) {
+      return h('section', { class: 'card book' }, h('h2', { text: 'ثبت جلسهٔ جدید' }),
+        h('p', { class: 'hint', text: 'برای مراجعِ خودتان وقت ثبت کنید. منشی همان‌جا در فهرست می‌بیند و پرداخت را ثبت می‌کند.' }),
+        h('div', { class: 'actions' }, h('button', { class: 'btn btn--primary', type: 'button', text: 'ثبت جلسه', onclick: function () { S.cform = true; S.cdone = null; render(); } })));
+    }
+    var f = {
+      label: h('input', { class: 'input', maxlength: 60, required: true, placeholder: 'نام کوچک یا یک کد، نه نام کامل' }),
+      phone: h('input', { class: 'input', dir: 'ltr', placeholder: '+1 647 000 0000  یا  0912…' }),
+      dur: h('select', { class: 'select' }, [15, 30, 45, 60, 90].map(function (x) { return h('option', { value: x, text: nf.format(x) + ' دقیقه', selected: x === 45 }); })),
+      mode: h('select', { class: 'select' }, h('option', { value: 'video', text: 'تصویری' }), h('option', { value: 'audio', text: 'صوتی' })),
+      kind: h('select', { class: 'select' }, h('option', { value: 'session', text: 'جلسه' }), h('option', { value: 'intro', text: 'جلسهٔ رایگان پیش‌مشاوره' }))
+    };
+    var pf = packFields(function () { return S.user.id; }, false);
+    var preview = h('p', { class: 'hint', text: '' });
+    var whenLocal = function () { var d = f.date.value(), t = f.time.value(); return d && t ? d + 'T' + t : ''; };
+    var showPreview = function () {
+      var d = tehranToUtc(whenLocal());
+      preview.textContent = '';
+      if (d) { preview.appendChild(document.createTextNode('ثبت می‌شود: ')); preview.appendChild(dayNode(d)); preview.appendChild(document.createTextNode('، ساعت ' + timeOf(d) + ' به وقت ایران')); }
+    };
+    f.date = dateField('', showPreview);
+    f.time = timeField(showPreview);
+    f.kind.addEventListener('change', function () { f.dur.value = f.kind.value === 'intro' ? '15' : '45'; pf.setKind(f.kind.value); });
+    var submit = h('button', { class: 'btn btn--primary', type: 'submit', text: 'ثبت جلسه' });
+    return h('form', { class: 'card book', onsubmit: function (e) {
+      e.preventDefault();
+      var when = tehranToUtc(whenLocal());
+      if (!when || !f.label.value.trim()) { flash('err', 'نام مراجع و زمان را کامل کنید.'); return render(); }
+      submit.disabled = true;
+      findConflict(S.user.id, when, +f.dur.value).then(function (cf) {
+        if (cf && !window.confirm(conflictText(cf))) { submit.disabled = false; return; }
+        var v = pf.values(f.kind.value), phone = f.phone.value.trim();
+        sb.rpc('counselor_create_session', { p_label: f.label.value.trim(), p_starts: when.toISOString(), p_duration: +f.dur.value, p_mode: f.mode.value, p_kind: f.kind.value,
+          p_package_id: v.package_id, p_package_group: v.package_group, p_package_no: v.package_no, p_package_total: v.package_total, p_phone: phone || null }).then(function (r) {
+          if (r.error) { submit.disabled = false; flash('err', explain(r.error)); return render(); }
+          S.cform = false;
+          S.cdone = { s: { id: r.data, counselor_id: S.user.id, client_label: f.label.value.trim(), starts_at: when.toISOString(), duration_min: +f.dur.value, mode: f.mode.value, kind: f.kind.value }, phone: phone };
+          loadCounselor(); loadPackages();
+        });
+      });
+    } },
+      h('h2', { text: 'ثبت جلسهٔ جدید' }),
+      h('div', { class: 'field' }, h('label', { text: 'مراجع (نام کوچک یا کد)' }), f.label),
+      h('div', { class: 'field' }, h('label', { text: 'شمارهٔ مراجع (اختیاری؛ فقط برای فرستادن پیام تأیید با واتساپ و فقط منشی و مدیر می‌بینند)' }), f.phone),
+      h('div', { class: 'row' },
+        h('div', { class: 'field' }, h('label', { text: 'تاریخ' }), f.date.el),
+        h('div', { class: 'field' }, h('label', { text: 'ساعت (به وقت ایران، ۲۴ ساعته)' }), f.time.el)),
+      preview,
+      h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'مدت' }), f.dur), h('div', { class: 'field' }, h('label', { text: 'نوع تماس' }), f.mode)),
+      h('div', { class: 'field' }, h('label', { text: 'جلسه یا پیش‌مشاوره' }), f.kind),
+      pf.el,
+      h('p', { class: 'hint', text: 'محتوای جلسه یا یادداشت بالینی را هیچ‌جا این‌جا ننویسید.' }),
+      h('div', { class: 'actions' }, submit, h('button', { class: 'btn', type: 'button', text: 'انصراف', onclick: function () { S.cform = false; render(); } })));
+  }
+  function counselorDoneCard() {
+    if (!S.cdone) return null;
+    var ds = S.cdone.s;
+    return h('section', { class: 'card hero', role: 'status' }, h('h2', { text: 'جلسه ثبت شد ✓' }),
+      h('p', { class: 'hint' }, ds.client_label + ' — ', dayNode(ds.starts_at), '، ساعت ' + timeOf(ds.starts_at) + '. منشی آن را در فهرست می‌بیند.'),
+      S.cdone.phone ? guidedSend(S.cdone, [{ label: 'ارسال تأیید به مراجع (واتساپ)', run: function () { sendConfirm(ds, S.profile, S.cdone.phone); } }]) : h('p', { class: 'hint', text: 'شمارهٔ مراجع را نگذاشتید؛ اگر خواستید خودتان به او خبر بدهید.' }),
+      h('div', { class: 'actions' }, h('button', { class: 'btn btn--small', type: 'button', text: 'بستن', onclick: function () { S.cdone = null; render(); } })));
+  }
+
   function phoneDigits(p) {
     var d = String(p || '').replace(/[^\d]/g, '');
     if (d.indexOf('00') === 0) d = d.slice(2);
@@ -225,6 +376,7 @@
       S.view = (r.data.role === 'counselor') ? 'counselor' : 'staff';
       if (S.view === 'counselor') { loadCounselor(); refreshPush(); }
       else { S.tab = 'board'; startRealtime(); loadStaff(); refreshPush(); }
+      sb.from('sessions').select('paid').limit(1).then(function (q) { S.pkgCol = !q.error; if (S.pkgCol) loadPackages(); });
     });
   }
 
@@ -657,7 +809,7 @@
       h('div', { class: 's__head' },
         h('div', { class: 's__time' }, dayJ(s.starts_at), h('small', null, ltr(dayG(s.starts_at)), ' · ساعت ' + timeOf(s.starts_at) + ' — ' + n(s.duration_min) + ' دقیقه (به وقت ایران)')),
         h('div', { class: 'chips' },
-          h('span', { class: 'chip chip--gold', text: KIND[s.kind] }), h('span', { class: 'chip', text: MODE[s.mode] }),
+          h('span', { class: 'chip chip--gold', text: KIND[s.kind] }), h('span', { class: 'chip', text: MODE[s.mode] }), payChips(s),
           h('span', { class: 'chip ' + (ok ? 'chip--ok' : (s.status === 'scheduled' ? '' : 'chip--warn')), text: STATUS[s.status] }))),
       h('div', null, h('b', { text: 'مراجع: ' }), s.client_label));
     if (s.status === 'scheduled') {
@@ -719,7 +871,7 @@
         past.length ? [past.slice(0, S.pastN || 30).map(function (s) { return sessionCard(s, true); }),
           past.length > (S.pastN || 30) ? h('div', { class: 'actions' }, h('button', { class: 'btn btn--small', type: 'button', text: 'نمایش جلسه‌های قدیمی‌تر (' + n(past.length - (S.pastN || 30)) + ')', onclick: function () { S.pastN = (S.pastN || 30) + 30; render(); } })) : null]
           : h('p', { class: 'empty', text: 'هنوز جلسه‌ای ثبت نشده.' }));
-    return [hero, stats, h('div', { class: 'cols' + (hasLink ? '' : ' cols--bfirst') }, h('div', { class: 'cols__a' }, upCard, pastCard), h('div', { class: 'cols__b' }, linkCard, pushC))];
+    return [hero, stats, h('div', { class: 'cols' + (hasLink ? '' : ' cols--bfirst') }, h('div', { class: 'cols__a' }, counselorDoneCard(), counselorBookCard(), upCard, pastCard), h('div', { class: 'cols__b' }, linkCard, pushC))];
   }
 
   function groupByDay(list) {
@@ -1181,6 +1333,7 @@
     if (s.status === 'scheduled') { var cb = counselorBtns(s, p, false, false); if (cb) acts.appendChild(cb); }
     if (!p || !p.meet_url) acts.appendChild(h('span', { class: 'chip chip--warn', text: 'مشاور هنوز لینک اتاق ثبت نکرده' }));
     if (s.status === 'scheduled') acts.appendChild(h('button', { class: 'btn btn--small', type: 'button', text: S.resched === s.id ? 'بستن' : 'تغییر زمان', onclick: function () { S.resched = S.resched === s.id ? null : s.id; render(); } }));
+    if (pkgReady() && s.paid !== 'free') acts.appendChild(payBtn(s));
     acts.appendChild(h('button', { class: 'btn btn--danger btn--small', type: 'button', text: 'حذف', onclick: function () {
       if (!window.confirm('این جلسه حذف شود؟')) return;
       sb.from('sessions').delete().eq('id', s.id).then(function (r) { flash(r.error ? 'err' : 'ok', r.error ? explain(r.error) : 'حذف شد.'); loadStaff(); });
@@ -1188,7 +1341,7 @@
     return h('div', { class: 's' },
       h('div', { class: 's__head' },
         h('div', { class: 's__time' }, dayJ(s.starts_at), h('small', null, ltr(dayG(s.starts_at)), ' · ساعت ' + timeOf(s.starts_at) + ' — ' + n(s.duration_min) + ' دقیقه')),
-        h('div', { class: 'chips' }, h('span', { class: 'chip chip--gold', text: KIND[s.kind] }), h('span', { class: 'chip', text: MODE[s.mode] }))),
+        h('div', { class: 'chips' }, h('span', { class: 'chip chip--gold', text: KIND[s.kind] }), h('span', { class: 'chip', text: MODE[s.mode] }), payChips(s))),
       h('div', null, h('b', { text: 'مشاور: ' }), nameOf(s.counselor_id), '   ', h('b', { text: 'مراجع: ' }), s.client_label,
         phone ? h('span', { class: 'hint', dir: 'ltr', text: '   ' + phone }) : null),
       h('div', { class: 'field' }, sel), acts, S.resched === s.id ? reschedForm(s, phone) : null);
@@ -1226,6 +1379,7 @@
       mode: h('select', { class: 'select' }, h('option', { value: 'video', text: 'تصویری' }), h('option', { value: 'audio', text: 'صوتی' })),
       kind: h('select', { class: 'select' }, h('option', { value: 'session', text: 'جلسه' }), h('option', { value: 'intro', text: 'جلسهٔ رایگان پیش‌مشاوره' }))
     };
+    var pf = pkgReady() ? packFields(function () { return f.who.value; }, true) : null;
     var preview = h('p', { class: 'hint', text: '' });
     var whenLocal = function () { var d = f.date.value(), t = f.time.value(); return d && t ? d + 'T' + t : ''; };
     var showPreview = function () {
@@ -1236,7 +1390,7 @@
     f.date = dateField('', showPreview);
     f.time = timeField(showPreview);
     var submit = h('button', { class: 'btn btn--primary', type: 'submit', text: 'ثبت جلسه' });
-    f.kind.addEventListener('change', function () { f.dur.value = f.kind.value === 'intro' ? '15' : '45'; });
+    f.kind.addEventListener('change', function () { f.dur.value = f.kind.value === 'intro' ? '15' : '45'; if (pf) pf.setKind(f.kind.value); });
     var form = h('form', { class: 'card', onsubmit: function (e) {
       e.preventDefault();
       var when = tehranToUtc(whenLocal());
@@ -1244,12 +1398,12 @@
       submit.disabled = true;
       findConflict(f.who.value, when, +f.dur.value).then(function (cf) {
       if (cf && !window.confirm(conflictText(cf))) { submit.disabled = false; return; }
-      sb.from('sessions').insert({ counselor_id: f.who.value, client_label: f.label.value.trim(), starts_at: when.toISOString(),
-        duration_min: +f.dur.value, mode: f.mode.value, kind: f.kind.value, created_by: S.user.id }).select().single().then(function (r) {
+      sb.from('sessions').insert(Object.assign({ counselor_id: f.who.value, client_label: f.label.value.trim(), starts_at: when.toISOString(),
+        duration_min: +f.dur.value, mode: f.mode.value, kind: f.kind.value, created_by: S.user.id }, pf ? pf.values(f.kind.value) : {})).select().single().then(function (r) {
         if (r.error) { submit.disabled = false; flash('err', explain(r.error)); return render(); }
         var phone = f.phone.value.trim();
         S.lastWho = f.who.value;
-        var booked = function (saved) { S.booked = { s: r.data, phone: saved ? phone : '' }; loadStaff(); };
+        var booked = function (saved) { S.booked = { s: r.data, phone: saved ? phone : '' }; loadStaff(); if (pf) loadPackages(); };
         if (!phone) return booked(false);
         sb.from('session_contacts').insert({ session_id: r.data.id, client_phone: phone }).then(function (c) {
           if (c.error) flash('err', 'جلسه ثبت شد ولی شمارهٔ مراجع ذخیره نشد.');
@@ -1269,9 +1423,11 @@
       preview,
       h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'مدت' }), f.dur), h('div', { class: 'field' }, h('label', { text: 'نوع تماس' }), f.mode)),
       h('div', { class: 'field' }, h('label', { text: 'جلسه یا پیش‌مشاوره' }), f.kind),
+      pf ? pf.el : null,
       h('p', { class: 'hint', text: 'محتوای جلسه یا یادداشت بالینی را هیچ‌جا این‌جا ننویسید.' }),
       h('div', { class: 'actions' }, submit));
     f.who.addEventListener('change', function () {
+      if (pf) pf.refresh();
       var p = counselors.filter(function (x) { return x.id === f.who.value; })[0];
       noLogin.hidden = !(p && p.no_login);
     });
