@@ -2660,30 +2660,23 @@
 .brand__mark{width:44px;height:44px;filter:drop-shadow(0 8px 10px rgba(22,57,50,.28))}
 .brand__name{font-size:2rem;line-height:1}
 .nav__right{display:flex;align-items:center;gap:10px}
-.nav__login-btn{position:relative;overflow:visible;gap:10px;padding:0 18px 0 7px;height:44px;width:auto;white-space:nowrap;justify-content:flex-start;border-radius:999px;
-  color:#FDFBF5;border:1px solid #14362E;
-  background:linear-gradient(180deg,#5C9788 0%,#336B5F 44%,#1F4B42 100%);
-  box-shadow:0 5px 0 #0F2B25,0 16px 24px -10px rgba(22,57,50,.65),inset 0 1px 0 rgba(255,255,255,.4),inset 0 -3px 6px rgba(0,0,0,.2);
-  transform:translateY(-2px);transition:transform .18s ease,box-shadow .18s ease,filter .18s ease}
-.nav__login-btn::before{content:"";position:absolute;inset:1px 1px 52% 1px;border-radius:999px 999px 40% 40%;background:linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,0));pointer-events:none}
-.nav__login-btn::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.38) 50%,transparent 65%);background-size:260% 100%;background-position:130% 0;transition:background-position .6s ease}
-.nav__login-btn:hover{background:linear-gradient(180deg,#6BA898 0%,#3B7769 44%,#245449 100%);transform:translateY(-4px) perspective(500px) rotateX(5deg);
-  box-shadow:0 7px 0 #0F2B25,0 22px 30px -10px rgba(22,57,50,.7),0 0 0 4px rgba(232,196,134,.3),inset 0 1px 0 rgba(255,255,255,.45),inset 0 -3px 6px rgba(0,0,0,.2)}
-.nav__login-btn:hover::after{background-position:-30% 0}
-.nav__login-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #0F2B25,0 6px 12px -6px rgba(22,57,50,.6),inset 0 2px 6px rgba(0,0,0,.28)}
-.nav__login-ic{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;flex:none;position:relative;z-index:1;
-  background:radial-gradient(circle at 32% 26%,#FFF6D6 0%,#F0CD86 45%,#C69446 100%);
-  box-shadow:0 3px 0 #8A6B39,0 7px 10px -3px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.9)}
-.nav__login-ic svg{width:17px;height:17px;color:#163932}
-.nav__login-t{position:relative;z-index:1;font-weight:800;font-size:.9rem;color:#FDFBF5;text-shadow:0 1px 0 rgba(0,0,0,.28)}
+.nav__login-btn{gap:8px;padding:0 16px 0 6px;height:40px;width:auto;white-space:nowrap;justify-content:flex-start;border-radius:999px;
+  color:#FDFBF5;border:1px solid #25504A;
+  background:linear-gradient(180deg,#437A6D,#2F6358);
+  box-shadow:0 2px 0 #1B3F38,0 8px 14px -9px rgba(22,57,50,.55);
+  transition:transform .15s ease,box-shadow .15s ease,background .15s ease}
+.nav__login-btn:hover{background:linear-gradient(180deg,#4C8576,#356B5F);transform:translateY(-1px);box-shadow:0 3px 0 #1B3F38,0 12px 18px -10px rgba(22,57,50,.6)}
+.nav__login-btn:active{transform:translateY(1px);box-shadow:0 1px 0 #1B3F38}
+.nav__login-ic{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;flex:none;background:#FDF6E3;box-shadow:inset 0 0 0 1px rgba(183,138,70,.55)}
+.nav__login-ic svg{width:16px;height:16px;color:#163932}
+.nav__login-t{font-weight:700;font-size:.88rem;color:#FDFBF5}
 .nav__login-t .lbl-long{display:none}
 @media (min-width:1400px){.nav__login-t .lbl-long{display:inline}.nav__login-t .lbl-short{display:none}}
-@media (prefers-reduced-motion:reduce){.nav__login-btn,.nav__login-btn::after{transition:none}.nav__login-btn:hover{transform:translateY(-2px)}}
 .nav__login-m{display:none}
 .lang-toggle{background:rgba(27,43,38,.06);border:1px solid rgba(27,43,38,.06)}
 .nav__cta{padding:11px 22px;font-size:.92rem;white-space:nowrap}
-.nav__cta{position:relative;transform:translateY(-2px);box-shadow:0 5px 0 #7C5426,0 16px 24px -10px rgba(138,107,57,.7),inset 0 1px 0 rgba(255,255,255,.55);transition:transform .18s ease,box-shadow .18s ease}
-.nav__cta:hover{transform:translateY(-4px);box-shadow:0 7px 0 #7C5426,0 22px 30px -10px rgba(138,107,57,.75),inset 0 1px 0 rgba(255,255,255,.55)}
+.nav__cta{position:relative;transform:translateY(-1px);box-shadow:0 3px 0 #7C5426,0 10px 16px -10px rgba(138,107,57,.7),inset 0 1px 0 rgba(255,255,255,.5);transition:transform .18s ease,box-shadow .18s ease}
+.nav__cta:hover{transform:translateY(-3px);box-shadow:0 4px 0 #7C5426,0 14px 20px -10px rgba(138,107,57,.75),inset 0 1px 0 rgba(255,255,255,.5)}
 .nav__cta:active{transform:translateY(2px);box-shadow:0 1px 0 #7C5426,inset 0 2px 6px rgba(0,0,0,.2)}
 .nav__cta-m{display:none !important}
 .nav__more{position:relative}
@@ -2723,12 +2716,12 @@
   .nav__more-btn{display:none}
   .nav__menu{display:contents !important}
   .nav__links .btn{margin:8px 0 0;width:100%}
-  .nav__links .nav__login-m{display:flex;align-items:center;gap:12px;width:100%;margin:10px 0 4px;padding:12px 16px 12px 12px;border-radius:20px;border:1px solid #14362E;position:relative;
-    background:linear-gradient(180deg,#5C9788 0%,#336B5F 46%,#1F4B42 100%);box-shadow:0 5px 0 #0F2B25,0 18px 26px -12px rgba(22,57,50,.65),inset 0 1px 0 rgba(255,255,255,.38);transform:translateY(-2px)}
-  .nav__login-m:active{transform:translateY(2px);box-shadow:0 1px 0 #0F2B25,inset 0 2px 6px rgba(0,0,0,.28)}
-  .nav__login-m .nav__login-ic{width:40px;height:40px}
-  .nav__login-m .nav__login-ic svg{width:22px;height:22px}
-  .nav__login-m b{display:block;font-size:1rem;color:#FDFBF5;line-height:1.5;text-shadow:0 1px 0 rgba(0,0,0,.25)}
+  .nav__links .nav__login-m{display:flex;align-items:center;gap:12px;width:100%;margin:10px 0 4px;padding:11px 14px 11px 11px;border-radius:18px;border:1px solid #25504A;
+    background:linear-gradient(180deg,#437A6D,#2F6358);box-shadow:0 2px 0 #1B3F38,0 10px 16px -10px rgba(22,57,50,.55)}
+  .nav__login-m:active{transform:translateY(1px)}
+  .nav__login-m .nav__login-ic{width:36px;height:36px}
+  .nav__login-m .nav__login-ic svg{width:20px;height:20px}
+  .nav__login-m b{display:block;font-size:1rem;color:#FDFBF5;line-height:1.5}
   .nav__login-m small{display:block;font-size:.8rem;color:rgba(253,251,245,.82);line-height:1.5}
 }
 /* 3D brand logo (same build as the counselor panel), teal-faced for the light header */
@@ -2750,8 +2743,8 @@
   .nav__right{gap:8px}
   .nav__links>a:not(.btn),.nav__menu a{padding:10px 14px}
   .nav__links.is-open{max-height:82vh}
-  .nav__login-btn{height:38px;padding:0 13px 0 5px;gap:7px;box-shadow:0 4px 0 #0F2B25,0 12px 18px -8px rgba(22,57,50,.6),inset 0 1px 0 rgba(255,255,255,.4),inset 0 -2px 5px rgba(0,0,0,.2)}
-  .nav__login-ic{width:28px;height:28px}
-  .nav__login-t{font-size:.84rem}
+  .nav__login-btn{height:36px;padding:0 12px 0 5px;gap:6px}
+  .nav__login-ic{width:26px;height:26px}
+  .nav__login-t{font-size:.82rem}
   .lang-toggle__btn{padding:6px 10px}
 }
