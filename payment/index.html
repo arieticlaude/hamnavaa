@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-lang="fa">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>پرداخت آنلاین همنوا | تسویه امن جلسات مشاوره</title>
+<meta name="description" content="پرداخت آنلاین جلسات مشاوره همنوا: کارت بانکی، پی‌پال، حواله بانکی و تتر. پرداخت روی صفحه امن درگاه انجام می‌شود و هیچ اطلاعات کارتی در سایت همنوا وارد نمی‌شود.">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<meta name="author" content="همنوا">
+<meta name="theme-color" content="#23463F">
+<link rel="canonical" href="https://www.hamnavaa.com/payment/">
+<link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/payment/">
+<link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/payment/">
+<link rel="icon" href="../favicon.ico" sizes="32x32">
+<link rel="icon" type="image/png" href="../assets/img/favicon-96.png" sizes="96x96">
+<link rel="apple-touch-icon" href="../assets/img/apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+
+<meta property="og:type" content="website">
+<meta property="og:locale" content="fa_IR">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:site_name" content="همنوا">
+<meta property="og:title" content="پرداخت آنلاین همنوا | تسویه امن جلسات مشاوره">
+<meta property="og:description" content="پرداخت آنلاین جلسات مشاوره همنوا: کارت بانکی، پی‌پال، حواله بانکی و تتر. پرداخت روی صفحه امن درگاه انجام می‌شود.">
+<meta property="og:url" content="https://www.hamnavaa.com/payment/">
+<meta property="og:image" content="https://www.hamnavaa.com/assets/img/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="پرداخت آنلاین همنوا | تسویه امن جلسات مشاوره">
+<meta name="twitter:description" content="پرداخت آنلاین جلسات مشاوره همنوا: کارت بانکی، پی‌پال، حواله بانکی و تتر.">
+<meta name="twitter:image" content="https://www.hamnavaa.com/assets/img/og-image.png">
+<link rel="stylesheet" href="../assets/css/site.css?v=89c2cb0f">
+<noscript><style>.reveal{opacity:1 !important; transform:none !important;} .stagger > *{opacity:1 !important;} .page{display:block !important;}</style></noscript>
+<script>window.PAGE_I18N={title:{fa:"پرداخت آنلاین همنوا | تسویه امن جلسات مشاوره",en:"Payment | Hamnavaa Online Psychology Counseling"},desc:{fa:"پرداخت آنلاین جلسات مشاوره همنوا: کارت بانکی، پی‌پال، حواله بانکی و تتر. پرداخت روی صفحه امن درگاه انجام می‌شود و هیچ اطلاعات کارتی در سایت همنوا وارد نمی‌شود.",en:"Pay for your Hamnavaa counseling sessions: card, PayPal, bank transfer or USDT. Payment happens on the provider's secure page."}};</script>
+
+<!-- ============================================================
+     PAYMENT LINKS — the only block that needs editing when a
+     gateway link changes. Nothing here is secret: every value is a
+     public checkout URL or a public wallet address. API keys and
+     merchant secrets must never appear in this file; the site is a
+     public repository.
+
+     Leave a link as "" and its button politely reports that the
+     method is not available for that package, rather than breaking.
+     ============================================================ -->
+<script>
+window.PAY_LINKS = {
+
+  packages: [
+    { id:'single',    usd:'30.90', sessions:1, popular:false,
+      fa:'تک جلسه',                    en:'Single session' },
+    { id:'pack3',     usd:'83.70', sessions:3, popular:true,
+      fa:'بستهٔ ۳ جلسه',                en:'3-session package' },
+    { id:'pack5',     usd:'129.50', sessions:5, popular:false,
+      fa:'بستهٔ ۵ جلسه',                en:'5-session package' },
+    { id:'stu1',      usd:'19.90', sessions:1, student:true,
+      fa:'تک‌جلسهٔ دانشجویی',            en:'Student single session' },
+    { id:'stu3',      usd:'47.70', sessions:3, student:true,
+      fa:'بستهٔ ۳ جلسهٔ دانشجویی',       en:'Student 3-session package' },
+    { id:'custom',    custom:true,
+      fa:'مبلغ دلخواه',                 en:'Custom amount' }
+  ],
+
+  // `note` says where a method works, `eta` says how soon the session is
+  // confirmed. Those are the two things a payer actually weighs.
+  //
+  // A method with nothing filled in is hidden completely rather than shown
+  // greyed out, so this list can hold every option we might ever offer and
+  // the page still only shows what genuinely works today. Fill a value in
+  // and that method appears by itself.
+  //
+  // `link` is one URL that covers every package (the provider asks for the
+  // amount); `links` is a separate URL per package.
+  methods: {
+
+    card: {
+      fa:'کارت بانکی', en:'Debit or credit card',
+      noteFa:'از هر کشوری — ویزا و مسترکارت',
+      noteEn:'From anywhere — Visa & Mastercard',
+      etaFa:'تأیید فوری', etaEn:'Confirmed instantly',
+      links: { single:'', pack3:'', pack5:'', stu1:'', stu3:'', custom:'' }
+    },
+
+    paypal: {
+      fa:'پی‌پال', en:'PayPal',
+      noteFa:'از هر کشوری — مبلغ بسته را در صفحهٔ پی‌پال وارد می‌کنید', noteEn:'From anywhere — you enter the package amount on the PayPal page',
+      etaFa:'تأیید فوری', etaEn:'Confirmed instantly',
+      link: 'https://www.paypal.com/ncp/payment/3HTX6RY5B2Z22',
+      links: { single:'', pack3:'', pack5:'', stu1:'', stu3:'', custom:'' }
+    },
+
+    // Wise is the one that makes America, Canada and Europe easy: the payer
+    // sends in their own currency on local rails, and it lands in the account
+    // we already have. No second bank account needed anywhere.
+    wise: {
+      fa:'وایز — Wise', en:'Wise',
+      noteFa:'آمریکا، کانادا و اروپا — با ارز خودتان',
+      noteEn:'US, Canada and Europe — pay in your own currency',
+      etaFa:'معمولاً همان روز', etaEn:'Usually the same day',
+      link: ''
+    },
+
+    revolut: {
+      fa:'رِوُلوت — Revolut', en:'Revolut',
+      noteFa:'اروپا و بریتانیا', noteEn:'Europe and the UK',
+      etaFa:'تأیید فوری', etaEn:'Confirmed instantly',
+      link: ''
+    },
+
+    // The three below each need an account in that region. An AE account
+    // cannot receive SEPA, Zelle or Interac, so they stay hidden until
+    // there is a real account behind them.
+    sepa: {
+      fa:'حواله سپا — SEPA', en:'SEPA transfer',
+      noteFa:'اروپا — یورو', noteEn:'Europe — EUR',
+      etaFa:'۱ تا ۲ روز کاری', etaEn:'1–2 working days',
+      iban:'', holder:'', bic:''
+    },
+
+    zelle: {
+      fa:'زل — Zelle', en:'Zelle',
+      noteFa:'آمریکا', noteEn:'United States',
+      etaFa:'تأیید در چند دقیقه', etaEn:'Confirmed within minutes',
+      handle:'', holder:''
+    },
+
+    interac: {
+      fa:'اینتراک — Interac', en:'Interac e-Transfer',
+      noteFa:'کانادا', noteEn:'Canada',
+      etaFa:'تأیید در چند دقیقه', etaEn:'Confirmed within minutes',
+      handle:'', holder:''
+    },
+
+    // holder and swift are still blank, and a wire cannot be sent without
+    // them — so this method stays hidden until all three are filled in.
+    bank: {
+      fa:'حواله بانکی', en:'Bank transfer',
+      noteFa:'بین‌المللی — دلار یا یورو', noteEn:'International — USD or EUR',
+      etaFa:'۱ تا ۳ روز کاری', etaEn:'1–3 working days',
+      iban:   'AE610330000019102272398',
+      holder: '',
+      swift:  ''
+    },
+
+    usdt: {
+      fa:'تتر — USDT', en:'Tether — USDT',
+      noteFa:'فقط شبکهٔ TRC20', noteEn:'TRC20 network only',
+      etaFa:'تأیید در چند دقیقه', etaEn:'Confirmed within minutes',
+      // Not a checkout link: the address is shown with a copy button and the
+      // amount to send. Verified against its own base58check checksum before
+      // being put here.
+      address: 'TLgW4M41akemi27wnLXBHc1ke1dbDqkrzg',
+      network: 'TRC20'
+    },
+
+    // Rial is settled by hand: the account number is sent over WhatsApp once
+    // the visitor says which package they want, so no Iranian account number
+    // is published on the site at all.
+    irr: {
+      fa:'کارت به کارت — ریال', en:'Iranian bank card (rial)',
+      noteFa:'از ایران — شمارهٔ حساب را در واتساپ می‌فرستیم',
+      noteEn:'From Iran — we send the account details on WhatsApp',
+      etaFa:'تأیید در همان روز', etaEn:'Confirmed the same day',
+      handoff: true
+    }
+
+  }
+};
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "هم‌نوا",
+      "item": "https://www.hamnavaa.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "پرداخت",
+      "item": "https://www.hamnavaa.com/payment/"
+    }
+  ]
+}
+</script>
+<!-- content graph -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "پرداخت آنلاین هم‌نوا",
+  "alternateName": "Hamnavaa payment",
+  "url": "https://www.hamnavaa.com/payment/",
+  "description": "صفحه پرداخت جلسات مشاوره هم‌نوا. پرداخت روی صفحه امن درگاه انجام می‌شود و هیچ اطلاعات کارتی در سایت هم‌نوا وارد یا ذخیره نمی‌شود.",
+  "inLanguage": "fa-IR",
+  "isPartOf": {
+    "@id": "https://www.hamnavaa.com/#website"
+  },
+  "about": {
+    "@id": "https://www.hamnavaa.com/#business"
+  },
+  "significantLink": "https://www.hamnavaa.com/pricing/"
+}
+</script>
+</head>
+<body>
+
+<div class="page-glow" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+
+<div class="topbar">
+  <div class="wrap">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span data-i18n="fa" lang="fa">برای رزرو سریع، یک پیام کوتاه در <a href="https://wa.me/989387148988" target="_blank" rel="noopener noreferrer">واتساپ</a> برای ما ارسال کنید</span>
+    <span data-i18n="en" lang="en">For quick booking, send us a short message on <a href="https://wa.me/989387148988" target="_blank" rel="noopener noreferrer">WhatsApp</a></span>
+  </div>
+</div>
+
+<header class="site-header">
+  <nav class="nav wrap">
+    <div class="nav__right">
+      <a href="../panel/" rel="nofollow" class="nav__login-btn" aria-label="ورود مشاوران و کارکنان / Staff login"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg><span data-i18n="fa" lang="fa">ورود</span><span data-i18n="en" lang="en">Login</span></a>
+      <div class="lang-toggle" id="langToggle" role="group" aria-label="Language / زبان">
+        <button type="button" class="lang-toggle__btn is-active" data-set-lang="fa">فا</button>
+        <button type="button" class="lang-toggle__btn" data-set-lang="en">EN</button>
+      </div>
+      <a href="../index.html" data-link data-page="home" class="brand">
+        <svg class="brand__mark" viewBox="0 0 84 84" fill="none">
+          <path d="M14 18 h56 a8 8 0 0 1 8 8 v28 a8 8 0 0 1 -8 8 h-30 l-16 14 v-14 h-10 a8 8 0 0 1 -8 -8 v-28 a8 8 0 0 1 8 -8 Z" fill="#3D6B61"/>
+          <rect x="28" y="34" width="6" height="14" rx="3" fill="#F1F4EF"/>
+          <rect x="39" y="28" width="6" height="26" rx="3" fill="#C2A06B"/>
+          <rect x="50" y="34" width="6" height="14" rx="3" fill="#F1F4EF"/>
+        </svg>
+        <span class="brand__name">هم‌نوا</span>
+      </a>
+    </div>
+    <button class="nav__toggle" id="navToggle" aria-label="باز کردن منو" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav__links" id="navLinks">
+      <a href="../index.html" data-link data-page="home"><span data-i18n="fa" lang="fa">خانه</span>
+<span data-i18n="en" lang="en">Home</span></a>
+      <a href="../services/index.html" data-link data-page="services"><span data-i18n="fa" lang="fa">خدمات</span>
+<span data-i18n="en" lang="en">Services</span></a>
+      <a href="../about/index.html" data-link data-page="about"><span data-i18n="fa" lang="fa">درباره ما</span>
+<span data-i18n="en" lang="en">About Us</span></a>
+      <a href="../counselors/index.html" data-link data-page="counselors"><span data-i18n="fa" lang="fa">درمانگران</span>
+<span data-i18n="en" lang="en">Counselors</span></a>
+      <a href="../tests/index.html" data-link data-page="tests" class="nav__link--glow"><span class="nav__link--glow-dot"></span>
+<span data-i18n="fa" lang="fa">تست‌های روان‌شناسی</span>
+<span data-i18n="en" lang="en">Psychology Tests</span></a>
+      <a href="../reviews/index.html" data-link data-page="reviews"><span data-i18n="fa" lang="fa">نظرات مراجعان</span>
+<span data-i18n="en" lang="en">Reviews</span></a>
+      <a href="../index.html#faq" data-link data-page="home"><span data-i18n="fa" lang="fa">پرسش‌های پرتکرار</span>
+<span data-i18n="en" lang="en">FAQ</span></a>
+      <a href="../pricing/index.html" data-link data-page="pricing"><span data-i18n="fa" lang="fa">تعرفه‌ها</span>
+<span data-i18n="en" lang="en">Pricing</span></a>
+      <a href="../payment/index.html" data-link data-page="payment"><span data-i18n="fa" lang="fa">پرداخت</span>
+<span data-i18n="en" lang="en">Payment</span></a>
+      <a href="../index.html#intro" data-link data-page="home" class="btn btn--primary"><span data-i18n="fa" lang="fa">پیش‌مشاورهٔ رایگان</span>
+<span data-i18n="en" lang="en">Free Pre-Consultation</span></a>
+    </div>
+  </nav>
+</header>
+
+<main>
+    <section class="page-hero">
+      <span class="page-hero__blob page-hero__blob--1"></span>
+      <span class="page-hero__blob page-hero__blob--2"></span>
+      <div class="wrap">
+        <div class="breadcrumb"><a href="../index.html" data-link data-page="home"><span data-i18n="fa" lang="fa">خانه</span>
+<span data-i18n="en" lang="en">Home</span></a><span>/</span>
+<span data-i18n="fa" lang="fa">پرداخت</span>
+<span data-i18n="en" lang="en">Payment</span></div>
+        <div class="eyebrow"><span data-i18n="fa" lang="fa">پرداخت آنلاین</span>
+<span data-i18n="en" lang="en">Online payment</span></div>
+        <h1 class="page-title"><span data-i18n="fa" lang="fa">پرداخت جلسات</span>
+<span data-i18n="en" lang="en">Pay for your sessions</span></h1>
+        <p><span data-i18n="fa" lang="fa">بسته و روش پرداخت را انتخاب کنید. پرداخت روی صفحهٔ امن خودِ درگاه انجام می‌شود.</span>
+<span data-i18n="en" lang="en">Choose a package and a payment method. Payment happens on the provider's own secure page.</span></p>
+      </div>
+    </section>
+
+    <!-- PICKER -->
+    <section class="section" id="pay">
+      <div class="wrap">
+        <div class="section__head reveal">
+          <div class="eyebrow"><span data-i18n="fa" lang="fa">دو قدم</span>
+<span data-i18n="en" lang="en">Two steps</span></div>
+          <h2><span data-i18n="fa" lang="fa">انتخاب بسته و روش پرداخت</span>
+<span data-i18n="en" lang="en">Pick a package and a method</span></h2>
+          <p><span data-i18n="fa" lang="fa">اگر هنوز جلسه‌ای هماهنگ نکرده‌اید، ابتدا یک <a href="../index.html#intro" data-link>جلسهٔ رایگان پیش‌مشاوره</a> رزرو کنید؛ پیش از آن هیچ پرداختی لازم نیست.</span>
+<span data-i18n="en" lang="en">If your session is not scheduled yet, start with a <a href="../index.html#intro" data-link>free pre-consultation session</a> — no payment is needed before that.</span></p>
+        </div>
+
+        <div class="paypick reveal" id="payPick">
+
+          <div class="paypick__step">
+            <div class="paypick__legend">
+              <span class="paypick__num">۱</span>
+              <span data-i18n="fa" lang="fa">بسته را انتخاب کنید</span>
+<span data-i18n="en" lang="en">Choose a package</span>
+            </div>
+            <div class="paypick__grid" id="payPackages" role="radiogroup"
+                 aria-label="انتخاب بسته / Choose a package"></div>
+          </div>
+
+          <div class="paypick__step">
+            <div class="paypick__legend">
+              <span class="paypick__num">۲</span>
+              <span data-i18n="fa" lang="fa">روش پرداخت را انتخاب کنید</span>
+<span data-i18n="en" lang="en">Choose how to pay</span>
+            </div>
+            <div class="paypick__grid paypick__grid--methods" id="payMethods" role="radiogroup"
+                 aria-label="روش پرداخت / Payment method"></div>
+          </div>
+
+          <div class="paypick__out" id="payOut" aria-live="polite"></div>
+
+          <noscript>
+            <div class="paypick__out">
+              <p class="paypick__hint"><span data-i18n="fa" lang="fa">این صفحه برای انتخاب بسته به جاوااسکریپت نیاز دارد. اگر روشن نیست، به ما پیام بدهید تا لینک پرداخت را مستقیم برایتان بفرستیم.</span>
+<span data-i18n="en" lang="en">Choosing a package here needs JavaScript. If it is off, message us and we will send you a payment link directly.</span></p>
+              <p style="margin-top:16px"><a class="btn btn--ghost" href="https://wa.me/989387148988" target="_blank" rel="noopener noreferrer"><span data-i18n="fa" lang="fa">پیام در واتساپ</span>
+<span data-i18n="en" lang="en">Message us on WhatsApp</span></a></p>
+            </div>
+          </noscript>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- AFTER PAYMENT -->
+    <section class="section" id="pay-next">
+      <div class="wrap">
+        <div class="section__head reveal">
+          <div class="eyebrow"><span data-i18n="fa" lang="fa">بعد از پرداخت</span>
+<span data-i18n="en" lang="en">After you pay</span></div>
+          <h2><span data-i18n="fa" lang="fa">جلسه چطور قطعی می‌شود</span>
+<span data-i18n="en" lang="en">How your session gets booked</span></h2>
+          <p><span data-i18n="fa" lang="fa">سه قدم کوتاه، و همه‌اش از طریق واتساپ.</span>
+<span data-i18n="en" lang="en">Three short steps, all of it over WhatsApp.</span></p>
+        </div>
+
+        <div class="pay-group reveal">
+          <div class="pay-methods stagger">
+            <div class="pay-method"><span class="pay-method__mark" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M6 3h9l4 4v14l-2.5-1.5L14 21l-2-1.5L10 21l-2.5-1.5L5 21V3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 9h5M9 13h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span><strong><span data-i18n="fa" lang="fa">رسید را بفرستید</span>
+<span data-i18n="en" lang="en">Send us the receipt</span></strong><span data-i18n="fa" lang="fa">بعد از پرداخت، رسید یا کد تراکنش را در واتساپ برای ما بفرستید.</span>
+<span data-i18n="en" lang="en">After paying, send the receipt or transaction code to us on WhatsApp.</span></div>
+            <div class="pay-method"><span class="pay-method__mark" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"/><path d="M8.5 12.2l2.4 2.4 4.6-4.9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><strong><span data-i18n="fa" lang="fa">تأیید می‌کنیم</span>
+<span data-i18n="en" lang="en">We confirm it</span></strong><span data-i18n="fa" lang="fa">پرداخت را بررسی می‌کنیم و رسید رسمی برایتان صادر می‌شود.</span>
+<span data-i18n="en" lang="en">We check the payment and issue you an official receipt.</span></div>
+            <div class="pay-method"><span class="pay-method__mark" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="12" height="12" rx="2.5" stroke="currentColor" stroke-width="1.6"/><path d="M15 11l5-3v8l-5-3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span><strong><span data-i18n="fa" lang="fa">جلسه قطعی می‌شود</span>
+<span data-i18n="en" lang="en">Your session is booked</span></strong><span data-i18n="fa" lang="fa">زمان جلسه نهایی و لینک تماس پیش از شروع برایتان فرستاده می‌شود.</span>
+<span data-i18n="en" lang="en">The time is finalised and the call link reaches you before it starts.</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ASSURANCE -->
+    <section class="section section--alt" id="pay-safety">
+      <div class="wrap">
+        <div class="section__head reveal">
+          <div class="eyebrow"><span data-i18n="fa" lang="fa">تعهد ما</span>
+<span data-i18n="en" lang="en">Our commitment</span></div>
+          <h2><span data-i18n="fa" lang="fa">پرداخت امن و شفاف</span>
+<span data-i18n="en" lang="en">Secure, transparent payment</span></h2>
+        </div>
+
+        <div class="pay-group reveal">
+          <div class="pay-methods stagger">
+            <div class="pay-method">
+              <span class="pay-method__mark" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v5.5c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6l7-3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <strong><span data-i18n="fa" lang="fa">کارت شما وارد سایت نمی‌شود</span>
+<span data-i18n="en" lang="en">Your card never touches this site</span></strong>
+              <span data-i18n="fa" lang="fa">اطلاعات کارت فقط در همان درگاه وارد می‌شود، نه در سایت هم‌نوا.</span>
+<span data-i18n="en" lang="en">Card details are entered only on the provider's page, never on Hamnavaa.</span>
+            </div>
+            <div class="pay-method">
+              <span class="pay-method__mark" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="4" y="10" width="16" height="10" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 10V7.5a4 4 0 0 1 8 0V10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              </span>
+              <strong><span data-i18n="fa" lang="fa">ارتباط رمزگذاری‌شده</span>
+<span data-i18n="en" lang="en">Encrypted connection</span></strong>
+              <span data-i18n="fa" lang="fa">تمام ارتباط سایت روی HTTPS رمزگذاری شده است.</span>
+<span data-i18n="en" lang="en">The whole site runs over encrypted HTTPS.</span>
+            </div>
+            <div class="pay-method">
+              <span class="pay-method__mark" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M6 3h9l4 4v14H6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3v5h5M9 13h6M9 17h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              </span>
+              <strong><span data-i18n="fa" lang="fa">رسید رسمی</span>
+<span data-i18n="en" lang="en">A proper receipt</span></strong>
+              <span data-i18n="fa" lang="fa">برای هر پرداخت، رسید رسمی دریافت می‌کنید.</span>
+<span data-i18n="en" lang="en">You receive an official receipt for every payment.</span>
+            </div>
+            <div class="pay-method">
+              <span class="pay-method__mark" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 1 1 2.5 5.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M4 19v-5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+              <strong><span data-i18n="fa" lang="fa">بازگشت وجه</span>
+<span data-i18n="en" lang="en">Refunds</span></strong>
+              <span data-i18n="fa" lang="fa">اگر جلسه‌ای از بستهٔ شما برگزار نشود، هزینه‌اش بازگردانده می‌شود.</span>
+<span data-i18n="en" lang="en">If a session from your package is not held, its cost is refunded.</span>
+            </div>
+          </div>
+        </div>
+
+        <p class="section__note reveal"><span data-i18n="fa" lang="fa">هم‌نوا هرگز از طریق ایمیل، پیامک یا واتساپ اطلاعات کارت، رمز یا کد یک‌بارمصرف شما را نمی‌پرسد. اگر چنین پیامی دریافت کردید، به آن پاسخ ندهید.</span>
+<span data-i18n="en" lang="en">Hamnavaa will never ask for your card details, password or one-time code by email, SMS or WhatsApp. If you receive such a message, do not reply to it.</span></p>
+
+        <p class="section__note reveal"><span data-i18n="fa" lang="fa">برای دیدن جزئیات بسته‌ها به <a href="../pricing/index.html" data-link data-page="pricing">صفحهٔ تعرفه‌ها</a> سر بزنید.</span>
+<span data-i18n="en" lang="en">For what each package includes, see the <a href="../pricing/index.html" data-link data-page="pricing">pricing page</a>.</span></p>
+      </div>
+    </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="../index.html" data-link data-page="home" class="brand">
+          <svg class="brand__mark" viewBox="0 0 84 84" fill="none">
+            <path d="M14 18 h56 a8 8 0 0 1 8 8 v28 a8 8 0 0 1 -8 8 h-30 l-16 14 v-14 h-10 a8 8 0 0 1 -8 -8 v-28 a8 8 0 0 1 8 -8 Z" fill="#F1F4EF"/>
+            <rect x="28" y="34" width="6" height="14" rx="3" fill="#23463F"/>
+            <rect x="39" y="28" width="6" height="26" rx="3" fill="#C2A06B"/>
+            <rect x="50" y="34" width="6" height="14" rx="3" fill="#23463F"/>
+          </svg>
+          <span class="brand__name">هم‌نوا</span>
+        </a>
+        <p class="footer-slogan"><span data-i18n="fa" lang="fa">از هر جای دنیا، صدای شما شنیده می‌شود</span>
+<span data-i18n="en" lang="en">From anywhere in the world, your voice will be heard</span></p>
+        <p><span data-i18n="fa" lang="fa">مشاوره روان‌شناسی تصویری و تلفنی، همراه با آرامش و محرمانگی کامل.</span>
+<span data-i18n="en" lang="en">Video and phone psychology counseling, with calm and complete confidentiality.</span></p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4><span data-i18n="fa" lang="fa">دسترسی سریع</span>
+<span data-i18n="en" lang="en">Quick Links</span></h4>
+          <ul>
+            <li><a data-link href="../services/index.html"><span data-i18n="fa" lang="fa">خدمات</span>
+<span data-i18n="en" lang="en">Services</span></a></li>
+            <li><a data-link href="../pricing/index.html"><span data-i18n="fa" lang="fa">تعرفه‌ها</span>
+<span data-i18n="en" lang="en">Pricing</span></a></li>
+            <li><a data-link href="../payment/index.html"><span data-i18n="fa" lang="fa">پرداخت</span>
+<span data-i18n="en" lang="en">Payment</span></a></li>
+            <li><a data-link href="../index.html#process"><span data-i18n="fa" lang="fa">روند مشاوره</span>
+<span data-i18n="en" lang="en">Our Process</span></a></li>
+            <li><a data-link href="../about/index.html"><span data-i18n="fa" lang="fa">درباره ما</span>
+<span data-i18n="en" lang="en">About Us</span></a></li>
+            <li><a data-link href="../counselors/index.html"><span data-i18n="fa" lang="fa">درمانگران</span>
+<span data-i18n="en" lang="en">Counselors</span></a></li>
+            <li><a href="../panel/" rel="nofollow"><span data-i18n="fa" lang="fa">ورود مشاوران</span>
+<span data-i18n="en" lang="en">Counselor Login</span></a></li>
+            <li><a data-link href="../index.html#faq"><span data-i18n="fa" lang="fa">پرسش‌های پرتکرار</span>
+<span data-i18n="en" lang="en">FAQ</span></a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4><span data-i18n="fa" lang="fa">ارتباط با ما</span>
+<span data-i18n="en" lang="en">Contact</span></h4>
+          <ul>
+            <li><a href="https://wa.me/989387148988" target="_blank" rel="noopener noreferrer"><span data-i18n="fa" lang="fa">واتساپ</span>
+<span data-i18n="en" lang="en">WhatsApp</span></a></li>
+            <li><a href="https://t.me/+989387148988" target="_blank" rel="noopener noreferrer"><span data-i18n="fa" lang="fa">تلگرام</span>
+<span data-i18n="en" lang="en">Telegram</span></a></li>
+            <li><a href="https://t.me/hamnavaapsychology" target="_blank" rel="noopener noreferrer"><span data-i18n="fa" lang="fa">کانال تلگرام</span>
+<span data-i18n="en" lang="en">Telegram Channel</span></a></li>
+            <li><a href="https://www.instagram.com/hamnavaa.psychology/" target="_blank" rel="noopener noreferrer me"><span data-i18n="fa" lang="fa">اینستاگرام</span>
+<span data-i18n="en" lang="en">Instagram</span></a></li>
+            <li dir="ltr" style="text-align:right"><a href="mailto:info@hamnavaa.com">info@hamnavaa.com</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="emergency-note"><span data-i18n="fa" lang="fa">هم‌نوا جایگزین خدمات اورژانسی نیست. در شرایط بحرانی، با شماره اورژانس کشور محل سکونت خود (مثلاً ۹۱۱ در آمریکا و کانادا، یا ۱۱۲ در بیشتر کشورهای اروپایی) یا نزدیک‌ترین مرکز درمانی تماس بگیرید.</span>
+<span data-i18n="en" lang="en">Hamnavaa is not a substitute for emergency services. In a crisis, contact the emergency number in your country of residence (e.g., 911 in the US and Canada, or 112 in most European countries) or the nearest medical center.</span></p>
+      <div class="footer-meta">
+        <p><span data-i18n="fa" lang="fa">© ۱۳۹۹ هم‌نوا — تمامی حقوق محفوظ است.</span>
+<span data-i18n="en" lang="en">© 2020 Hamnavaa — All rights reserved.</span></p>
+        <p class="footer-credit" dir="ltr">Designed &amp; built by <span class="footer-credit__name">Eti</span></p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<a href="https://t.me/+989387148988" target="_blank" rel="noopener noreferrer" class="telegram-float" aria-label="Message us on Telegram / پیام در تلگرام">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+    <path d="M11.944 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0a12 12 0 00-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 01.171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+  </svg>
+</a>
+<a href="https://wa.me/989387148988" target="_blank" rel="noopener noreferrer" class="whatsapp-float" aria-label="Send a WhatsApp message / ارسال پیام در واتساپ">
+  <svg width="30" height="30" viewBox="0 0 24 24" fill="white">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </svg>
+</a>
+
+<button class="back-to-top" id="backToTop" aria-label="Back to top / بازگشت به بالا">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+
+<button class="chess-trigger" id="chessTrigger" aria-label="؟" title="؟">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3c-1.4 0-2.5 1.1-2.5 2.5 0 .8.4 1.5 1 2-1.6.7-2.5 2.4-2.3 4.5h7.6c.2-2.1-.7-3.8-2.3-4.5.6-.5 1-1.2 1-2C14.5 4.1 13.4 3 12 3zM8 14l-1.5 5h11L16 14H8zM6 21h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+</button>
+
+<div class="modal-overlay" id="counselorModal" aria-hidden="true">
+  <div class="modal-box" role="dialog" aria-modal="true" id="counselorModalBox">
+    <button type="button" class="modal-close" id="counselorModalClose" aria-label="Close / بستن">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <div id="counselorModalContent"></div>
+  </div>
+</div>
+
+<!-- Chess easter egg. The panel is built by site.js so the pages
+     cannot drift apart; only the shell lives in markup. -->
+<div class="modal-overlay" id="chessModal" aria-hidden="true">
+  <div class="modal-box chess-box" role="dialog" aria-modal="true" id="chessModalBox"></div>
+</div>
+
+<div class="modal-overlay" id="testModal" aria-hidden="true">
+  <div class="modal-box test-box" role="dialog" aria-modal="true" id="testModalBox">
+    <button type="button" class="modal-close" id="testModalClose" aria-label="Close / بستن">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <div id="testModalContent"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="../assets/js/site.js?v=97d66784" defer></script>
+</body>
+</html>

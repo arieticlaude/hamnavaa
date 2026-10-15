@@ -21,6 +21,18 @@ Last updated: 2026-09-13
   Requests are handed off to WhatsApp — there is no self-serve calendar.
 - Confidentiality is total; no physical attendance required.
 
+## Paying for sessions
+
+- Payment is made on the payment page: https://www.hamnavaa.com/payment/
+- The client picks a package and a payment method; the site then opens the
+  provider's own hosted checkout page. Card details are never entered on,
+  or stored by, hamnavaa.com.
+- Methods offered: PayPal (the client enters the amount shown for the chosen
+  package), USDT on the TRC20 network, and Iranian rial arranged through
+  WhatsApp.
+- The free 15-minute intro session requires no payment at all.
+- Prices themselves are listed at https://www.hamnavaa.com/pricing/
+
 ## Individual test pages
 
 Twelve free self-assessments, each on its own page:
