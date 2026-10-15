@@ -537,6 +537,50 @@ window.PAY_LINKS = {
   </div>
 </div>
 
+<style>
+.payamt{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:14px 0 4px;padding:12px 16px;border-radius:16px;background:#fff;border:1px dashed rgba(58,98,89,.45)}
+.payamt__t{font-weight:700;font-size:14.5px;color:#163932;line-height:1.6}
+.payamt__t small{display:block;font-weight:500;color:#55655E;font-size:13px}
+.payamt__v{display:flex;align-items:center;gap:10px}
+.payamt__v b{direction:ltr;font-size:24px;font-weight:800;color:#163932;font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.payamt__v button{border:1px solid rgba(58,98,89,.4);background:#EFF6F3;color:#163932;font:inherit;font-weight:700;font-size:13.5px;border-radius:10px;padding:6px 14px;cursor:pointer}
+.payamt__v button:hover{background:#E1EEE9}
+</style>
+<script>
+/* PayPal's payment link asks the payer to type the amount, and it has no URL parameter to pre-fill it.
+   So: show the exact amount for the chosen package and copy it automatically when the payer continues. */
+(function () {
+  var out = document.getElementById('payOut');
+  if (!out || !window.PAY_LINKS) return;
+  var en = function () { return document.documentElement.dataset.lang === 'en'; };
+  function copy(text, done) {
+    function fb() {
+      var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:-1000px;opacity:0'; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch (e) {} ta.remove(); if (done) done();
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { if (done) done(); }, fb); else fb();
+  }
+  function enhance() {
+    var go = out.querySelector('a.paypick__go');
+    if (!go || !/paypal\.com\/ncp\//.test(go.getAttribute('href') || '') || out.querySelector('.payamt')) return;
+    var sel = document.querySelector('#payPackages [aria-checked="true"]'); if (!sel) return;
+    var id = sel.getAttribute('data-pkg');
+    var pkg = window.PAY_LINKS.packages.filter(function (p) { return p.id === id; })[0];
+    if (!pkg || pkg.custom || !pkg.usd) return;
+    var box = document.createElement('div'); box.className = 'payamt';
+    box.innerHTML = '<div class="payamt__t">' + (en() ? 'On the PayPal page, type this amount:' : 'در صفحهٔ پی‌پال این مبلغ را وارد کنید:') +
+      '<small>' + (en() ? 'It is copied for you when you press Continue — just paste it (Ctrl+V / long-press).' : 'با زدن «ادامه و پرداخت» خودکار کپی می‌شود؛ فقط Paste کنید (Ctrl+V یا نگه‌داشتن انگشت).') + '</small></div>' +
+      '<div class="payamt__v"><b>$' + pkg.usd + '</b><button type="button">' + (en() ? 'Copy amount' : 'کپی مبلغ') + '</button></div>';
+    var btn = box.querySelector('button');
+    btn.addEventListener('click', function () { copy(pkg.usd, function () { btn.textContent = en() ? 'Copied' : 'کپی شد'; setTimeout(function () { btn.textContent = en() ? 'Copy amount' : 'کپی مبلغ'; }, 1800); }); });
+    go.parentNode.insertBefore(box, go);
+    go.addEventListener('click', function () { copy(pkg.usd); });
+  }
+  new MutationObserver(enhance).observe(out, { childList: true, subtree: true });
+  enhance();
+})();
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="../assets/js/site.js?v=97d66784" defer></script>
 </body>
