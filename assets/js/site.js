@@ -491,6 +491,19 @@
     navToggle.setAttribute('aria-expanded', 'false');
   }));
 
+  // header "More" menu: opens on click everywhere, and on hover for mouse users on desktop
+  document.querySelectorAll('.nav__more').forEach(box => {
+    const btn = box.querySelector('.nav__more-btn');
+    const wide = () => window.matchMedia('(hover:hover) and (min-width:1280px)').matches;
+    const set = open => { box.classList.toggle('is-open', open); btn.setAttribute('aria-expanded', open ? 'true' : 'false'); };
+    btn.addEventListener('click', e => { e.stopPropagation(); set(!box.classList.contains('is-open')); });
+    box.addEventListener('mouseenter', () => { if (wide()) set(true); });
+    box.addEventListener('mouseleave', () => { if (wide()) set(false); });
+    document.addEventListener('click', e => { if (!box.contains(e.target)) set(false); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') set(false); });
+    box.querySelectorAll('a').forEach(a => a.addEventListener('click', () => set(false)));
+  });
+
   // call timer
   const toPersianDigits = n => n.toString().padStart(2,'0').replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
   const faDigits = n => n.toString().replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
