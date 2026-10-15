@@ -324,6 +324,7 @@
     if (/rate limit|too many/i.test(m)) return 'تلاش‌ها زیاد بود. چند دقیقه بعد دوباره امتحان کنید.';
     if (/not due yet|not found/i.test(m)) return 'جلسه پیدا نشد یا هنوز وقتش نشده است.';
     if (/profiles_phone_check/i.test(m)) return 'شماره معتبر نیست. فقط رقم، فاصله و + بنویسید.';
+    if (/foreign key|violates|23503/i.test(m)) return 'این مورد به جلسه یا سابقه وصل است و حذف نمی‌شود. اول جلسه‌هایش را پاک کنید، یا او را غیرفعال کنید.';
     if (/invalid meet/i.test(m)) return 'لینک Meet معتبر نیست. باید شبیه meet.google.com/abc-defg-hij باشد.';
     if (/weak|at least/i.test(m)) return 'رمز عبور باید قوی‌تر باشد.';
     if (/failed to fetch|network|load failed/i.test(m)) return 'اتصال به سرور برقرار نشد. اینترنت را بررسی کنید.';
@@ -1313,7 +1314,7 @@
         h('div', { class: 'field filters__go' }, h('button', { class: 'btn btn--primary', type: 'button', text: 'نمایش جلسه‌ها', onclick: apply })),
         h('div', { class: 'field filters__q' }, h('label', { text: 'جست‌وجو' }), qin), h('div', { class: 'field' }, h('label', { text: 'وضعیت' }), stSel)),
       h('p', { class: 'hint', text: n(list.length) + ' جلسه' + ((S.data.q || S.data.st) ? ' (با فیلتر)' : '') }),
-      list.length ? h('div', { class: 'grid2' }, list.map(staffCard)) : h('p', { class: 'empty', text: 'جلسه‌ای پیدا نشد.' })));
+      list.length ? h('div', { class: 'grid2' }, list.map(staffCard)) : h('p', { class: 'empty', text: 'جلسه‌ای پیدا نشد.' })), S.profile.role === 'admin' ? adminToolsCard() : null);
   }
 
   function staffCard(s) {
@@ -1460,11 +1461,54 @@
       return h('div', { class: 's person' }, h('div', { class: 'person__head' }, avatar(p.full_name || '؟'), name),
         h('div', { class: 'row' }, role, h('label', null, active, ' فعال')), takes, wa, guest,
         h('div', { class: 'chips' }, h('span', { class: 'chip ' + (p.meet_url ? 'chip--ok' : 'chip--warn'), text: p.meet_url ? 'لینک اتاق ثبت شده' : 'لینک اتاق ندارد' }),
-          isProvider(p) && phoneCol() ? h('span', { class: 'chip ' + (p.phone ? 'chip--ok' : 'chip--warn'), text: p.phone ? 'شمارهٔ واتساپ ثبت شده' : 'شمارهٔ واتساپ ندارد' }) : null));
+          isProvider(p) && phoneCol() ? h('span', { class: 'chip ' + (p.phone ? 'chip--ok' : 'chip--warn'), text: p.phone ? 'شمارهٔ واتساپ ثبت شده' : 'شمارهٔ واتساپ ندارد' }) : null),
+        isAdmin && !self ? h('div', { class: 'actions' }, h('button', { class: 'btn btn--danger btn--small', type: 'button', text: 'حذف این فرد', onclick: function () { deletePerson(p); } })) : null);
     });
-    return h('section', { class: 'card' }, h('h2', { text: 'مشاورها و کارکنان' }),
+    return h('div', null, isAdmin ? addPersonCard() : null, h('section', { class: 'card' }, h('h2', { text: 'مشاورها و کارکنان' }),
       h('p', { class: 'hint' }, 'برای دعوت یک مشاور جدید: در داشبورد ', ltr('Supabase'), ' بخش ', ltr('Authentication'), ' ← ', ltr('Users'), ' ← ', ltr('Invite user'), ' را بزنید. بعد از اولین ورودش، این‌جا فعالش کنید. اگر مدیر یا منشی خودش مشاور هم هست، گزینهٔ «خودش هم جلسه می‌گیرد» را بزنید تا در فهرست مشاورهای ثبت جلسه بیاید.'),
-      rows.length ? h('div', { class: 'grid2' }, rows) : h('p', { class: 'empty', text: 'هنوز کسی نیست.' }));
+      rows.length ? h('div', { class: 'grid2' }, rows) : h('p', { class: 'empty', text: 'هنوز کسی نیست.' })));
+  }
+
+  /* ───────────── ابزار مدیر: افزودن و حذف ───────────── */
+  function deletePerson(p) {
+    if (!window.confirm('«' + (p.full_name || 'بدون نام') + '» حذف شود؟\nاگر جلسه‌ای به او وصل باشد حذف نمی‌شود؛ در آن حالت غیرفعالش کنید.')) return;
+    sb.from('profiles').delete().eq('id', p.id).then(function (r) {
+      flash(r.error ? 'err' : 'ok', r.error ? explain(r.error) : 'حذف شد.'); loadStaff();
+    });
+  }
+  function addPersonCard() {
+    var name = h('input', { class: 'input', maxlength: 80, required: true, placeholder: 'مثلاً دکتر نام و نام‌خانوادگی' });
+    var btn = h('button', { class: 'btn btn--primary', type: 'submit', text: 'افزودن مشاور' });
+    return h('form', { class: 'card', onsubmit: function (e) {
+      e.preventDefault();
+      if (!name.value.trim()) return;
+      btn.disabled = true;
+      sb.from('profiles').insert({ full_name: name.value.trim(), role: 'counselor', active: true, no_login: true }).then(function (r) {
+        flash(r.error ? 'err' : 'ok', r.error ? explain(r.error) : 'مشاور اضافه شد. بعد از دعوتش، ایمیل او را در کارتش «اتصال به حساب» کنید.'); loadStaff();
+      });
+    } },
+      h('h2', { text: 'افزودن مشاور (بدون حساب ورود)' }),
+      h('p', { class: 'hint', text: 'منشی می‌تواند برایش جلسه ثبت کند. وقتی دعوتش کردید، ایمیلش را در کارت او بزنید تا جلسه‌ها به حساب واقعی‌اش بروند.' }),
+      h('div', { class: 'field' }, h('label', { text: 'نام' }), name), h('div', { class: 'actions' }, btn));
+  }
+  // پاک‌کردن جلسه‌های آزمایشی: همه‌چیزِ ساخته‌شده تا پایان یک تاریخ (جلسه، شمارهٔ مراجع، رویداد اتاق، لاگ جلسه)
+  function adminToolsCard() {
+    var d = dateField(tehranDateInput(0));
+    var go = h('button', { class: 'btn btn--danger', type: 'button', text: 'پاک‌کردن جلسه‌های آزمایشی' });
+    go.addEventListener('click', function () {
+      var cutoff = tehranToUtc(d.value() + 'T23:59');
+      if (!cutoff) { flash('err', 'تاریخ را انتخاب کنید.'); return render(); }
+      if (window.prompt('همهٔ جلسه‌های ساخته‌شده تا پایان ' + d.value() + ' برای همیشه پاک می‌شود، با شمارهٔ مراجع‌ها و لاگ‌هایشان.\nبرای ادامه بنویسید: حذف') !== 'حذف') { flash('info', 'پاک نشد.'); return render(); }
+      go.disabled = true;
+      sb.rpc('admin_clear_sessions', { p_created_before: cutoff.toISOString() }).then(function (r) {
+        var x = r.data || {};
+        flash(r.error ? 'err' : 'ok', r.error ? explain(r.error) : 'پاک شد: ' + n(x.sessions || 0) + ' جلسه، ' + n(x.room_events || 0) + ' رویداد اتاق، ' + n(x.log_rows || 0) + ' ردیف لاگ.');
+        loadStaff(); if (pkgReady()) loadPackages();
+      });
+    });
+    return h('section', { class: 'card card--attn' }, h('h2', { text: 'ابزار مدیر' }),
+      h('p', { class: 'hint', text: 'پاک‌کردنِ جلسه‌های آزمایشی. افراد، لینک اتاق‌ها، لاگ ورودها و اعلان‌ها دست نمی‌خورند. تاریخی را بزنید که تا پایانش هرچه ساخته شده آزمایشی بوده است.' }),
+      h('div', { class: 'field' }, h('label', { text: 'پاک شود: همه‌چیزِ ساخته‌شده تا پایان این روز' }), d.el), h('div', { class: 'actions' }, go));
   }
   function guestBlock(p, isAdmin) {
     var meet = h('input', { class: 'input', dir: 'ltr', type: 'url', placeholder: 'https://meet.google.com/abc-defg-hij', value: p.meet_url || '', disabled: !isAdmin, 'aria-label': 'لینک اتاق' });
