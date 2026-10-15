@@ -595,7 +595,7 @@ window.PAY_LINKS = {
 .paypick__sum b:first-child{font-size:clamp(19px,2.4vw,24px);font-weight:800;color:#163932}
 .paypick__sum b:nth-of-type(2){display:inline-flex;align-items:center;padding:5px 18px 7px;border-radius:999px;font-size:clamp(18px,2.2vw,22px);font-weight:800;color:#FDFBF5;
   background:linear-gradient(180deg,#5C9788,#2F6358);box-shadow:0 3px 0 #1B3F38,0 12px 18px -10px rgba(22,57,50,.65),inset 0 1px 0 rgba(255,255,255,.3)}
-.paypick__sum span:last-child{margin-inline-start:auto;padding:6px 16px 7px;border-radius:999px;font-weight:700;font-size:.92rem;color:#163932;background:#fff;border:1px solid rgba(27,43,38,.12)}
+.paypick__sum>span:not(.paypick__sum-sep){margin-inline-start:auto;padding:6px 16px 7px;border-radius:999px;font-weight:700;font-size:.92rem;color:#163932;background:#fff;border:1px solid rgba(27,43,38,.12)}
 .paypick__go.btn{min-width:min(100%,300px);padding:17px 38px;font-size:1.1rem;font-weight:800;border-radius:999px;
   box-shadow:0 5px 0 #7C5426,0 22px 30px -14px rgba(138,107,57,.75),inset 0 1px 0 rgba(255,255,255,.55);transition:transform .18s ease,box-shadow .18s ease}
 .paypick__go.btn:hover{transform:translateY(-3px);box-shadow:0 8px 0 #7C5426,0 28px 36px -14px rgba(138,107,57,.8),inset 0 1px 0 rgba(255,255,255,.55)}
@@ -609,11 +609,54 @@ html[dir="ltr"] .paypick__go.btn::after{content:"\2192"}
 .paypick__addr{border-radius:18px;border:1px dashed rgba(27,43,38,.22);background:#fff}
 @media (max-width:560px){
   .paypick__go.btn{width:100%}
-  .paypick__sum span:last-child{margin-inline-start:0}
+  .paypick__sum>span:not(.paypick__sum-sep){margin-inline-start:0}
   .paypick__grid--methods .paypick__opt{padding-top:70px}
   .paytrust li{font-size:.82rem}
 }
 </style>
+<style>
+.amtcopy{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(58,98,89,.35);background:#EFF6F3;color:#163932;font:inherit;font-weight:700;font-size:.9rem;border-radius:999px;padding:7px 16px 8px 14px;cursor:pointer;
+  box-shadow:0 3px 0 rgba(27,43,38,.1);transition:transform .15s ease,box-shadow .15s ease,background .15s ease}
+.amtcopy:hover{background:#E1EEE9;transform:translateY(-1px)}
+.amtcopy:active{transform:translateY(2px);box-shadow:0 0 0 rgba(0,0,0,0)}
+.amtcopy svg{width:17px;height:17px;flex:none}
+.amtcopy.is-done{background:#E7F4EC;border-color:#B5D9C3;color:#1F5A3C}
+.amthint{flex-basis:100%;margin:2px 0 0;font-size:.88rem;color:#55655E;line-height:1.7}
+</style>
+<script>
+/* PayPal's link has no way to pre-fill the amount, so the receipt shows the chosen package's amount with a copy button. */
+(function () {
+  var out = document.getElementById('payOut');
+  if (!out || !window.PAY_LINKS) return;
+  var en = function () { return document.documentElement.dataset.lang === 'en'; };
+  var ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6.5A2.5 2.5 0 0 1 7.5 4H15"/></svg>';
+  function copy(text, done) {
+    function fb() {
+      var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:-1000px;opacity:0'; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch (e) {} ta.remove(); done();
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fb); else fb();
+  }
+  function enhance() {
+    var go = out.querySelector('a.paypick__go'), sum = out.querySelector('.paypick__sum');
+    if (!go || !sum || sum.querySelector('.amtcopy') || !/paypal\.com\/ncp\//.test(go.getAttribute('href') || '')) return;
+    var sel = document.querySelector('#payPackages [aria-checked="true"]'); if (!sel) return;
+    var pkg = window.PAY_LINKS.packages.filter(function (p) { return p.id === sel.getAttribute('data-pkg'); })[0];
+    if (!pkg || pkg.custom || !pkg.usd) return;
+    var btn = document.createElement('button'); btn.type = 'button'; btn.className = 'amtcopy';
+    var label = function (done) { btn.innerHTML = ICON + '<span>' + (done ? (en() ? 'Copied' : 'کپی شد') : (en() ? 'Copy amount' : 'کپی مبلغ')) + '</span>'; btn.classList.toggle('is-done', !!done); };
+    label(false);
+    btn.addEventListener('click', function () { copy(pkg.usd, function () { label(true); setTimeout(function () { label(false); }, 1800); }); });
+    var hint = document.createElement('p'); hint.className = 'amthint';
+    hint.textContent = en() ? 'On the PayPal page, paste this amount (' + pkg.usd + ') in the amount box.' : 'در صفحهٔ پی‌پال، همین عدد (' + pkg.usd + ') را در کادر مبلغ بچسبانید.';
+    sum.insertBefore(btn, sum.querySelector(':scope > span:not(.paypick__sum-sep)'));
+    sum.appendChild(hint);
+  }
+  new MutationObserver(enhance).observe(out, { childList: true, subtree: true });
+  enhance();
+})();
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="../assets/js/site.js?v=22507d0b" defer></script>
 </body>
