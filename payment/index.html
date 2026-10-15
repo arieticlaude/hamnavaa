@@ -293,6 +293,11 @@ window.PAY_LINKS = {
 <span data-i18n="en" lang="en">Pay for your sessions</span></h1>
         <p><span data-i18n="fa" lang="fa">بسته و روش پرداخت را انتخاب کنید. پرداخت روی صفحهٔ امن خودِ درگاه انجام می‌شود.</span>
 <span data-i18n="en" lang="en">Choose a package and a payment method. Payment happens on the provider's own secure page.</span></p>
+        <ul class="paytrust">
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><span data-i18n="fa" lang="fa">پرداخت روی صفحهٔ امن خودِ درگاه</span><span data-i18n="en" lang="en">Paid on the provider's secure page</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg><span data-i18n="fa" lang="fa">تأیید فوری با پی‌پال و کارت</span><span data-i18n="en" lang="en">Instant with PayPal and cards</span></li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg><span data-i18n="fa" lang="fa">پشتیبانی در واتساپ</span><span data-i18n="en" lang="en">Support on WhatsApp</span></li>
+        </ul>
       </div>
     </section>
 
@@ -547,49 +552,68 @@ window.PAY_LINKS = {
 </div>
 
 <style>
-.payamt{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:14px 0 4px;padding:12px 16px;border-radius:16px;background:#fff;border:1px dashed rgba(58,98,89,.45)}
-.payamt__t{font-weight:700;font-size:14.5px;color:#163932;line-height:1.6}
-.payamt__t small{display:block;font-weight:500;color:#55655E;font-size:13px}
-.payamt__v{display:flex;align-items:center;gap:10px}
-.payamt__v b{direction:ltr;font-size:24px;font-weight:800;color:#163932;font-variant-numeric:tabular-nums;letter-spacing:.01em}
-.payamt__v button{border:1px solid rgba(58,98,89,.4);background:#EFF6F3;color:#163932;font:inherit;font-weight:700;font-size:13.5px;border-radius:10px;padding:6px 14px;cursor:pointer}
-.payamt__v button:hover{background:#E1EEE9}
+/* ===== payment page polish ===== */
+.paytrust{list-style:none;display:flex;flex-wrap:wrap;justify-content:center;gap:10px 12px;margin:26px 0 0;padding:0}
+.paytrust li{display:inline-flex;align-items:center;gap:9px;padding:8px 16px 9px 14px;border-radius:999px;font-size:.9rem;font-weight:600;color:#163932;
+  background:linear-gradient(180deg,#fff,#F5F0E3);border:1px solid rgba(27,43,38,.1);box-shadow:0 3px 0 rgba(27,43,38,.07),0 12px 18px -12px rgba(22,57,50,.5)}
+.paytrust svg{width:18px;height:18px;color:#3A6259;flex:none}
+
+.paypick{gap:clamp(30px,4.5vw,52px)}
+.paypick__legend{font-size:clamp(18px,2.3vw,22px);font-weight:800;color:#163932;margin-bottom:20px}
+.paypick__num{width:40px;height:40px;font-size:18px;font-weight:800;background:linear-gradient(180deg,#5C9788,#2F6358);box-shadow:0 3px 0 #1B3F38,0 10px 16px -8px rgba(22,57,50,.6),inset 0 1px 0 rgba(255,255,255,.35)}
+
+/* package + method cards */
+.paypick__opt{border-radius:22px;padding:22px 24px;border:1px solid rgba(27,43,38,.1);
+  background:linear-gradient(180deg,#FFFFFF,#F8F3E8);box-shadow:0 3px 0 rgba(27,43,38,.06),0 18px 28px -22px rgba(22,57,50,.55)}
+.paypick__opt:hover:not([aria-disabled="true"]){transform:translateY(-3px);box-shadow:0 5px 0 rgba(27,43,38,.07),0 24px 34px -22px rgba(22,57,50,.6);background:linear-gradient(180deg,#fff,#F6F0E2)}
+.paypick__opt[aria-checked="true"]{border-color:#3A6259;background:linear-gradient(180deg,#F4FAF7,#E8F2EE);
+  box-shadow:0 0 0 2px #3A6259 inset,0 5px 0 #2F6358,0 24px 34px -20px rgba(22,57,50,.65);transform:translateY(-2px)}
+.paypick__opt[aria-checked="true"]::after{content:"";position:absolute;inset-block-start:14px;inset-inline-start:14px;width:26px;height:26px;border-radius:50%;
+  background:#3A6259 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E") center/16px no-repeat;
+  box-shadow:0 3px 8px -3px rgba(22,57,50,.7)}
+.paypick__opt-price{font-size:clamp(22px,3vw,28px);font-weight:800;letter-spacing:-.01em}
+.paypick__opt-tag{top:-12px;padding:4px 14px 5px;background:linear-gradient(180deg,#E9C98B,#B78A46);box-shadow:0 3px 0 #8A6B39,0 10px 16px -8px rgba(138,107,57,.7)}
+#payPackages .paypick__opt[data-pkg="pack3"]:not([aria-checked="true"]){border-color:rgba(183,138,70,.55)}
+
+#payPackages .paypick__opt[aria-checked="true"]::after{inset-inline-start:auto;inset-inline-end:14px}
+/* method cards: an icon disc on each */
+.paypick__grid--methods .paypick__opt{padding-top:74px}
+.paypick__grid--methods .paypick__opt::before{content:"";position:absolute;inset-block-start:18px;inset-inline-end:20px;width:44px;height:44px;border-radius:14px;
+  background:#3A6259 center/24px no-repeat;box-shadow:0 3px 0 #1B3F38,0 10px 16px -8px rgba(22,57,50,.6),inset 0 1px 0 rgba(255,255,255,.3)}
+.paypick__opt[data-method="card"]::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='2.5' y='5' width='19' height='14' rx='3'/%3E%3Cpath d='M2.5 10h19M6.5 15h3'/%3E%3C/svg%3E")}
+.paypick__opt[data-method="paypal"]::before{background-color:#2B5E8C;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 21 9.2 7.5h5.6a3.5 3.5 0 0 1 0 7H11'/%3E%3Cpath d='M5 18.5 6.6 8.5h5.2'/%3E%3C/svg%3E");box-shadow:0 3px 0 #1B3F5E,0 10px 16px -8px rgba(30,70,110,.6),inset 0 1px 0 rgba(255,255,255,.3)}
+.paypick__opt[data-method="usdt"]::before{background-color:#2F8F6B;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M7.5 9h9M12 9v7.5M9.5 12.2c0 .8 1.2 1.3 2.5 1.3s2.5-.5 2.5-1.3'/%3E%3C/svg%3E");box-shadow:0 3px 0 #1E6B4D,0 10px 16px -8px rgba(30,110,80,.6),inset 0 1px 0 rgba(255,255,255,.3)}
+.paypick__opt[data-method="irr"]::before{background-color:#B78A46;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 10 12 4l9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20.5h18'/%3E%3C/svg%3E");box-shadow:0 3px 0 #8A6B39,0 10px 16px -8px rgba(138,107,57,.65),inset 0 1px 0 rgba(255,255,255,.35)}
+.paypick__opt-eta{padding:3px 11px;border-radius:999px;background:rgba(58,98,89,.1);margin-top:4px}
+
+/* the receipt */
+.paypick__out{border-radius:28px;padding:clamp(24px,3.4vw,38px);border:1px solid rgba(27,43,38,.1);
+  background:linear-gradient(180deg,#FFFFFF 0%,#F8F3E8 100%);box-shadow:0 4px 0 rgba(27,43,38,.05),0 34px 54px -34px rgba(22,57,50,.6);position:relative;overflow:hidden}
+.paypick__out::before{content:"";position:absolute;inset-inline:0;top:0;height:5px;background:linear-gradient(90deg,#E9C98B,#B78A46 40%,#3A6259)}
+.paypick__sum{display:flex;flex-wrap:wrap;align-items:center;gap:12px 14px;margin:0 0 22px;padding-bottom:20px;border-bottom:1px dashed rgba(27,43,38,.2)}
+.paypick__sum-sep{display:none}
+.paypick__sum b:first-child{font-size:clamp(19px,2.4vw,24px);font-weight:800;color:#163932}
+.paypick__sum b:nth-of-type(2){display:inline-flex;align-items:center;padding:5px 18px 7px;border-radius:999px;font-size:clamp(18px,2.2vw,22px);font-weight:800;color:#FDFBF5;
+  background:linear-gradient(180deg,#5C9788,#2F6358);box-shadow:0 3px 0 #1B3F38,0 12px 18px -10px rgba(22,57,50,.65),inset 0 1px 0 rgba(255,255,255,.3)}
+.paypick__sum span:last-child{margin-inline-start:auto;padding:6px 16px 7px;border-radius:999px;font-weight:700;font-size:.92rem;color:#163932;background:#fff;border:1px solid rgba(27,43,38,.12)}
+.paypick__go.btn{min-width:min(100%,300px);padding:17px 38px;font-size:1.1rem;font-weight:800;border-radius:999px;
+  box-shadow:0 5px 0 #7C5426,0 22px 30px -14px rgba(138,107,57,.75),inset 0 1px 0 rgba(255,255,255,.55);transition:transform .18s ease,box-shadow .18s ease}
+.paypick__go.btn:hover{transform:translateY(-3px);box-shadow:0 8px 0 #7C5426,0 28px 36px -14px rgba(138,107,57,.8),inset 0 1px 0 rgba(255,255,255,.55)}
+.paypick__go.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #7C5426,inset 0 2px 6px rgba(0,0,0,.2)}
+.paypick__go.btn::after{content:"\2190";font-size:1.3em;line-height:1}
+html[dir="ltr"] .paypick__go.btn::after{content:"\2192"}
+.paypick__fine{display:flex;align-items:center;gap:10px;margin:20px 0 0;font-size:.88rem}
+.paypick__fine::before{content:"";width:22px;height:22px;flex:none;background:#3A6259;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='10' width='16' height='10' rx='2.5'/%3E%3Cpath d='M8 10V7a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='10' width='16' height='10' rx='2.5'/%3E%3Cpath d='M8 10V7a4 4 0 0 1 8 0v3'/%3E%3C/svg%3E") center/contain no-repeat}
+.paypick__addr{border-radius:18px;border:1px dashed rgba(27,43,38,.22);background:#fff}
+@media (max-width:560px){
+  .paypick__go.btn{width:100%}
+  .paypick__sum span:last-child{margin-inline-start:0}
+  .paypick__grid--methods .paypick__opt{padding-top:70px}
+  .paytrust li{font-size:.82rem}
+}
 </style>
-<script>
-/* PayPal's payment link asks the payer to type the amount, and it has no URL parameter to pre-fill it.
-   So: show the exact amount for the chosen package and copy it automatically when the payer continues. */
-(function () {
-  var out = document.getElementById('payOut');
-  if (!out || !window.PAY_LINKS) return;
-  var en = function () { return document.documentElement.dataset.lang === 'en'; };
-  function copy(text, done) {
-    function fb() {
-      var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', '');
-      ta.style.cssText = 'position:fixed;top:-1000px;opacity:0'; document.body.appendChild(ta); ta.select();
-      try { document.execCommand('copy'); } catch (e) {} ta.remove(); if (done) done();
-    }
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { if (done) done(); }, fb); else fb();
-  }
-  function enhance() {
-    var go = out.querySelector('a.paypick__go');
-    if (!go || !/paypal\.com\/ncp\//.test(go.getAttribute('href') || '') || out.querySelector('.payamt')) return;
-    var sel = document.querySelector('#payPackages [aria-checked="true"]'); if (!sel) return;
-    var id = sel.getAttribute('data-pkg');
-    var pkg = window.PAY_LINKS.packages.filter(function (p) { return p.id === id; })[0];
-    if (!pkg || pkg.custom || !pkg.usd) return;
-    var box = document.createElement('div'); box.className = 'payamt';
-    box.innerHTML = '<div class="payamt__t">' + (en() ? 'On the PayPal page, type this amount:' : 'در صفحهٔ پی‌پال این مبلغ را وارد کنید:') +
-      '<small>' + (en() ? 'It is copied for you when you press Continue — just paste it (Ctrl+V / long-press).' : 'با زدن «ادامه و پرداخت» خودکار کپی می‌شود؛ فقط Paste کنید (Ctrl+V یا نگه‌داشتن انگشت).') + '</small></div>' +
-      '<div class="payamt__v"><b>$' + pkg.usd + '</b><button type="button">' + (en() ? 'Copy amount' : 'کپی مبلغ') + '</button></div>';
-    var btn = box.querySelector('button');
-    btn.addEventListener('click', function () { copy(pkg.usd, function () { btn.textContent = en() ? 'Copied' : 'کپی شد'; setTimeout(function () { btn.textContent = en() ? 'Copy amount' : 'کپی مبلغ'; }, 1800); }); });
-    go.parentNode.insertBefore(box, go);
-    go.addEventListener('click', function () { copy(pkg.usd); });
-  }
-  new MutationObserver(enhance).observe(out, { childList: true, subtree: true });
-  enhance();
-})();
-</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="../assets/js/site.js?v=22507d0b" defer></script>
 </body>
