@@ -555,25 +555,8 @@
     wrap.appendChild(logo);
     slot.replaceWith(wrap);
     const body = logo.querySelector('.l3d__body');
-    let cx = -10, cy = -26, tx = -10, ty = -26, hasPtr = false, px = 0, py = 0;
-    const pose = () => { body.style.transform = 'rotateX(' + cx.toFixed(2) + 'deg) rotateY(' + cy.toFixed(2) + 'deg)'; };
-    pose();
-    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    window.addEventListener('pointermove', e => {
-      const r = wrap.getBoundingClientRect();
-      px = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / (window.innerWidth * 0.45)));
-      py = Math.max(-1, Math.min(1, (e.clientY - (r.top + r.height / 2)) / (window.innerHeight * 0.45)));
-      hasPtr = true;
-    }, { passive: true });
-    document.addEventListener('pointerleave', () => { hasPtr = false; });
-    const t0 = performance.now();
-    (function tick(now) {
-      const t = (now - t0) / 1000;
-      if (hasPtr) { ty = -26 + px * 34; tx = -10 - py * 18; }
-      else { ty = -26 + Math.sin(t * 0.75) * 18; tx = -10 + Math.sin(t * 0.95 + 1) * 4.5; }
-      cx += (tx - cx) * 0.07; cy += (ty - cy) * 0.07; pose();
-      requestAnimationFrame(tick);
-    })(t0);
+    // a fixed, slightly turned pose: 3D by depth and light, no reaction to the pointer
+    body.style.transform = 'rotateX(-10deg) rotateY(-26deg)';
   })();
 
   // call timer
