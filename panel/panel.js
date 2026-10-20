@@ -4,6 +4,8 @@
    را خود پایگاه‌داده (RLS) تعیین می‌کند، نه این صفحه. */
 (function () {
   'use strict';
+  // the panel is never meant to be shown inside another site's frame (clickjacking)
+  if (window.top !== window.self) { document.documentElement.textContent = ''; try { window.top.location = window.self.location; } catch (e) { /* blocked: the empty page is what stays */ } return; }
 
   var CFG = window.PANEL_CONFIG || {};
   var LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
@@ -326,7 +328,7 @@
     if (/profiles_phone_check/i.test(m)) return 'شماره معتبر نیست. فقط رقم، فاصله و + بنویسید.';
     if (/foreign key|violates|23503/i.test(m)) return 'این مورد به جلسه یا سابقه وصل است و حذف نمی‌شود. اول جلسه‌هایش را پاک کنید، یا او را غیرفعال کنید.';
     if (/invalid meet/i.test(m)) return 'لینک Meet معتبر نیست. باید شبیه meet.google.com/abc-defg-hij باشد.';
-    if (/weak|at least/i.test(m)) return 'رمز عبور باید قوی‌تر باشد.';
+    if (/weak|at least|character/i.test(m)) return 'رمز عبور ضعیف است: دست‌کم ۱۲ نویسه و شامل حرف کوچک و بزرگ انگلیسی و عدد.';
     if (/failed to fetch|network|load failed/i.test(m)) return 'اتصال به سرور برقرار نشد. اینترنت را بررسی کنید.';
     return 'خطایی رخ داد. دوباره امتحان کنید.';
   }
@@ -730,12 +732,12 @@
   }
 
   function vSetPw() {
-    var p1 = h('input', { class: 'input', type: 'password', id: 'np1', dir: 'ltr', autocomplete: 'new-password', minlength: 10, required: true, placeholder: 'دست‌کم ۱۰ نویسه' });
-    var p2 = h('input', { class: 'input', type: 'password', id: 'np2', dir: 'ltr', autocomplete: 'new-password', minlength: 10, required: true });
+    var p1 = h('input', { class: 'input', type: 'password', id: 'np1', dir: 'ltr', autocomplete: 'new-password', minlength: 12, required: true, placeholder: 'دست‌کم ۱۲ نویسه؛ حرف بزرگ، کوچک و عدد' });
+    var p2 = h('input', { class: 'input', type: 'password', id: 'np2', dir: 'ltr', autocomplete: 'new-password', minlength: 12, required: true });
     var form = h('form', { class: 'authcard', onsubmit: function (e) {
       e.preventDefault();
       if (p1.value !== p2.value) { flash('err', 'دو رمز یکی نیستند.'); return vSetPw(); }
-      if (p1.value.length < 10) { flash('err', 'رمز باید دست‌کم ۱۰ نویسه باشد.'); return vSetPw(); }
+      if (p1.value.length < 12 || !/[a-z]/.test(p1.value) || !/[A-Z]/.test(p1.value) || !/[0-9]/.test(p1.value)) { flash('err', 'رمز باید دست‌کم ۱۲ نویسه و شامل حرف کوچک و بزرگ انگلیسی و عدد باشد.'); return vSetPw(); }
       sb.auth.updateUser({ password: p1.value }).then(function (r) {
         if (r.error) { flash('err', explain(r.error)); return vSetPw(); }
         history.replaceState(null, '', location.pathname + location.search);
