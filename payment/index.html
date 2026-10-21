@@ -76,8 +76,8 @@ window.PAY_LINKS = {
 
     card: {
       fa:'کارت بانکی یا Apple Pay', en:'Debit/credit card or Apple Pay',
-      noteFa:'ویزا، مسترکارت و Apple Pay (روی دستگاه‌های اپل) — مبلغ بسته را در صفحهٔ پرداخت وارد می‌کنید',
-      noteEn:'Visa, Mastercard and Apple Pay (on Apple devices) — you enter the package amount on the payment page',
+      noteFa:'برای پرداخت از خارج از ایران — ویزا، مسترکارت و Apple Pay (روی دستگاه‌های اپل)؛ مبلغ بسته را در صفحهٔ پرداخت وارد می‌کنید',
+      noteEn:'For paying from outside Iran — Visa, Mastercard and Apple Pay (on Apple devices); you enter the package amount on the payment page',
       etaFa:'تأیید فوری', etaEn:'Confirmed instantly',
       link: 'https://www.paypal.com/ncp/payment/3HTX6RY5B2Z22',
       links: { single:'', pack3:'', pack5:'', stu1:'', stu3:'', custom:'' }
@@ -85,7 +85,7 @@ window.PAY_LINKS = {
 
     paypal: {
       fa:'پی‌پال', en:'PayPal',
-      noteFa:'از هر کشوری — مبلغ بسته را در صفحهٔ پی‌پال وارد می‌کنید', noteEn:'From anywhere — you enter the package amount on the PayPal page',
+      noteFa:'برای پرداخت از خارج از ایران — مبلغ بسته را در صفحهٔ پی‌پال وارد می‌کنید', noteEn:'For paying from outside Iran — you enter the package amount on the PayPal page',
       etaFa:'تأیید فوری', etaEn:'Confirmed instantly',
       link: 'https://www.paypal.com/ncp/payment/3HTX6RY5B2Z22',
       links: { single:'', pack3:'', pack5:'', stu1:'', stu3:'', custom:'' }
@@ -621,6 +621,7 @@ html[dir="ltr"] .paypick__go.btn::after{content:"\2192"}
 .amtcopy:active{transform:translateY(2px);box-shadow:0 0 0 rgba(0,0,0,0)}
 .amtcopy svg{width:17px;height:17px;flex:none}
 .amtcopy.is-done{background:#E7F4EC;border-color:#B5D9C3;color:#1F5A3C}
+.payfallback{margin:14px 0 0;padding:12px 16px 13px;border-radius:16px;background:rgba(183,138,70,.12);border:1px dashed rgba(138,107,57,.45);font-size:.92rem;line-height:1.8;color:#3d3220}
 .amthint{flex-basis:100%;margin:2px 0 0;font-size:.88rem;color:#55655E;line-height:1.7}
 </style>
 <script>
@@ -653,8 +654,17 @@ html[dir="ltr"] .paypick__go.btn::after{content:"\2192"}
     sum.insertBefore(btn, sum.querySelector(':scope > span:not(.paypick__sum-sep)'));
     sum.appendChild(hint);
   }
-  new MutationObserver(enhance).observe(out, { childList: true, subtree: true });
-  enhance();
+  function fallback() {
+    var go = out.querySelector('a.paypick__go');
+    if (!go || out.querySelector('.payfallback') || !/paypal\.com\/ncp\//.test(go.getAttribute('href') || '')) return;
+    var p = document.createElement('p'); p.className = 'payfallback';
+    p.textContent = en()
+      ? 'If PayPal shows an error or is not available in your country, choose another way above: USDT, or a payment in rial through WhatsApp.'
+      : 'اگر پی‌پال خطا داد یا در کشور شما در دسترس نبود، همین‌جا روش دیگری را انتخاب کنید: تتر (USDT) یا پرداخت ریالی از طریق واتساپ.';
+    out.appendChild(p);
+  }
+  new MutationObserver(function () { enhance(); fallback(); }).observe(out, { childList: true, subtree: true });
+  enhance(); fallback();
 })();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
