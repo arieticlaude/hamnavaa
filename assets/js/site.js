@@ -449,7 +449,7 @@
       a.style.maxHeight = a.scrollHeight + 'px';
     });
     document.querySelectorAll('.stats-band .stat').forEach(el => {
-      const val = el.dataset.done === 'true' ? parseInt(el.dataset.target, 10) : 0;
+      const val = el.dataset.done === 'true' ? computeLiveTarget(el) : 0;
       renderStat(el, val);
     });
     labelSelectedCards();
@@ -568,7 +568,9 @@
     seconds++;
     const m = Math.floor(seconds/60) % 60;
     const s = seconds % 60;
-    timerEl.textContent = toPersianDigits(m) + ':' + toPersianDigits(s);
+    timerEl.textContent = document.documentElement.getAttribute('data-lang') === 'en'
+      ? String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0')
+      : toPersianDigits(m) + ':' + toPersianDigits(s);
   }, 1000);
 
   // stats band counter animation
@@ -695,7 +697,7 @@
       card.innerHTML =
         '<div class="star-row" aria-hidden="true">'+stars+'</div>' +
         '<p class="testimonial-card__quote"><span data-i18n="fa">'+t.fa+'</span><span data-i18n="en">'+t.en+'</span></p>' +
-        '<div class="testimonial-card__author"><span class="testimonial-card__avatar">'+(t.name_fa).slice(0,1)+'</span><span><span data-i18n="fa">'+t.name_fa+'</span><span data-i18n="en">'+t.name_en+'</span></span></div>';
+        '<div class="testimonial-card__author"><span class="testimonial-card__avatar"><span data-i18n="fa">'+(t.name_fa).slice(0,1)+'</span><span data-i18n="en">'+(t.name_en).slice(0,1)+'</span></span><span><span data-i18n="fa">'+t.name_fa+'</span><span data-i18n="en">'+t.name_en+'</span></span></div>';
     }
     return card;
   }
