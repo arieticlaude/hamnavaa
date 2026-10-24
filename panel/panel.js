@@ -353,7 +353,7 @@
     // صفحهٔ مشاور هر دقیقه تازه می‌شود (پنجرهٔ ورود به اتاق)، ولی هرگز وسط نوشتن در یک فیلد
     setInterval(function () {
       var tag = (document.activeElement && document.activeElement.tagName) || '';
-      if ((S.view === 'counselor' || (S.view === 'staff' && S.tab === 'mine')) && !/INPUT|SELECT|TEXTAREA/.test(tag)) loadCounselor();
+      if ((S.view === 'counselor' || (S.view === 'staff' && (S.tab === 'mine' || (S.tab === 'board' && S.profile && S.profile.takes_sessions)))) && !/INPUT|SELECT|TEXTAREA/.test(tag)) loadCounselor();
     }, 60000);
   }
 
@@ -376,7 +376,7 @@
       try { if (!MOCK && !sessionStorage.getItem('hn_sig')) { sessionStorage.setItem('hn_sig', '1'); sb.rpc('record_signin', { p_ua: navigator.userAgent || '' }).then(function () {}, function () {}); } } catch (e) { /* ثبت ورود اختیاری است */ }
       S.view = (r.data.role === 'counselor') ? 'counselor' : 'staff';
       if (S.view === 'counselor') { loadCounselor(); refreshPush(); }
-      else { S.tab = 'board'; startRealtime(); loadStaff(); refreshPush(); }
+      else { S.tab = 'board'; startRealtime(); loadStaff(); refreshPush(); if (r.data.takes_sessions) loadCounselor(); }
       sb.from('sessions').select('paid').limit(1).then(function (q) { S.pkgCol = !q.error; if (S.pkgCol) loadPackages(); });
     });
   }
@@ -1269,9 +1269,30 @@
     });
   }
 
+  /* مدیر یا منشی‌ای که خودش مشاور هم هست (مثل دکتر فتاحی): دکمهٔ ورود به اتاقِ خودش باید روی همین صفحهٔ اول باشد،
+     نه فقط در تب آخرِ «جلسه‌های من». */
+  function myRoomCard() {
+    if (!S.profile || !S.profile.takes_sessions) return null;
+    if (!S.mine) return h('section', { class: 'card hero' }, h('h2', { text: 'اتاق مشاورهٔ من' }), h('p', { class: 'hint', text: 'در حال بارگذاری جلسه‌های شما…' }));
+    var now = Date.now();
+    var upcoming = S.mine.filter(function (s) { return s.status === 'scheduled' && endOf(s) + JOIN_AFTER_MIN * 60000 >= now; });
+    var next = upcoming.filter(function (s) { return endOf(s) > now; })[0] || upcoming[0];
+    var hasLink = !!S.profile.meet_url;
+    var card = h('section', { class: 'card hero', id: 'sec-room' },
+      h('h2', { text: 'اتاق مشاورهٔ من' }),
+      h('p', { class: 'hint' }, next ? ['جلسهٔ بعدی شما: ', dayLabel(next.starts_at) + '، ساعت ' + timeOf(next.starts_at) + ' — ' + next.client_label + ' — ', h('b', { class: 'cd', text: countdown(next) })] : 'جلسهٔ برنامه‌ریزی‌شده‌ای ندارید.'),
+      h('button', { class: 'room-btn', type: 'button', disabled: !hasLink, onclick: function () { openRoom(next); } },
+        svgEl(VIDEO_ICON), h('span', { text: 'ورود به اتاق مشاوره' })),
+      !hasLink ? h('p', { class: 'hint', text: 'لینک اتاق شما ثبت نشده. از تب «جلسه‌های من» ثبتش کنید.' }) : null);
+    if (S.room && hasLink) {
+      card.appendChild(h('p', { class: 'hint', role: 'status', text: S.notified === 'ok' ? 'اتاق باز شد و برای منشی اعلام شد ✓' :
+        S.notified === 'fail' ? 'اتاق باز شد، ولی اطلاع‌رسانی خودکار انجام نشد. از تب «جلسه‌های من» لینک را برای منشی بفرستید.' : 'اتاق باز شد. در حال اطلاع‌رسانی…' }));
+    }
+    return card;
+  }
   function tBoard() {
     var B = S.data.board || { events: [], sessions: {}, contacts: {} };
-    return h('div', { class: 'cols' }, h('div', { class: 'cols__a' }, pushCard(), h('section', { class: 'card' }, h('h2', { text: 'اتاق‌های باز' }),
+    return h('div', { class: 'cols' }, h('div', { class: 'cols__a' }, myRoomCard(), pushCard(), h('section', { class: 'card' }, h('h2', { text: 'اتاق‌های باز' }),
       h('p', { class: 'hint', text: 'وقتی مشاوری دکمهٔ «ورود به اتاق مشاوره» را می‌زند، همین‌جا ظاهر می‌شود. این صفحه را باز نگه دارید.' }),
       h('div', { class: 'actions' }, h('button', { class: 'btn btn--small', type: 'button', disabled: !!S.alerts, onclick: enableAlerts,
         text: S.alerts ? 'صدا و اعلان فعال است ✓' : 'فعال‌سازی صدا و اعلان' })),
