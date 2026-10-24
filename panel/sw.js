@@ -1,7 +1,7 @@
 /* هم‌نوا — پنل: سرویس‌ورکر کوچک برای «نصب روی گوشی».
    فقط فایل‌های خود پنل (/panel/) را، اول از شبکه و در صورت قطعی از حافظه، می‌دهد.
    هیچ درخواستی به Supabase یا هر آدرس دیگر را دست نمی‌زند و هیچ داده‌ای نگه نمی‌دارد. */
-var V = 'hamnavaa-panel-v3';
+var V = 'hamnavaa-panel-v4';
 self.addEventListener('install', function () { self.skipWaiting(); });
 self.addEventListener('activate', function (e) {
   e.waitUntil(caches.keys().then(function (ks) {

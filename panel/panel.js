@@ -1114,13 +1114,25 @@
     return p ? (p.full_name || 'بدون نام') : '—';
   }
   function profileOf(id) { return (S.data.profiles || []).filter(function (x) { return x.id === id; })[0]; }
+  /* فهرست افراد فقط هنگام ورود بار می‌شد؛ در برنامهٔ گوشی که روزها باز می‌ماند کهنه می‌شد
+     (مثلاً مدیرِ مشاور در فهرست «جلسهٔ جدید» نمی‌آمد). حالا با باز کردن تب‌ها و برگشتن به برنامه تازه می‌شود. */
+  function refreshProfiles() {
+    if (MOCK || S.view !== 'staff' || !S.user) return;
+    sb.from('profiles').select('*').order('full_name', { ascending: true }).then(function (r) {
+      if (r.error || !r.data) return;
+      var sig = function (a) { return (a || []).map(function (p) { return [p.id, p.role, p.active, p.takes_sessions, p.full_name].join('|'); }).join(';'); };
+      var changed = sig(r.data) !== sig(S.data.profiles);
+      S.data.profiles = r.data;
+      if (changed && S.view === 'staff') render();
+    });
+  }
 
   function vStaff() {
     var open = (S.data.board && S.data.board.events.length) || 0;
     var tabList = [['board', 'اتاق‌های باز'], ['sessions', 'جلسه‌ها'], ['new', 'جلسهٔ جدید'], ['people', 'مشاورها'], ['monitor', 'پایش']];
     if (S.profile.takes_sessions) tabList.push(['mine', 'جلسه‌های من']);
     var tabs = h('div', { class: 'tabs', role: 'tablist' }, tabList.map(function (t) {
-      return h('button', { class: 'tab', role: 'tab', 'aria-selected': S.tab === t[0] ? 'true' : 'false', onclick: function () { S.tab = t[0]; if (t[0] !== 'new') S.booked = null; if (t[0] === 'mine') loadCounselor(); if (t[0] === 'monitor') loadMonitor(); render(); } },
+      return h('button', { class: 'tab', role: 'tab', 'aria-selected': S.tab === t[0] ? 'true' : 'false', onclick: function () { S.tab = t[0]; if (t[0] !== 'new') S.booked = null; if (t[0] === 'mine') loadCounselor(); if (t[0] === 'monitor') loadMonitor(); render(); if (t[0] === 'new' || t[0] === 'people' || t[0] === 'sessions') refreshProfiles(); } },
         ico({ board: 'video', sessions: 'calendar', 'new': 'plus', people: 'users', monitor: 'activity', mine: 'user' }[t[0]] || 'calendar'),
         h('span', { text: t[1] }), t[0] === 'board' ? h('span', { class: 'badge', id: 'boardBadge', text: open ? n(open) : '' }) : null);
     }));
@@ -1225,6 +1237,7 @@
     if (sb.channel) sb.channel('room-events').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'room_events' }, function () { loadBoard(); }).subscribe();
     setInterval(function () { if (S.view === 'staff') loadBoard(); }, 20000);      // اگر اتصال زنده قطع شد
     window.addEventListener('focus', function () { document.title = BASE_TITLE; });
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) refreshProfiles(); });
   }
   function beep() {
     try {
