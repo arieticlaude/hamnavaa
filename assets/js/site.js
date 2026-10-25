@@ -373,6 +373,7 @@
     const last = parts[parts.length - 1] || '';
     // .../services/index.html -> "services";  .../index.html or / -> "home"
     const dir = /\.html?$/i.test(last) ? parts[parts.length - 2] : last;
+    if (parts.includes('countries')) return 'countries';   // worldwide hub + country pages (also /en/...)
     const KNOWN = ['services','about','counselors','tests','reviews','pricing'];
     return KNOWN.includes(dir) ? dir : 'home';
   }

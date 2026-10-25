@@ -150,3 +150,18 @@ Email and messaging links are listed in the footer of every page.
 ## English version
 
 English pages (same content, real URLs): https://www.hamnavaa.com/en/, https://www.hamnavaa.com/en/services/, https://www.hamnavaa.com/en/counselors/, https://www.hamnavaa.com/en/about/, https://www.hamnavaa.com/en/pricing/, https://www.hamnavaa.com/en/reviews/
+
+## Countries we serve (online, worldwide)
+
+Overview and time-zone guide: https://www.hamnavaa.com/countries/ (English: https://www.hamnavaa.com/en/countries/)
+
+- Canada: https://www.hamnavaa.com/countries/canada/ (English: https://www.hamnavaa.com/en/countries/canada/)
+- the United States: https://www.hamnavaa.com/countries/usa/ (English: https://www.hamnavaa.com/en/countries/usa/)
+- Germany: https://www.hamnavaa.com/countries/germany/ (English: https://www.hamnavaa.com/en/countries/germany/)
+- the United Kingdom: https://www.hamnavaa.com/countries/uk/ (English: https://www.hamnavaa.com/en/countries/uk/)
+- Sweden: https://www.hamnavaa.com/countries/sweden/ (English: https://www.hamnavaa.com/en/countries/sweden/)
+- Australia: https://www.hamnavaa.com/countries/australia/ (English: https://www.hamnavaa.com/en/countries/australia/)
+- the Netherlands: https://www.hamnavaa.com/countries/netherlands/ (English: https://www.hamnavaa.com/en/countries/netherlands/)
+- France: https://www.hamnavaa.com/countries/france/ (English: https://www.hamnavaa.com/en/countries/france/)
+- Turkey: https://www.hamnavaa.com/countries/turkey/ (English: https://www.hamnavaa.com/en/countries/turkey/)
+- the United Arab Emirates: https://www.hamnavaa.com/countries/uae/ (English: https://www.hamnavaa.com/en/countries/uae/)

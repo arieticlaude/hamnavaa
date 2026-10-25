@@ -213,4 +213,224 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/reviews/"/>
   </url>
 
+  <url>
+    <loc>https://www.hamnavaa.com/countries/</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/countries/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/en/countries/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/countries/"/>
+  </url>
+
+  <url>
+    <loc>https://www.hamnavaa.com/en/countries/</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/countries/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/en/countries/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/countries/"/>
+  </url>
+
+  <url>
+    <loc>https://www.hamnavaa.com/countries/canada/</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/countries/canada/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/en/countries/canada/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/countries/canada/"/>
+  </url>
+
+  <url>
+    <loc>https://www.hamnavaa.com/en/countries/canada/</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/countries/canada/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/en/countries/canada/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/countries/canada/"/>
+  </url>
+
+  <url>
+    <loc>https://www.hamnavaa.com/countries/usa/</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/countries/usa/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/en/countries/usa/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/countries/usa/"/>
+  </url>
+
+  <url>
+    <loc>https://www.hamnavaa.com/en/countries/usa/</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/countries/usa/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/en/countries/usa/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/countries/usa/"/>
+  </url>
+
+  <url>
+    <loc>https://www.hamnavaa.com/countries/germany/</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/countries/germany/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/en/countries/germany/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/countries/germany/"/>
+  </url>
+
+  <url>
+    <loc>https://www.hamnavaa.com/en/countries/germany/</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/countries/germany/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/en/countries/germany/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/countries/germany/"/>
+  </url>
+
+  <url>
+    <loc>https://www.hamnavaa.com/countries/uk/</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/countries/uk/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/en/countries/uk/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/countries/uk/"/>
+  </url>
+
+  <url>
+    <loc>https://www.hamnavaa.com/en/countries/uk/</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/countries/uk/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/en/countries/uk/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/countries/uk/"/>
+  </url>
+
+  <url>
+    <loc>https://www.hamnavaa.com/countries/sweden/</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/countries/sweden/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/en/countries/sweden/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/countries/sweden/"/>
+  </url>
+
+  <url>
+    <loc>https://www.hamnavaa.com/en/countries/sweden/</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/countries/sweden/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/en/countries/sweden/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/countries/sweden/"/>
+  </url>
+
+  <url>
+    <loc>https://www.hamnavaa.com/countries/australia/</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/countries/australia/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/en/countries/australia/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/countries/australia/"/>
+  </url>
+
+  <url>
+    <loc>https://www.hamnavaa.com/en/countries/australia/</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/countries/australia/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/en/countries/australia/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/countries/australia/"/>
+  </url>
+
+  <url>
+    <loc>https://www.hamnavaa.com/countries/netherlands/</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/countries/netherlands/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/en/countries/netherlands/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/countries/netherlands/"/>
+  </url>
+
+  <url>
+    <loc>https://www.hamnavaa.com/en/countries/netherlands/</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/countries/netherlands/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/en/countries/netherlands/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/countries/netherlands/"/>
+  </url>
+
+  <url>
+    <loc>https://www.hamnavaa.com/countries/france/</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/countries/france/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/en/countries/france/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/countries/france/"/>
+  </url>
+
+  <url>
+    <loc>https://www.hamnavaa.com/en/countries/france/</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/countries/france/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/en/countries/france/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/countries/france/"/>
+  </url>
+
+  <url>
+    <loc>https://www.hamnavaa.com/countries/turkey/</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/countries/turkey/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/en/countries/turkey/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/countries/turkey/"/>
+  </url>
+
+  <url>
+    <loc>https://www.hamnavaa.com/en/countries/turkey/</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/countries/turkey/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/en/countries/turkey/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/countries/turkey/"/>
+  </url>
+
+  <url>
+    <loc>https://www.hamnavaa.com/countries/uae/</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/countries/uae/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/en/countries/uae/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/countries/uae/"/>
+  </url>
+
+  <url>
+    <loc>https://www.hamnavaa.com/en/countries/uae/</loc>
+    <lastmod>2026-10-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="fa" href="https://www.hamnavaa.com/countries/uae/"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.hamnavaa.com/en/countries/uae/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.hamnavaa.com/countries/uae/"/>
+  </url>
+
 </urlset>
