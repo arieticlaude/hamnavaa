@@ -470,12 +470,21 @@
     // rather than being called by name from here
     document.dispatchEvent(new CustomEvent('hamnava:lang', { detail: { lang: lang } }));
   }
-  langButtons.forEach(btn => btn.addEventListener('click', () => setLanguage(btn.dataset.setLang)));
+  langButtons.forEach(btn => btn.addEventListener('click', () => {
+    const want = btn.dataset.setLang;
+    // Pages that have a real URL in the other language (hreflang alternate) navigate there, so every language is a
+    // shareable, indexable address. file:// and pages without a twin keep the in-place toggle.
+    const own = root.getAttribute('data-static-lang');
+    const alt = document.querySelector('link[rel="alternate"][hreflang="' + want + '"]');
+    if (own && own !== want && alt && alt.href && location.protocol !== 'file:') { location.href = alt.href; return; }
+    setLanguage(want);
+  }));
 
   // apply ?lang=en on load — this is the URL Google is told about via hreflang
   (function initLanguage(){
     let lang = 'fa';
     try { if (new URL(location.href).searchParams.get('lang') === 'en') lang = 'en'; } catch (e) {}
+    if (root.getAttribute('data-lang') === 'en') lang = 'en';      // static English pages (/en/...)
     if (lang === 'en') setLanguage('en', { initial:true });
   })();
 

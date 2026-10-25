@@ -146,3 +146,7 @@ Email and messaging links are listed in the footer of every page.
   therapy session.
 - Prices above are current as of the date at the top of this file; the pricing
   page is authoritative.
+
+## English version
+
+English pages (same content, real URLs): https://www.hamnavaa.com/en/, https://www.hamnavaa.com/en/services/, https://www.hamnavaa.com/en/counselors/, https://www.hamnavaa.com/en/about/, https://www.hamnavaa.com/en/pricing/, https://www.hamnavaa.com/en/reviews/
