@@ -162,6 +162,18 @@
   var MODE = { video: 'تصویری', audio: 'صوتی' };
   var KIND = { intro: 'پیش‌مشاوره', session: 'جلسه' };
 
+  /* مشاوره‌های اصلی و پیش‌مشاوره‌های رایگان (۱۵ دقیقه) دو فهرست جدا دارند؛
+     وقتی روزی ده‌ها مورد باشد، هر دسته با شمارندهٔ خودش جدا دیده می‌شود. */
+  function kindOf(s) { return s.kind === 'intro' ? 'intro' : 'session'; }
+  function countKinds(list) { var c = { session: 0, intro: 0 }; list.forEach(function (s) { c[kindOf(s)]++; }); return c; }
+  function ofKind(list, k) { return list.filter(function (s) { return kindOf(s) === k; }); }
+  function kindSeg(counts, cur, pick) {
+    return h('div', { class: 'seg', role: 'tablist', 'aria-label': 'نوع جلسه' }, [['session', 'مشاوره‌ها'], ['intro', 'پیش‌مشاوره‌ها']].map(function (k) {
+      return h('button', { class: 'seg__b seg__b--' + k[0], type: 'button', role: 'tab', 'aria-selected': cur === k[0] ? 'true' : 'false', onclick: function () { pick(k[0]); } },
+        h('span', { text: k[1] }), h('b', { text: n(counts[k[0]]) }));
+    }));
+  }
+
   /* ───────────── بسته و پرداخت (با migration-11) ───────────── */
   var PACKS = [['single', 'تک جلسه', 1], ['pack3', 'بستهٔ ۳ جلسه‌ای', 3], ['pack5', 'بستهٔ ۵ جلسه‌ای', 5],
                ['stu1', 'تک‌جلسهٔ دانشجویی', 1], ['stu3', 'بستهٔ ۳ جلسهٔ دانشجویی', 3]];
@@ -1068,14 +1080,24 @@
     if (mode === 'attention') {
       acts.appendChild(h('button', { class: 'btn btn--primary btn--small', type: 'button', text: 'انجام شد', onclick: function () { if (window.confirm('این جلسه انجام شد؟')) setStatus(s, 'done'); } }));
       acts.appendChild(h('button', { class: 'btn btn--danger btn--small', type: 'button', text: 'غیبت مراجع', onclick: function () { if (window.confirm('مراجع در این جلسه حاضر نشد؟')) setStatus(s, 'client_no_show'); } }));
-    } else if (s.status === 'scheduled' && phone) {
-      acts.appendChild(h('button', { class: 'btn btn--wa btn--small', type: 'button', text: 'یادآوری به مراجع', onclick: function () { sendReminder(s, p, phone); } }));
+    } else if (s.status === 'scheduled') {
+      if (phone) acts.appendChild(h('button', { class: 'btn btn--wa btn--small', type: 'button', text: 'یادآوری به مراجع', onclick: function () { sendReminder(s, p, phone); } }));
+      var cr = counselorRemindBtn(s, p);
+      if (cr) acts.appendChild(cr);
+    }
+    if (mode === 'today') {   // ردیف فشرده: ساعت | مراجع و مشاور | یادآوری یا وضعیت
+      var ok = s.status === 'done', end = s.status === 'scheduled' ? null
+        : h('span', { class: 'chip ' + (ok ? 'chip--ok' : 'chip--warn'), text: STATUS[s.status] });
+      return h('div', { class: 'r r--' + kindOf(s) + (ok ? ' r--done' : s.status !== 'scheduled' ? ' r--warn' : '') },
+        h('div', { class: 'r__head r__head--static' }, h('span', { class: 'r__time', text: timeOf(s.starts_at) }),
+          h('span', { class: 'r__who' }, h('b', { text: s.client_label }), h('small', { text: nameOf(s.counselor_id) + (s.duration_min !== (kindOf(s) === 'intro' ? 15 : 45) ? ' · ' + n(s.duration_min) + ' د' : '') + (s.mode === 'audio' ? ' · صوتی' : '') })), end),
+        acts.childNodes.length ? h('div', { class: 'r__acts' }, acts.childNodes.length > 1 ? Array.prototype.slice.call(acts.childNodes) : acts.firstChild) : null);
     }
     return h('div', { class: 's agenda' + (s.status === 'scheduled' ? '' : ' agenda--done') },
       h('div', { class: 's__head' },
         h('div', { class: 's__time' }, mode === 'attention' ? [dayJ(s.starts_at), h('small', null, 'ساعت ' + timeOf(s.starts_at))] : [timeOf(s.starts_at), h('small', { text: n(s.duration_min) + ' دقیقه · ' + KIND[s.kind] + ' · ' + MODE[s.mode] })]),
         h('span', { class: 'chip ' + (s.status === 'done' ? 'chip--ok' : (s.status === 'scheduled' ? '' : 'chip--warn')), text: STATUS[s.status] })),
-      h('div', null, h('b', { text: nameOf(s.counselor_id) }), ' — ' + s.client_label), acts);
+      h('div', null, h('b', { text: nameOf(s.counselor_id) }), ' — ' + s.client_label, mode === 'attention' ? [' ', h('span', { class: 'chip chip--gold', text: KIND[s.kind] })] : null), acts);
   }
   function attentionCard() {
     var list = S.data.attention || [];
@@ -1085,9 +1107,11 @@
       list.map(function (s) { return agendaRow(s, 'attention'); }));
   }
   function todayCard() {
-    var list = S.data.today || [];
+    var list = S.data.today || [], cnt = countKinds(list), k = S.data.tk || 'session', shown = ofKind(list, k);
     return h('section', { class: 'card' }, h('h2', null, 'جلسه‌های امروز ', h('small', { class: 'hint', text: dayJ(Date.now()) })),
-      list.length ? list.map(function (s) { return agendaRow(s, 'today'); }) : h('p', { class: 'empty', text: 'امروز جلسه‌ای ثبت نشده.' }));
+      list.length ? [kindSeg(cnt, k, function (x) { S.data.tk = x; render(); }),
+        shown.length ? h('div', { class: 'rows' }, shown.map(function (s) { return agendaRow(s, 'today'); })) : h('p', { class: 'empty', text: k === 'intro' ? 'امروز پیش‌مشاوره‌ای نیست.' : 'امروز مشاورهٔ اصلی‌ای نیست.' })]
+        : h('p', { class: 'empty', text: 'امروز جلسه‌ای ثبت نشده.' }));
   }
 
   /* ───────────── صفحهٔ منشی / مدیر ───────────── */
@@ -1166,8 +1190,8 @@
     if (p && p.meet_url) lines.push(p.meet_url);
     return lines.join('\n');
   }
-  function counselorText(s, p, moved) {
-    var lines = ['سلام ' + ((p && p.full_name) || '') + ' 🌿', moved ? 'زمان یکی از جلسه‌های شما عوض شد:' : 'یک جلسهٔ تازه برای شما رزرو شد:',
+  function counselorText(s, p, moved, remind) {
+    var lines = ['سلام ' + ((p && p.full_name) || '') + ' 🌿', moved ? 'زمان یکی از جلسه‌های شما عوض شد:' : remind ? 'یادآوری جلسهٔ شما:' : 'یک جلسهٔ تازه برای شما رزرو شد:',
       'زمان: ' + dayOf(s.starts_at) + '، ساعت ' + timeOf(s.starts_at) + ' (به وقت ایران)',
       'مدت: ' + n(s.duration_min) + ' دقیقه',
       'نوع: ' + (s.kind === 'intro' ? 'جلسهٔ رایگان پیش‌مشاوره' : 'جلسهٔ مشاوره') + ' — ' + (s.mode === 'audio' ? 'تماس صوتی' : 'تماس تصویری'),
@@ -1175,7 +1199,12 @@
     lines.push(p && !p.no_login ? 'سر وقت از دکمهٔ «ورود به اتاق مشاوره» در پنل هم‌نوا وارد شوید.' : 'سر وقت لینک اتاق خودتان را باز کنید و مراجع را بپذیرید.');
     return lines.join('\n');
   }
-  function sendToCounselor(s, p, moved) { window.open(waLink(phoneDigits(p.phone), counselorText(s, p, moved)), '_blank', 'noopener'); }
+  function sendToCounselor(s, p, moved, remind) { window.open(waLink(phoneDigits(p.phone), counselorText(s, p, moved, remind)), '_blank', 'noopener'); }
+  // یادآوری جلسه به خود مشاور (واتساپ)؛ مثل خبر دادن، فقط وقتی شمارهٔ واتساپ مشاور ثبت شده باشد
+  function counselorRemindBtn(s, p, label) {
+    return phoneCol() && p && p.phone
+      ? h('button', { class: 'btn btn--wa btn--small', type: 'button', text: label || 'یادآوری به مشاور', onclick: function () { sendToCounselor(s, p, false, true); } }) : null;
+  }
   // ستون phone با migration-10 اضافه می‌شود؛ تا آن موقع هیچ دکمه یا فیلدی دربارهٔ آن نشان داده نمی‌شود
   function phoneCol() { return (S.data.profiles || []).some(function (x) { return 'phone' in x; }); }
   function counselorStep(s, p, moved, label) {
@@ -1342,18 +1371,56 @@
         phoneCol() && mp && !mp.phone ? h('p', { class: 'hint', text: 'شمارهٔ واتساپ این مشاور ثبت نشده؛ در تب «مشاورها» ثبتش کنید.' }) : null,
         h('div', { class: 'actions' }, h('button', { class: 'btn btn--small', type: 'button', text: 'بستن', onclick: function () { S.moved = null; render(); } })));
     }
+    var cnt = countKinds(list), kt = S.data.kt || 'session', shown = ofKind(list, kt);
+    var filtered = (S.data.q || S.data.st) ? ' با این فیلتر' : '';
     return h('div', null, moved, h('section', { class: 'card' }, h('h2', { text: 'جلسه‌ها' }),
+      kindSeg(cnt, kt, function (x) { S.data.kt = x; render(); }),
       chips,
       h('div', { class: 'filters' },
         h('div', { class: 'field' }, h('label', { text: 'از تاریخ' }), from.el), h('div', { class: 'field' }, h('label', { text: 'تا تاریخ' }), to.el),
         h('div', { class: 'field' }, h('label', { text: 'مشاور' }), who),
         h('div', { class: 'field filters__go' }, h('button', { class: 'btn btn--primary', type: 'button', text: 'نمایش جلسه‌ها', onclick: apply })),
         h('div', { class: 'field filters__q' }, h('label', { text: 'جست‌وجو' }), qin), h('div', { class: 'field' }, h('label', { text: 'وضعیت' }), stSel)),
-      h('p', { class: 'hint', text: n(list.length) + ' جلسه' + ((S.data.q || S.data.st) ? ' (با فیلتر)' : '') }),
-      list.length ? h('div', { class: 'grid2' }, list.map(staffCard)) : h('p', { class: 'empty', text: 'جلسه‌ای پیدا نشد.' })), S.profile.role === 'admin' ? adminToolsCard() : null);
+      shown.length ? dayRows(shown) : h('p', { class: 'empty', text: (kt === 'intro' ? 'پیش‌مشاوره‌ای' : 'مشاوره‌ای') + ' پیدا نشد' + filtered + '.' })),
+      S.profile.role === 'admin' ? adminToolsCard() : null);
   }
 
-  function staffCard(s) {
+  /* فهرست فشرده: هر روز یک سرتیتر با شمارش، هر جلسه یک ردیف یک‌خطی؛ با زدن ردیف، دکمه‌ها باز می‌شود */
+  function dayRows(list) {
+    var out = [], box = null, last = null, per = {};
+    list.forEach(function (s) { var d = tehranISO(s.starts_at); per[d] = (per[d] || 0) + 1; });
+    list.forEach(function (s) {
+      var d = tehranISO(s.starts_at), lab = dayLabel(s.starts_at);
+      if (d !== last) {
+        out.push(h('h3', { class: 'dayhead' }, lab, lab !== dayJ(s.starts_at) ? h('small', { text: ' · ' + dayJ(s.starts_at) }) : null, h('span', { class: 'dayhead__n', text: n(per[d]) })));
+        box = h('div', { class: 'rows' }); out.push(box); last = d;
+      }
+      box.appendChild(staffRow(s));
+    });
+    return out;
+  }
+  function staffRow(s) {
+    var st = s.status, ok = st === 'done', bad = st !== 'scheduled' && !ok;
+    var chips = [h('span', { class: 'chip', text: n(s.duration_min) + ' د · ' + MODE[s.mode] })];
+    if (bad || ok) chips.push(h('span', { class: 'chip ' + (ok ? 'chip--ok' : 'chip--warn'), text: STATUS[st] }));
+    if (kindOf(s) === 'session' && pkgReady() && s.paid && s.paid !== 'free') chips.push(h('span', { class: 'chip ' + (s.paid === 'paid' ? 'chip--ok' : 'chip--warn'), text: s.paid === 'paid' ? 'پرداخت‌شده ✓' : 'پرداخت نشده' }));
+    S.data.open = S.data.open || {};
+    var head = h('button', { class: 'r__head', type: 'button', 'aria-expanded': S.data.open[s.id] ? 'true' : 'false' },
+      h('span', { class: 'r__time', text: timeOf(s.starts_at) }),
+      h('span', { class: 'r__who' }, h('b', { text: s.client_label }), h('small', { text: nameOf(s.counselor_id) })),
+      h('span', { class: 'chips r__chips' }, chips), h('span', { class: 'r__chev', 'aria-hidden': 'true' }));
+    var row = h('div', { class: 'r r--' + kindOf(s) + (ok ? ' r--done' : bad ? ' r--warn' : '') + (S.data.open[s.id] ? ' r--open' : '') }, head,
+      S.data.open[s.id] ? h('div', { class: 'r__body' }, staffBody(s)) : null);
+    head.addEventListener('click', function () {
+      var on = row.classList.toggle('r--open'), b = row.querySelector('.r__body');
+      head.setAttribute('aria-expanded', on ? 'true' : 'false'); S.data.open[s.id] = on;
+      if (on && !b) row.appendChild(h('div', { class: 'r__body' }, staffBody(s)));
+      else if (!on && b) b.remove();
+    });
+    return row;
+  }
+
+  function staffBody(s) {
     var p = profileOf(s.counselor_id), phone = S.data.contacts && S.data.contacts[s.id];
     var sel = h('select', { class: 'select', 'aria-label': 'وضعیت', onchange: function (e) {
       sb.from('sessions').update({ status: e.target.value, updated_at: new Date().toISOString() }).eq('id', s.id).then(function (r) {
@@ -1363,8 +1430,9 @@
     var acts = h('div', { class: 'actions' });
     if (phone) {
       acts.appendChild(h('button', { class: 'btn btn--wa btn--small', type: 'button', text: 'ارسال تأیید', onclick: function () { sendConfirm(s, p, phone); } }));
-      if (s.status === 'scheduled') acts.appendChild(h('button', { class: 'btn btn--wa btn--small', type: 'button', text: 'یادآوری', onclick: function () { sendReminder(s, p, phone); } }));
+      if (s.status === 'scheduled') acts.appendChild(h('button', { class: 'btn btn--wa btn--small', type: 'button', text: 'یادآوری به مراجع', onclick: function () { sendReminder(s, p, phone); } }));
     } else acts.appendChild(h('span', { class: 'chip', text: 'شمارهٔ مراجع ثبت نشده' }));
+    if (s.status === 'scheduled') { var cr = counselorRemindBtn(s, p); if (cr) acts.appendChild(cr); }
     if (s.status === 'scheduled') { var cb = counselorBtns(s, p, false, false); if (cb) acts.appendChild(cb); }
     if (!p || !p.meet_url) acts.appendChild(h('span', { class: 'chip chip--warn', text: 'مشاور هنوز لینک اتاق ثبت نکرده' }));
     if (s.status === 'scheduled') acts.appendChild(h('button', { class: 'btn btn--small', type: 'button', text: S.resched === s.id ? 'بستن' : 'تغییر زمان', onclick: function () { S.resched = S.resched === s.id ? null : s.id; render(); } }));
@@ -1373,13 +1441,12 @@
       if (!window.confirm('این جلسه حذف شود؟')) return;
       sb.from('sessions').delete().eq('id', s.id).then(function (r) { flash(r.error ? 'err' : 'ok', r.error ? explain(r.error) : 'حذف شد.'); loadStaff(); });
     } }));
-    return h('div', { class: 's' },
-      h('div', { class: 's__head' },
-        h('div', { class: 's__time' }, dayJ(s.starts_at), h('small', null, ltr(dayG(s.starts_at)), ' · ساعت ' + timeOf(s.starts_at) + ' — ' + n(s.duration_min) + ' دقیقه')),
-        h('div', { class: 'chips' }, h('span', { class: 'chip chip--gold', text: KIND[s.kind] }), h('span', { class: 'chip', text: MODE[s.mode] }), payChips(s))),
+    return [
+      h('div', { class: 'hint' }, dayJ(s.starts_at), ' · ', ltr(dayG(s.starts_at)), ' · ساعت ' + timeOf(s.starts_at) + ' — ' + n(s.duration_min) + ' دقیقه'),
+      h('div', { class: 'chips' }, h('span', { class: 'chip chip--gold', text: KIND[s.kind] }), h('span', { class: 'chip', text: MODE[s.mode] }), payChips(s)),
       h('div', null, h('b', { text: 'مشاور: ' }), nameOf(s.counselor_id), '   ', h('b', { text: 'مراجع: ' }), s.client_label,
         phone ? h('span', { class: 'hint', dir: 'ltr', text: '   ' + phone }) : null),
-      h('div', { class: 'field' }, sel), acts, S.resched === s.id ? reschedForm(s, phone) : null);
+      h('div', { class: 'field' }, sel), acts, S.resched === s.id ? reschedForm(s, phone) : null];
   }
   function reschedForm(s, phone) {
     var d = dateField(tehranISO(s.starts_at)), t = timeField(null, tehranHM(s.starts_at));

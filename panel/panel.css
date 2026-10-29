@@ -489,3 +489,49 @@ input[type=checkbox]{accent-color:var(--teal);width:18px;height:18px;vertical-al
   .tilekpi span{font-size:.76rem;line-height:1.35}
   .tilekpi small{font-size:.68rem}
 }
+
+/* ───── فهرست فشردهٔ جلسه‌ها؛ مشاوره‌ها و پیش‌مشاوره‌ها جدا (2026-10-29) ───── */
+.seg{display:flex;gap:6px;padding:5px;margin:12px 0 8px;background:rgba(27,43,38,.06);border-radius:14px}
+.seg__b{flex:1 1 0;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:6px 12px;border:0;border-radius:10px;background:transparent;
+  font:inherit;font-weight:700;color:var(--muted);cursor:pointer;transition:background .15s,color .15s,box-shadow .15s}
+.seg__b b{min-width:28px;padding:0 9px;border-radius:999px;background:rgba(27,43,38,.1);color:var(--teal-deep);font-size:13px;line-height:22px;text-align:center}
+.seg__b:hover{color:var(--teal-deep);background:rgba(255,255,255,.55)}
+.seg__b[aria-selected=true]{background:#fff;color:var(--teal-deep);box-shadow:var(--shadow-sm)}
+.seg__b--session[aria-selected=true] b{background:var(--teal);color:#fff}
+.seg__b--intro[aria-selected=true] b{background:var(--gold);color:#fff}
+.dayhead{display:flex;align-items:center;gap:6px;margin-top:28px}
+.dayhead:first-of-type{margin-top:10px}
+.dayhead__n{min-width:26px;padding:0 9px;border-radius:999px;background:var(--teal-100);color:var(--teal-deep);font-size:12.5px;font-weight:700;line-height:22px;text-align:center}
+.rows{display:flex;flex-direction:column;margin-top:6px;border:1px solid var(--line);border-radius:14px;background:#FDFBF6;overflow:hidden}
+.r{position:relative;border-top:1px solid var(--line)}
+.r:first-child{border-top:0}
+.r::before{content:"";position:absolute;inset-block:0;inset-inline-start:0;width:4px;background:var(--teal-500)}
+.r--intro::before{background:var(--gold)}
+.r--done::before{background:var(--ok)}
+.r--warn::before{background:var(--coral)}
+.r__head{width:100%;display:grid;grid-template-columns:58px minmax(0,1fr) auto 16px;align-items:center;gap:12px;padding:9px 16px 9px 12px;border:0;background:transparent;font:inherit;text-align:start;cursor:pointer;color:inherit}
+.r__head:hover{background:var(--teal-50)}
+.r__time{font-weight:800;color:var(--teal-deep);font-size:15px}
+.r__who{min-width:0;display:flex;flex-direction:column;line-height:1.55}
+.r__who b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.r__who small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font-size:12.5px}
+.r__chips{justify-content:flex-end;flex-wrap:nowrap}
+.r__chips .chip{white-space:nowrap}
+.r__chev{width:9px;height:9px;border-inline-end:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(45deg);transition:transform .15s}
+.r--open{background:#fff}
+.r--open .r__chev{transform:rotate(-135deg)}
+.r__body{display:flex;flex-direction:column;gap:8px;padding:10px 18px 14px;border-top:1px dashed var(--line)}
+.r__body .actions{margin-top:2px}
+@media (max-width:560px){
+  .r__head{grid-template-columns:50px minmax(0,1fr) auto 14px;gap:8px;padding-inline-end:10px}
+  .r__chips .chip:not(.chip--warn){display:none}
+}
+
+.r__head--static{cursor:default;grid-template-columns:50px minmax(0,1fr) auto;padding-block:8px}
+.r__head--static:hover{background:transparent}
+.r__head--static .actions{margin:0;gap:6px}
+.r__head--static .btn{min-height:34px;padding:4px 12px}
+
+.r__acts{grid-column:2 / -1;display:flex;flex-wrap:wrap;gap:6px;padding:0 0 9px 16px;margin-top:-4px}
+.r__acts .btn{min-height:32px;padding:3px 12px;font-size:12.5px}
+.r__head--static+.r__acts{padding-inline-start:12px}
