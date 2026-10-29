@@ -336,6 +336,7 @@
     if (/invalid login/i.test(m)) return 'ایمیل یا رمز عبور اشتباه است.';
     if (/not confirmed/i.test(m)) return 'ایمیل هنوز تأیید نشده است.';
     if (/rate limit|too many/i.test(m)) return 'تلاش‌ها زیاد بود. چند دقیقه بعد دوباره امتحان کنید.';
+    if (/reason required/i.test(m)) return 'برای حذف مشاورهٔ اصلی نوشتن دلیل لازم است.';
     if (/not due yet|not found/i.test(m)) return 'جلسه پیدا نشد یا هنوز وقتش نشده است.';
     if (/profiles_phone_check/i.test(m)) return 'شماره معتبر نیست. فقط رقم، فاصله و + بنویسید.';
     if (/foreign key|violates|23503/i.test(m)) return 'این مورد به جلسه یا سابقه وصل است و حذف نمی‌شود. اول جلسه‌هایش را پاک کنید، یا او را غیرفعال کنید.';
@@ -1437,16 +1438,49 @@
     if (!p || !p.meet_url) acts.appendChild(h('span', { class: 'chip chip--warn', text: 'مشاور هنوز لینک اتاق ثبت نکرده' }));
     if (s.status === 'scheduled') acts.appendChild(h('button', { class: 'btn btn--small', type: 'button', text: S.resched === s.id ? 'بستن' : 'تغییر زمان', onclick: function () { S.resched = S.resched === s.id ? null : s.id; render(); } }));
     if (pkgReady() && s.paid !== 'free') acts.appendChild(payBtn(s));
-    acts.appendChild(h('button', { class: 'btn btn--danger btn--small', type: 'button', text: 'حذف', onclick: function () {
-      if (!window.confirm('این جلسه حذف شود؟')) return;
-      sb.from('sessions').delete().eq('id', s.id).then(function (r) { flash(r.error ? 'err' : 'ok', r.error ? explain(r.error) : 'حذف شد.'); loadStaff(); });
+    acts.appendChild(h('button', { class: 'btn btn--danger btn--small', type: 'button', text: S.delFor === s.id ? 'انصراف از حذف' : 'حذف', onclick: function () {
+      if (kindOf(s) === 'intro') { if (window.confirm('این پیش‌مشاوره حذف شود؟')) deleteSession(s, ''); return; }
+      S.delFor = S.delFor === s.id ? null : s.id; render();      // مشاورهٔ اصلی: اول دلیل پرسیده می‌شود
     } }));
     return [
       h('div', { class: 'hint' }, dayJ(s.starts_at), ' · ', ltr(dayG(s.starts_at)), ' · ساعت ' + timeOf(s.starts_at) + ' — ' + n(s.duration_min) + ' دقیقه'),
       h('div', { class: 'chips' }, h('span', { class: 'chip chip--gold', text: KIND[s.kind] }), h('span', { class: 'chip', text: MODE[s.mode] }), payChips(s)),
       h('div', null, h('b', { text: 'مشاور: ' }), nameOf(s.counselor_id), '   ', h('b', { text: 'مراجع: ' }), s.client_label,
         phone ? h('span', { class: 'hint', dir: 'ltr', text: '   ' + phone }) : null),
-      h('div', { class: 'field' }, sel), acts, S.resched === s.id ? reschedForm(s, phone) : null];
+      h('div', { class: 'field' }, sel), acts, S.resched === s.id ? reschedForm(s, phone) : null, S.delFor === s.id ? deleteForm(s) : null];
+  }
+
+  /* حذف جلسه: برای مشاورهٔ اصلی دلیل اجباری است و همراه نوع جلسه در «پایش» ثبت می‌شود؛ پیش‌مشاوره فقط با تأیید حذف می‌شود */
+  var DEL_REASONS = ['لغو توسط مراجع', 'انصراف مراجع پیش از جلسه', 'ثبت اشتباه یا تکراری', 'تغییر مشاور یا بسته', 'پرداخت نشد', 'سایر (توضیح بنویسید)'];
+  function deleteForm(s) {
+    var sel = h('select', { class: 'select', 'aria-label': 'دلیل حذف' }, h('option', { value: '', text: 'دلیل حذف را انتخاب کنید…' }),
+      DEL_REASONS.map(function (r) { return h('option', { value: r, text: r }); }));
+    var note = h('input', { class: 'input', maxlength: 200, placeholder: 'توضیح (برای «سایر» لازم است)', 'aria-label': 'توضیح' });
+    var msg = h('p', { class: 'hint', role: 'status' });
+    var go = h('button', { class: 'btn btn--danger btn--small', type: 'button', text: 'حذف این مشاوره' });
+    go.addEventListener('click', function () {
+      var other = sel.value === DEL_REASONS[DEL_REASONS.length - 1], txt = note.value.trim();
+      if (!sel.value) { msg.textContent = 'دلیل حذف را انتخاب کنید.'; return; }
+      if (other && txt.length < 3) { msg.textContent = 'برای «سایر» دلیل را بنویسید.'; return; }
+      var reason = other ? txt : sel.value + (txt ? ' — ' + txt : '');
+      if (window.confirm('مشاورهٔ «' + s.client_label + '» با دلیل «' + reason + '» حذف شود؟ این کار برگشت‌پذیر نیست.')) deleteSession(s, reason);
+    });
+    return h('div', { class: 'resched' }, h('p', { class: 'hint', text: 'این یک مشاورهٔ اصلی است؛ پیش از حذف دلیلش را مشخص کنید. دلیل در «پایش ← گزارش فعالیت» می‌ماند.' }),
+      h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'دلیل' }), sel), h('div', { class: 'field' }, h('label', { text: 'توضیح' }), note)),
+      msg, h('div', { class: 'actions' }, go));
+  }
+  function deleteSession(s, reason) {
+    sb.rpc('staff_delete_session', { p_session: s.id, p_reason: reason }).then(function (r) {
+      if (r.error && /could not find the function|PGRST202|staff_delete_session/i.test(String(r.error.message || '') + String(r.error.code || ''))) {
+        // دیتابیس هنوز migration-14 را ندارد: مثل قبل حذف می‌شود، ولی دلیل و نوع با ریز در گزارش ثبت نمی‌شود
+        return sb.from('sessions').delete().eq('id', s.id).then(function (r2) {
+          S.delFor = null; flash(r2.error ? 'err' : 'info', r2.error ? explain(r2.error) : 'حذف شد؛ ولی ثبت دلیل هنوز در دیتابیس فعال نشده است.'); loadStaff();
+        });
+      }
+      S.delFor = null;
+      if (S.data.open) delete S.data.open[s.id];
+      flash(r.error ? 'err' : 'ok', r.error ? explain(r.error) : 'حذف شد.'); loadStaff();
+    });
   }
   function reschedForm(s, phone) {
     var d = dateField(tehranISO(s.starts_at)), t = timeField(null, tehranHM(s.starts_at));
@@ -1787,8 +1821,13 @@
     q.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); go(); } });
     var rows = (M.log || []).map(function (e) {
       var when = e.meta && e.meta.starts_at ? ['برای ', stamp(e.meta.starts_at)] : null;
-      return h('div', { class: 'logrow logrow--act' }, stamp(e.at), h('span', { class: 'chip', text: ACTIONS[e.action] || e.action }),
-        h('div', { class: 'logtxt' }, e.summary, when ? h('small', null, when) : null, h('small', { text: 'توسط ' + (e.actor_name || '—') })));
+      var del = e.action === 'session_deleted' && e.meta && e.meta.kind;           // حذف جلسه: نوع و دلیل
+      var main = del && e.meta.kind !== 'intro';
+      var label = del ? (main ? 'حذف مشاورهٔ اصلی' : 'حذف پیش‌مشاوره') : (ACTIONS[e.action] || e.action);
+      return h('div', { class: 'logrow logrow--act' }, stamp(e.at), h('span', { class: 'chip' + (main ? ' chip--warn' : del ? ' chip--gold' : ''), text: label }),
+        h('div', { class: 'logtxt' }, e.summary, when ? h('small', null, when) : null,
+          main ? h('small', { text: 'دلیل حذف: ' + (e.meta.reason || 'ثبت نشده') }) : null,
+          h('small', { text: 'توسط ' + (e.actor_name || '—') })));
     });
     var more = (M.log || []).length >= M.limit ? h('div', { class: 'actions' }, h('button', { class: 'btn btn--small', type: 'button', text: 'نمایش قدیمی‌تر', onclick: function () { M.limit += 200; loadMonitor(); render(); } })) : null;
     return h('section', { class: 'card' }, h('h2', { text: 'گزارش فعالیت' }),
