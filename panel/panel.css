@@ -57,9 +57,13 @@ button,input,select{font:inherit;color:inherit}
 .ibtn:active{transform:scale(.97)}
 .ibtn .ico{width:18px;height:18px}
 a.ibtn,a.sbtn{text-decoration:none}
-.ibtn--mail:hover{background:#FBF3DC;border-color:rgba(176,138,60,.5)}
+/* دکمهٔ ایمیل مدیر: طلایی و پررنگ، تا میان دکمه‌های سفید «تغییر رمز» و «خروج» گم نشود */
+.ibtn--mail{background:linear-gradient(180deg,#F1D296,var(--gold-light) 55%,#DDB06A);border-color:#C99B52;color:var(--teal-900);font-weight:800;
+  box-shadow:0 6px 14px -6px rgba(138,107,57,.65),inset 0 1px 0 rgba(255,255,255,.55)}
+.ibtn--mail:hover{background:linear-gradient(180deg,#F6DDAB,#EBC585 55%,#E0B573);border-color:var(--gold-deep)}
+.ibtn--mail .ico{width:21px;height:21px;stroke-width:2.1}
 .ibtn--out:hover{background:#FBECEA;border-color:#E3C4C0;color:var(--coral)}
-@media (max-width:560px){.ibtn{padding:0;width:44px}.ibtn__t{display:none}}
+@media (max-width:560px){.ibtn{padding:0;width:44px}.ibtn__t{display:none}.ibtn--mail{width:auto;padding:0 12px}.ibtn--mail .ibtn__t{display:inline}}
 
 /* ───────── welcome banner ───────── */
 .welcome{position:relative;overflow:hidden;display:flex;align-items:center;gap:20px;margin:0 0 18px;padding:22px 26px;border-radius:24px;color:#FDFBF5;
@@ -464,7 +468,10 @@ a.ibtn,a.sbtn{text-decoration:none}
   .sbtn:hover{background:rgba(255,255,255,.14)}
   .side .sbtn.ibtn--out:hover{background:rgba(176,74,66,.38);border-color:rgba(255,170,160,.5);color:#fff}
   .sbtn .ico{width:17px;height:17px}
-  .side__acts .sbtn--mail{grid-column:1 / -1}
+  .side__acts .sbtn--mail{grid-column:1 / -1;min-height:46px;gap:9px;font-size:14px;font-weight:800;color:var(--teal-900);border-color:#C99B52;
+    background:linear-gradient(180deg,#F1D296,var(--gold-light) 55%,#DDB06A);box-shadow:0 8px 18px -8px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.55)}
+  .side__acts .sbtn--mail:hover{background:linear-gradient(180deg,#F6DDAB,#EBC585 55%,#E0B573)}
+  .side__acts .sbtn--mail .ico{width:21px;height:21px;stroke-width:2.1}
 }
 @media (min-width:1180px){.cols{grid-template-columns:minmax(0,1.55fr) minmax(320px,1fr)}}
 @media (max-width:1179px){.cols--bfirst .cols__b{order:-1}}

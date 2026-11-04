@@ -475,7 +475,7 @@
     /* ایمیل سازمانی هم‌نوا فعلاً فقط مدیر دارد؛ پس پیوند ورود به وب‌میل فقط به او نشان داده می‌شود (در تب تازه باز می‌شود) */
     var mailBtn = function (cls) {
       return S.profile && S.profile.active && S.profile.role === 'admin'
-        ? h('a', { class: cls + ' ' + cls + '--mail', href: WEBMAIL_URL, target: '_blank', rel: 'noopener noreferrer', title: 'ورود به ایمیل هم‌نوا', 'aria-label': 'ورود به ایمیل هم‌نوا (در تب تازه باز می‌شود)' }, ico('mail'), h('span', { class: 'ibtn__t', text: 'ایمیل' })) : null;
+        ? h('a', { class: cls + ' ' + cls + '--mail', href: WEBMAIL_URL, target: '_blank', rel: 'noopener noreferrer', title: 'ورود به ایمیل هم‌نوا', 'aria-label': 'ورود به ایمیل هم‌نوا (در تب تازه باز می‌شود)' }, ico('mail'), h('span', { class: 'ibtn__t', text: cls === 'sbtn' ? 'ورود به ایمیل هم‌نوا' : 'ایمیل' })) : null;
     };
     var head = h('header', { class: 'top' }, h('div', { class: 'top__in' },
       h('div', { class: 'brand' }, svgEl(MARK), h('div', null, h('b', { text: 'هم‌نوا' }), h('span', { text: 'پنل مشاور' }))),
