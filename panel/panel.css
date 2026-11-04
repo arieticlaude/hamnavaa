@@ -56,6 +56,8 @@ button,input,select{font:inherit;color:inherit}
 .ibtn:hover{background:var(--teal-50);border-color:rgba(58,98,89,.4)}
 .ibtn:active{transform:scale(.97)}
 .ibtn .ico{width:18px;height:18px}
+a.ibtn,a.sbtn{text-decoration:none}
+.ibtn--mail:hover{background:#FBF3DC;border-color:rgba(176,138,60,.5)}
 .ibtn--out:hover{background:#FBECEA;border-color:#E3C4C0;color:var(--coral)}
 @media (max-width:560px){.ibtn{padding:0;width:44px}.ibtn__t{display:none}}
 
@@ -462,6 +464,7 @@ button,input,select{font:inherit;color:inherit}
   .sbtn:hover{background:rgba(255,255,255,.14)}
   .side .sbtn.ibtn--out:hover{background:rgba(176,74,66,.38);border-color:rgba(255,170,160,.5);color:#fff}
   .sbtn .ico{width:17px;height:17px}
+  .side__acts .sbtn--mail{grid-column:1 / -1}
 }
 @media (min-width:1180px){.cols{grid-template-columns:minmax(0,1.55fr) minmax(320px,1fr)}}
 @media (max-width:1179px){.cols--bfirst .cols__b{order:-1}}

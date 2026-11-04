@@ -461,6 +461,7 @@
     }));
   }
 
+  var WEBMAIL_URL = 'https://server126c.irwebspace.com/webmail';
   function shell(children) {
     var who = S.user ? ((S.profile && S.profile.full_name) || S.user.email) : '';
     var kids = (Array.isArray(children) ? children : [children]).filter(Boolean), nav = null;
@@ -471,16 +472,21 @@
       return S.profile ? h('button', { class: cls, type: 'button', title: 'تغییر رمز', 'aria-label': 'تغییر رمز', onclick: function () { S.view = 'setpw'; S.canCancel = true; render(); } }, ico('key'), h('span', { class: 'ibtn__t', text: 'تغییر رمز' })) : null;
     };
     var outBtn = function (cls) { return h('button', { class: cls + ' ibtn--out', type: 'button', title: 'خروج', 'aria-label': 'خروج', onclick: signOut }, ico('logout'), h('span', { class: 'ibtn__t', text: 'خروج' })); };
+    /* ایمیل سازمانی هم‌نوا فعلاً فقط مدیر دارد؛ پس پیوند ورود به وب‌میل فقط به او نشان داده می‌شود (در تب تازه باز می‌شود) */
+    var mailBtn = function (cls) {
+      return S.profile && S.profile.active && S.profile.role === 'admin'
+        ? h('a', { class: cls + ' ' + cls + '--mail', href: WEBMAIL_URL, target: '_blank', rel: 'noopener noreferrer', title: 'ورود به ایمیل هم‌نوا', 'aria-label': 'ورود به ایمیل هم‌نوا (در تب تازه باز می‌شود)' }, ico('mail'), h('span', { class: 'ibtn__t', text: 'ایمیل' })) : null;
+    };
     var head = h('header', { class: 'top' }, h('div', { class: 'top__in' },
       h('div', { class: 'brand' }, svgEl(MARK), h('div', null, h('b', { text: 'هم‌نوا' }), h('span', { text: 'پنل مشاور' }))),
-      S.user ? h('div', { class: 'top__acts' }, pwBtn('ibtn'), outBtn('ibtn')) : null));
+      S.user ? h('div', { class: 'top__acts' }, mailBtn('ibtn'), pwBtn('ibtn'), outBtn('ibtn')) : null));
     var role = S.profile && ROLE_FA[S.profile.role];
     var side = h('aside', { class: 'side' },
       h('div', { class: 'side__brand' }, svgEl(MARK_LIGHT), h('div', null, h('b', { text: 'هم‌نوا' }), h('span', { text: 'فضای کاری مشاوران' }))),
       nav ? h('p', { class: 'side__label', text: staff ? 'منوی اصلی' : 'در این صفحه' }) : null, nav,
       S.user ? h('div', { class: 'side__user' },
         h('div', { class: 'side__who' }, avatar(who), h('div', null, h('b', { text: who }), role ? h('span', { text: role }) : null)),
-        h('div', { class: 'side__acts' }, pwBtn('sbtn'), outBtn('sbtn'))) : null);
+        h('div', { class: 'side__acts' }, mailBtn('sbtn'), pwBtn('sbtn'), outBtn('sbtn'))) : null);
     var nodes = [];
     if (active) nodes.push(welcome(who));
     if (S.flash) nodes.push(h('div', { class: 'flash flash--' + S.flash.type, role: 'status', text: S.flash.text }));
