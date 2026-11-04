@@ -1647,7 +1647,7 @@
 
       // Pre-fill: clone items until the track is wider than the container + 2
       // buffers. Faces are not all the same width — the name underneath sets it,
-      // and those range from "دکتر الناز زرین‌فر" to "دکتر لیلی اسماعیل‌زاده" —
+      // and those range from "دکتر الناز زرین‌فر" to "دکتر مژگان سپاه‌منصور" —
       // so size the target off the average rather than off whichever item
       // happens to be first.
       var idx = 0;
