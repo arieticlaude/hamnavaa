@@ -35,11 +35,28 @@
     }
   }
 
+  // loads vendor/three.min.js next to this script, once, after window load; then runs cb
+  function lazyThree(cb){
+    if (lazyThree.started) return; lazyThree.started = true;
+    const self = document.querySelector('script[src*="assets/js/site.js"]');
+    const base = self ? self.getAttribute('src').replace(/site\.js.*$/, '') : '/assets/js/';
+    const go = function(){
+      const e = document.createElement('script'); e.src = base + 'vendor/three.min.js?v=1'; e.async = true;
+      e.onload = function(){ try { cb(); } catch (err) { /* decorative only */ } };
+      document.head.appendChild(e);
+    };
+    if (document.readyState === 'complete') setTimeout(go, 300);
+    else window.addEventListener('load', function(){ setTimeout(go, 300); });
+  }
+
   // ambient rotating wireframe globe behind the hero (decorative, non-interactive;
   // skipped entirely if the three.js CDN failed to load, e.g. offline use of this file)
   (function initHeroGlobe(){
     const mount = document.getElementById('heroGlobe');
-    if (!mount || typeof THREE === 'undefined') return;
+    if (!mount) return;
+    // three.js is big (about 650 KB) and only decorates the hero: load it after the page has finished loading,
+    // from our own server, so a slow or filtered CDN can never hold the whole page back
+    if (typeof THREE === 'undefined') { lazyThree(initHeroGlobe); return; }
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 100);
