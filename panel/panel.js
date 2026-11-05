@@ -342,7 +342,7 @@
     if (/foreign key|violates|23503/i.test(m)) return 'این مورد به جلسه یا سابقه وصل است و حذف نمی‌شود. اول جلسه‌هایش را پاک کنید، یا او را غیرفعال کنید.';
     if (/invalid meet/i.test(m)) return 'لینک Meet معتبر نیست. باید شبیه meet.google.com/abc-defg-hij باشد.';
     if (/weak|at least|character/i.test(m)) return 'رمز عبور ضعیف است: دست‌کم ۱۲ نویسه و شامل حرف کوچک و بزرگ انگلیسی و عدد.';
-    if (/failed to fetch|network|load failed/i.test(m)) return 'اتصال به سرور برقرار نشد. اینترنت را بررسی کنید.';
+    if (/failed to fetch|network|load failed/i.test(m)) return 'اتصال به سرور برقرار نشد. اینترنت را بررسی کنید؛ اگر سالم است، پایین همین صفحه «عیب‌یابی اتصال» را باز کنید.';
     return 'خطایی رخ داد. دوباره امتحان کنید.';
   }
   function flash(type, text) { S.flash = { type: type, text: text }; S.flashUntil = Date.now() + 3500; }   // چند بازنقاشی پشت‌سرهم پیام را نمی‌بلعد
@@ -724,9 +724,13 @@
     var btn = h('button', { class: 'btn btn--primary btn--block', type: 'submit', text: 'ورود' });
     var form = h('form', { class: 'authcard', onsubmit: function (e) {
       e.preventDefault(); btn.disabled = true; btn.textContent = 'در حال ورود…'; S.lastEmail = email.value.trim();
+      var slow = setTimeout(function () {       // سرور هیچ جوابی نداد (شبکه بسته است): تا ابد منتظر نمی‌مانیم
+        btn.disabled = false; flash('err', 'از سرور جوابی نیامد. اگر اینترنت سالم است، پایین همین صفحه «عیب‌یابی اتصال» را باز کنید.'); vLogin();
+      }, 15000);
       sb.auth.signInWithPassword({ email: email.value.trim(), password: pass.value }).then(function (r) {
+        clearTimeout(slow);
         if (r.error) { btn.disabled = false; flash('err', explain(r.error)); return vLogin(); }
-      });
+      }, function () { clearTimeout(slow); btn.disabled = false; flash('err', explain('network')); vLogin(); });
     } },
       h('div', { class: 'authcard__head' }, h('h2', { text: 'ورود به پنل' }), h('p', { class: 'hint', text: 'با ایمیل و رمز عبور خود وارد شوید.' })),
       S.flash ? h('div', { class: 'flash flash--' + S.flash.type, role: 'status', text: S.flash.text }) : null,
@@ -742,6 +746,7 @@
       } })),
       btn,
       h('p', { class: 'hint authcard__note', text: 'ثبت‌نام آزاد وجود ندارد. حساب شما را هم‌نوا می‌سازد و دعوت‌نامه به ایمیلتان می‌رسد.' }),
+      h('p', { class: 'hint authcard__note' }, 'پنل باز نمی‌شود یا وارد نمی‌شوید؟ ', h('a', { href: 'diag.html', text: 'عیب‌یابی اتصال' })),
       h('p', { class: 'authcard__back' }, h('a', { href: '../', text: '← بازگشت به سایت هم‌نوا' })));
     S.flash = null;
     var inst = installCard();
