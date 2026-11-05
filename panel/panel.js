@@ -351,12 +351,45 @@
   function connect() {
     if (MOCK) { return window.__panelMock(/[?&]mock=(\w+)/.exec(location.search)[1]); }
     return window.supabase.createClient(CFG.url, CFG.key, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: 'sb-bxrwcdonxeirhvpinwpz-auth-token' }   // همان کلید قبلی: عوض‌شدن مسیر (مستقیم یا واسطه) کسی را بیرون نمی‌اندازد
     });
+  }
+
+  /* مسیر سرور داده: اگر آدرس مستقیم (supabase.co) از شبکهٔ کاربر بسته باشد، از واسطهٔ Cloudflare (altUrl) می‌رویم.
+     برنده‌ی آخرین آزمایش ۱۲ ساعت یادآوری می‌شود تا هر بار منتظر آزمایش نمانیم. */
+  function probe(base, ms) {
+    return new Promise(function (resolve) {
+      var done = false, t = setTimeout(function () { if (!done) { done = true; resolve(false); } }, ms);
+      function fin(ok) { if (done) return; done = true; clearTimeout(t); resolve(ok); }
+      try { fetch(base + '/auth/v1/health', { headers: { apikey: CFG.key }, cache: 'no-store' }).then(function (r) { fin(r.status === 200 || r.status === 401); }, function () { fin(false); }); } catch (e) { fin(false); }
+    });
+  }
+  function probeTwice(base, ms) { return probe(base, ms).then(function (ok) { return ok ? true : probe(base, ms); }); }
+  function pickApi(done) {
+    if (MOCK || !CFG.altUrl) return done(CFG.url);
+    var saved = null;
+    try { saved = JSON.parse(localStorage.getItem('hn_api') || 'null'); } catch (e) { saved = null; }
+    if (saved && saved.url === CFG.altUrl && Date.now() - saved.at < 12 * 3600 * 1000) return done(CFG.altUrl);
+    // هر دو مسیر هم‌زمان آزمایش می‌شوند؛ اگر مستقیم جواب داد همان، وگرنه واسطه
+    var dOk = null, aOk = null, fired = false;
+    function decide() {
+      if (fired) return;
+      if (dOk === true) { fired = true; try { localStorage.removeItem('hn_api'); } catch (e) { /* مهم نیست */ } return done(CFG.url); }
+      if (dOk === false && aOk !== null) {
+        fired = true;
+        if (aOk) { try { localStorage.setItem('hn_api', JSON.stringify({ url: CFG.altUrl, at: Date.now() })); } catch (e2) { /* مهم نیست */ } return done(CFG.altUrl); }
+        return done(CFG.url);      // هیچ‌کدام جواب نداد: همان مسیر اصلی و پیام خطای معمول
+      }
+    }
+    probe(CFG.url, 4500).then(function (ok) { dOk = ok; decide(); });
+    probeTwice(CFG.altUrl, 7000).then(function (ok) { aOk = ok; decide(); });
   }
 
   function boot() {
     if (!MOCK && (!window.supabase || !CFG.url || !CFG.key)) { app.textContent = 'پیکربندی پنل کامل نیست.'; return; }
+    pickApi(function (url) { CFG.url = url; boot2(); });
+  }
+  function boot2() {
     sb = connect();
     sb.auth.onAuthStateChange(function (event, session) {
       // درون این تابع به پایگاه‌داده زنگ نزنید؛ به یک چرخه بعد موکول می‌شود
