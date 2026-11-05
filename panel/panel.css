@@ -219,7 +219,7 @@ a.ibtn,a.sbtn{text-decoration:none}
 
 .auth__side{position:relative;overflow:hidden;color:#FDFBF5;padding:36px 56px 34px;display:flex;flex-direction:column;justify-content:space-between;gap:10px;touch-action:pan-y;
   background:radial-gradient(760px 520px at 85% 8%,rgba(183,138,70,.12),transparent 62%),radial-gradient(660px 540px at 0% 100%,rgba(77,124,113,.6),transparent 60%),linear-gradient(160deg,#0C2622,#143730 55%,#25504A)}
-.auth__side::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+.auth__side::before{content:"";position:absolute;top:0;left:0;right:0;bottom:0;inset:0;pointer-events:none;opacity:.5;
   background-image:linear-gradient(rgba(253,251,245,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(253,251,245,.045) 1px,transparent 1px);background-size:46px 46px;
   -webkit-mask-image:radial-gradient(ellipse at 50% 38%,#000 20%,transparent 72%);mask-image:radial-gradient(ellipse at 50% 38%,#000 20%,transparent 72%)}
 .auth__side>*{position:relative;z-index:1}
@@ -234,8 +234,8 @@ a.ibtn,a.sbtn{text-decoration:none}
 .spark{position:absolute;border-radius:50%;background:radial-gradient(circle,#FBE7B8,#E8C486 55%,transparent 72%);opacity:.7;animation:spark 6s ease-in-out infinite}
 
 .l3d{--s:inherit;position:relative;width:var(--s);height:var(--s);transform-style:preserve-3d;animation:l3float 6s ease-in-out infinite}
-.l3d__body{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform}
-.l3d__ly{position:absolute;inset:0;display:block;transform:translateZ(calc(var(--z)*var(--s)*.0085))}
+.l3d__body{position:absolute;top:0;left:0;right:0;bottom:0;inset:0;transform-style:preserve-3d;will-change:transform}
+.l3d__ly{position:absolute;top:0;left:0;right:0;bottom:0;inset:0;display:block;transform:translateZ(calc(var(--z)*var(--s)*.0085))}
 .l3d__ly svg{width:100%;height:100%;display:block;overflow:visible}
 .l3d__sheen{animation:sheen 6.5s ease-in-out infinite}
 .l3d__shadow{position:absolute;left:50%;bottom:-24%;width:84%;height:18%;transform:translateX(-50%);border-radius:50%;background:radial-gradient(ellipse,rgba(4,16,13,.62),transparent 70%);filter:blur(7px);animation:l3shadow 6s ease-in-out infinite}
@@ -389,7 +389,7 @@ a.ibtn,a.sbtn{text-decoration:none}
 
 /* لوگوی سه‌بعدی داخل بنر خوش‌آمد */
 .welcome{min-height:176px}
-.welcome::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.55;background-image:linear-gradient(rgba(253,251,245,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(253,251,245,.05) 1px,transparent 1px);background-size:38px 38px;-webkit-mask-image:radial-gradient(ellipse at var(--lx,54%) 50%,#000 10%,transparent 70%);mask-image:radial-gradient(ellipse at var(--lx,54%) 50%,#000 10%,transparent 70%)}
+.welcome::before{content:"";position:absolute;top:0;left:0;right:0;bottom:0;inset:0;pointer-events:none;opacity:.55;background-image:linear-gradient(rgba(253,251,245,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(253,251,245,.05) 1px,transparent 1px);background-size:38px 38px;-webkit-mask-image:radial-gradient(ellipse at var(--lx,54%) 50%,#000 10%,transparent 70%);mask-image:radial-gradient(ellipse at var(--lx,54%) 50%,#000 10%,transparent 70%)}
 .welcome__txt{min-width:0}
 .welcome__tag{flex:1;align-self:center;text-align:start;max-width:330px;margin-inline-start:auto;padding-inline:26px 8px;font-family:'Markazi Text',serif;font-size:27px;line-height:1.25;font-weight:500;color:rgba(253,251,245,.82);text-wrap:balance;border-inline-start:1px solid rgba(232,196,134,.28)}
 .welcome__art{--s:168px;position:relative;flex:none;width:var(--s);height:var(--s);margin-block:-10px;margin-inline:26px 8px;display:grid;place-items:center;perspective:760px}
@@ -444,7 +444,7 @@ a.ibtn,a.sbtn{text-decoration:none}
   .side{position:sticky;top:14px;height:calc(100vh - 28px);display:flex;flex-direction:column;gap:6px;padding:22px 16px 16px;border-radius:28px;color:#FDFBF5;overflow-y:auto;scrollbar-width:none;box-shadow:var(--shadow-lg);
     background:radial-gradient(360px 260px at 100% 0%,rgba(232,196,134,.22),transparent 62%),radial-gradient(320px 300px at 0% 100%,rgba(77,124,113,.55),transparent 62%),linear-gradient(175deg,#0C2622,#143730 58%,#1E4841)}
   .side::-webkit-scrollbar{display:none}
-  .side::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;border-radius:inherit;background-image:linear-gradient(rgba(253,251,245,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(253,251,245,.04) 1px,transparent 1px);background-size:40px 40px;-webkit-mask-image:radial-gradient(ellipse at 60% 30%,#000 10%,transparent 72%);mask-image:radial-gradient(ellipse at 60% 30%,#000 10%,transparent 72%)}
+  .side::before{content:"";position:absolute;top:0;left:0;right:0;bottom:0;inset:0;pointer-events:none;opacity:.5;border-radius:inherit;background-image:linear-gradient(rgba(253,251,245,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(253,251,245,.04) 1px,transparent 1px);background-size:40px 40px;-webkit-mask-image:radial-gradient(ellipse at 60% 30%,#000 10%,transparent 72%);mask-image:radial-gradient(ellipse at 60% 30%,#000 10%,transparent 72%)}
   .side>*{position:relative;z-index:1}
   .side__brand{display:flex;align-items:center;gap:12px;padding:2px 8px 18px;margin-bottom:10px;border-bottom:1px solid rgba(253,251,245,.1)}
   .side__brand svg{width:46px;height:46px;flex:none;filter:drop-shadow(0 6px 10px rgba(0,0,0,.35))}
@@ -481,7 +481,7 @@ a.ibtn,a.sbtn{text-decoration:none}
   .side{display:contents}
   .side>*{display:none}
   .side>.tabs--anchors{display:none}
-  .layout--staff .side>.tabs{display:flex;position:fixed;z-index:40;inset-inline:10px;bottom:max(10px,env(safe-area-inset-bottom));gap:2px;padding:6px;margin:0;overflow:visible;
+  .layout--staff .side>.tabs{display:flex;position:fixed;z-index:40;left:10px;right:10px;bottom:10px;inset-inline:10px;bottom:max(10px,env(safe-area-inset-bottom));gap:2px;padding:6px;margin:0;overflow:visible;
     background:rgba(255,255,255,.9);-webkit-backdrop-filter:saturate(1.6) blur(18px);backdrop-filter:saturate(1.6) blur(18px);border:1px solid var(--line);border-radius:24px;box-shadow:0 22px 46px -16px rgba(15,43,38,.5)}
   .layout--staff .tab{flex:1 1 0;flex-direction:column;gap:3px;padding:8px 2px 7px;min-width:0;font-size:11px;line-height:1.25;border-radius:18px;white-space:normal;text-align:center;position:relative}
   .layout--staff .tab .ico{width:22px;height:22px}
@@ -545,3 +545,6 @@ input[type=checkbox]{accent-color:var(--teal);width:18px;height:18px;vertical-al
 .r__acts{grid-column:2 / -1;display:flex;flex-wrap:wrap;gap:6px;padding:0 0 9px 16px;margin-top:-4px}
 .r__acts .btn{min-height:32px;padding:3px 12px;font-size:12.5px}
 .r__head--static+.r__acts{padding-inline-start:12px}
+/* مرورگرهای قدیمی که clamp() ندارند: اندازهٔ ثابت */
+@supports not (width:clamp(1px,2px,3px)){.auth__stage{--s:240px}}
+@supports not (width:clamp(1px,2px,3px)){.copy h1,.auth__copy h1{font-size:42px}}

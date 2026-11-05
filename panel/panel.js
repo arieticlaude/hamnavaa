@@ -386,7 +386,12 @@
   }
 
   function boot() {
-    if (!MOCK && (!window.supabase || !CFG.url || !CFG.key)) { app.textContent = 'پیکربندی پنل کامل نیست.'; return; }
+    if (!MOCK && (!window.supabase || !CFG.url || !CFG.key)) {
+      app.replaceChildren(h('div', { class: 'boot' }, h('p', { text: 'پنل روی این مرورگر اجرا نشد.' }),
+        h('p', { class: 'hint', text: 'مرورگر گوشی را به‌روز کنید یا پنل را با مرورگر دیگری (مثلاً Chrome) باز کنید.' }),
+        h('p', null, h('a', { href: 'diag.html', text: 'عیب‌یابی اتصال و مرورگر' }))));
+      return;
+    }
     pickApi(function (url) { CFG.url = url; boot2(); });
   }
   function boot2() {
