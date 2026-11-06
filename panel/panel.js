@@ -442,7 +442,7 @@
    ['الناز زرین‌فر', 'elnaz-zarinfar'], ['حسین مختاری', 'hossein-mokhtari'], ['سارا فتاحی', 'sara-fattahi'],
    ['سارا منصفی', 'sara-monsefi'], ['ساناز زرین‌فر', 'sanaz-zarinfar'], ['سپیده وحید هرندی', 'sepideh-vahid-harandi'],
    ['صفا مصطفی‌زاده', 'safa-mostafazadeh'], ['محسن شاه ولی', 'mohsen-shahvali'],
-   ['مرجان علی‌محمدی', 'marjan-alimohammadi'], ['مژگان سپاه‌منصور', 'mojgan-sepahmansour'], ['مهدی قنبری', 'mahdi-ghanbari'],
+   ['مرجان علی‌محمدی', 'marjan-alimohammadi'], ['مژگان سپاه‌منصور', 'mojgan-sepahmansour'], ['مهدی قنبری', 'mahdi-ghanbari'], ['لیلا جباری', 'leila-jabbari'],
    ['نشاط غلامی‌پور', 'neshat-gholamipour'], ['نگار تیموری', 'negar-teymouri'], ['نورا دهقان‌پور', 'nora-dehghanpour'],
    ['مدیر هم‌نوا', 'arash-modir'], ['منشی هم‌نوا', 'nazanin-monshi'], ['آرش', 'arash-modir'], ['نازنین', 'nazanin-monshi'], ['نازنین فتاحی', 'nazanin-monshi']
   ].forEach(function (p) { PORTRAIT[nkey(p[0])] = p[1]; });
