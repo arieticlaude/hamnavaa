@@ -1176,6 +1176,7 @@
       if (res[0].error || res[1].error) flash('err', explain(res[0].error || res[1].error));
       S.data.sessions = res[0].data || []; S.data.profiles = res[1].data || [];
       var ids = S.data.sessions.map(function (s) { return s.id; });
+      loadFirstFlags();
       if (!ids.length) { S.data.contacts = {}; render(); return loadBoard(); }
       sb.from('session_contacts').select('*').in('session_id', ids).then(function (c) {
         S.data.contacts = {};
@@ -1734,6 +1735,26 @@
     '۶. زمان‌بندی: لطفاً ۵ دقیقه زودتر آماده باشید تا جلسه به‌موقع آغاز شود.', '',
     '۷. حریم خصوصی: از ضبط جلسه یا حضور افراد دیگر بدون هماهنگی قبلی خودداری کنید.', '',
     '🌱 سپاس از همراهی شما', '', 'تیم روان‌شناسی هم‌نوا'];
+  /* راهنمای حضور فقط برای «اولین مشاورهٔ اصلی» هر مراجع می‌رود.
+     مراجع با شمارهٔ تلفن شناخته می‌شود؛ اگر یکی از دو جلسه شماره نداشته باشد، نام کوچک/کد مراجع ملاک است.
+     S.firstMain[sessionId] = true/false؛ تا حساب نشده، برای اطمینان راهنما ضمیمه می‌شود. */
+  function loadFirstFlags() {
+    return Promise.all([sb.from('sessions').select('id,client_label,starts_at,kind').eq('kind', 'session').limit(5000), sb.from('session_contacts').select('session_id,client_phone').limit(5000)]).then(function (r) {
+      if (r[0].error) return;
+      var ph = {}; (r[1].data || []).forEach(function (c) { var d = phoneDigits(c.client_phone); if (d) ph[c.session_id] = d.slice(-9); });
+      var list = (r[0].data || []).map(function (x) { return { id: x.id, t: new Date(x.starts_at).getTime(), lab: nkey(x.client_label), ph: ph[x.id] || '' }; });
+      var map = {};
+      list.forEach(function (a) {
+        map[a.id] = !list.some(function (b) {
+          if (b.id === a.id) return false;
+          var same = (a.ph && b.ph) ? a.ph === b.ph : (a.lab && a.lab === b.lab);
+          return same && (b.t < a.t || (b.t === a.t && b.id < a.id));
+        });
+      });
+      S.firstMain = map;
+    });
+  }
+  function isFirstMain(s) { return !s || !S.firstMain || S.firstMain[s.id] !== false; }
   function confirmText(s, p, noGuide) {
     var lines = ['سلام ' + s.client_label + ' عزیز 🌿', 'جلسهٔ شما در هم‌نوا ثبت شد.',
       'مشاور: ' + ((p && p.full_name) || 'هم‌نوا'),
@@ -1741,7 +1762,7 @@
       'نوع: ' + (s.kind === 'intro' ? 'جلسهٔ رایگان پیش‌مشاوره' : 'جلسهٔ مشاوره') + ' — ' + (s.mode === 'audio' ? 'تماس صوتی' : 'تماس تصویری')];
     if (p && p.meet_url) lines.push('لینک اتاق: ' + p.meet_url, 'سر وقت روی لینک بزنید؛ مشاور شما را به اتاق می‌پذیرد.');
     else lines.push('لینک اتاق پیش از جلسه برایتان فرستاده می‌شود.');
-    if (s.kind !== 'intro') lines.push('', '──────────', '', SESSION_GUIDE.join('\n'));
+    if (s.kind !== 'intro' && !noGuide && isFirstMain(s)) lines.push('', '──────────', '', SESSION_GUIDE.join('\n'));
     return lines.join('\n');
   }
   function reminderText(s, p) {
