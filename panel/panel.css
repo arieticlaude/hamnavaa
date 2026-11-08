@@ -652,3 +652,11 @@ input[type=checkbox]{accent-color:var(--teal);width:18px;height:18px;vertical-al
 .fcard__x:hover{background:#FBECEA;border-color:#E3C4C0}
 .fcard__x svg{width:18px;height:18px}
 .docs-field>label{display:block;margin-bottom:8px}
+
+.presets{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:-4px 0 10px}
+.presets[hidden]{display:none}
+.presets__t{font-size:13px;font-weight:700;color:var(--teal-deep)}
+.preset{display:inline-flex;flex-direction:column;align-items:center;line-height:1.25;border:1.5px solid #E6D3A8;background:linear-gradient(180deg,#FFFBF0,#F8EFD9);border-radius:12px;padding:5px 14px;font:inherit;cursor:pointer;color:#5C431B;transition:transform .12s,box-shadow .12s}
+.preset b{font-size:15px;font-weight:800}
+.preset small{font-size:11.5px;color:#7A6128}
+.preset:hover{transform:translateY(-1px);box-shadow:0 8px 16px -10px rgba(138,107,57,.8)}

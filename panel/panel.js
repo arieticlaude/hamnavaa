@@ -1219,7 +1219,9 @@
   var CAM_ICON = SVGH + '<path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>';
   var X_ICON = SVGH + '<path d="M6 6l12 12M18 6 6 18"/></svg>';
   var accMf = new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 2 });
-  function money(x) { return accMf.format(Math.round(x * 100) / 100); }
+  var accMf2 = new Intl.NumberFormat('fa-IR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  function money(x) { var r = Math.round(x * 100) / 100; return (r % 1 === 0 ? accMf : accMf2).format(r); }
+  function faDec(s) { return String(s).replace(/\d/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'.charAt(+d); }).replace('.', '٫'); }
   function accUnit(cur) { return cur === 'IRT' ? 'تومان' : ltr(cur); }
   function accAmt(x, cur) { var f = document.createDocumentFragment(); f.appendChild(document.createTextNode(money(x) + ' ')); f.appendChild(cur === 'IRT' ? document.createTextNode('تومان') : ltr(cur)); return f; }
   function accState() {
@@ -1573,15 +1575,32 @@
       if (!ACC_CATS[f.direction].some(function (c) { return c[0] === f.category; })) f.category = ACC_CATS[f.direction][0][0];
       ACC_CATS[f.direction].forEach(function (c) { catSel.appendChild(h('option', { value: c[0], text: c[1], selected: c[0] === f.category })); });
     }
-    var accSel = h('select', { class: 'select', 'aria-label': 'حساب', onchange: function (ev) { f.account = ev.target.value; fillCur(); } },
+    var accSel = h('select', { class: 'select', 'aria-label': 'حساب', onchange: function (ev) { f.account = ev.target.value; fillCur(); amtUi(); } },
       h('option', { value: 'fx', text: 'حساب ارزی (خارج از ایران)', selected: f.account === 'fx' }), h('option', { value: 'irr', text: 'حساب تومانی (ایران)', selected: f.account === 'irr' }));
-    var dirSel = h('select', { class: 'select', 'aria-label': 'نوع', onchange: function (ev) { f.direction = ev.target.value; fillCat(); } },
+    var dirSel = h('select', { class: 'select', 'aria-label': 'نوع', onchange: function (ev) { f.direction = ev.target.value; fillCat(); amtUi(); } },
       h('option', { value: 'in', text: 'واریز (پول آمد)', selected: f.direction === 'in' }), h('option', { value: 'out', text: 'برداشت (پول رفت)', selected: f.direction === 'out' }));
-    curSel.addEventListener('change', function (ev) { f.currency = ev.target.value; });
+    curSel.addEventListener('change', function (ev) { f.currency = ev.target.value; if (typeof amtUi === 'function') amtUi(); });
     catSel.addEventListener('change', function (ev) { f.category = ev.target.value; });
     fillCur(); fillCat();
-    var amt = h('input', { class: 'input', dir: 'ltr', inputmode: 'decimal', value: f.amount, placeholder: 'مثلاً 120 یا 4,500,000', required: true, 'aria-label': 'مبلغ' });
+    var amt = h('input', { class: 'input', dir: 'ltr', inputmode: 'decimal', value: f.amount, placeholder: 'مثلاً 26.90', required: true, 'aria-label': 'مبلغ' });
     amt.addEventListener('input', function () { f.amount = amt.value; var v = parseFloat(normNum(amt.value)); msg.textContent = isFinite(v) && v > 0 ? 'مبلغ: ' + money(v) + ' ' + (f.currency === 'IRT' ? 'تومان' : f.currency) : ''; });
+    var amtLbl = h('label', { text: 'مبلغ' }), presetBox = h('div', { class: 'presets', role: 'group', 'aria-label': 'مبلغ‌های آماده' });
+    var PRESETS = [['26.90', 'تک‌جلسه', 'session'], ['71.70', 'پکیج ۳ جلسه', 'package'], ['109.50', 'پکیج ۵ جلسه', 'package'], ['15.90', 'دانشجو', 'session'], ['35.70', 'دانشجو ۳ جلسه', 'package']];
+    function amtUi() {
+      var irr = f.account === 'irr';
+      amtLbl.textContent = irr ? 'مبلغ (به تومان)' : 'مبلغ (' + f.currency + ')';
+      amt.placeholder = irr ? 'مثلاً 4,500,000 (تومان، نه ریال)' : 'مثلاً 26.90';
+      presetBox.textContent = ''; presetBox.hidden = irr || f.direction !== 'in';
+      if (presetBox.hidden) return;
+      presetBox.appendChild(h('span', { class: 'presets__t', text: 'مبلغ آماده:' }));
+      PRESETS.forEach(function (p) {
+        presetBox.appendChild(h('button', { class: 'preset', type: 'button', onclick: function () {
+          amt.value = p[0]; f.amount = p[0]; f.category = p[2]; fillCat();
+          var v = parseFloat(p[0]); msg.textContent = 'مبلغ: ' + money(v) + ' ' + f.currency; amt.focus();
+        } }, h('b', { text: faDec(p[0]) }), h('small', { text: p[1] })));
+      });
+    }
+    amtUi();
     var who = h('select', { class: 'select', 'aria-label': 'مشاور', onchange: function (ev) { f.counselor = ev.target.value; } }, h('option', { value: '', text: 'بدون مشاور' }),
       (S.data.profiles || []).filter(isProvider).map(function (p) { return h('option', { value: p.id, text: p.full_name || 'بدون نام', selected: f.counselor === p.id }); }));
     var ref = h('input', { class: 'input', dir: 'ltr', maxlength: 80, value: f.ref, placeholder: 'شمارهٔ پیگیری / تراکنش (اختیاری)', 'aria-label': 'شمارهٔ پیگیری' });
@@ -1665,8 +1684,8 @@
       h('h2', { text: e ? 'ویرایش تراکنش' : (A.preset === 'out' ? 'ثبت هزینهٔ جدید' : 'ثبت واریز جدید') }),
       h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'نوع' }), dirSel), h('div', { class: 'field' }, h('label', { text: 'تاریخ' }), df.el)),
       h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'حساب' }), accSel), h('div', { class: 'field' }, h('label', { text: 'ارز' }), curSel)),
-      h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'مبلغ' }), amt), h('div', { class: 'field' }, h('label', { text: 'دسته' }), catSel)),
-      msg,
+      h('div', { class: 'row' }, h('div', { class: 'field' }, amtLbl, amt), h('div', { class: 'field' }, h('label', { text: 'دسته' }), catSel)),
+      presetBox, msg,
       h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'مشاور (اختیاری)' }), who), h('div', { class: 'field' }, h('label', { text: 'شمارهٔ پیگیری (اختیاری)' }), ref)),
       h('div', { class: 'field' }, h('label', { text: 'توضیح (اختیاری)' }), note), docs,
       h('div', { class: 'actions' }, submit, h('button', { class: 'btn', type: 'button', text: 'انصراف', onclick: function () { A.form = false; A.edit = null; A.f = null; A.pend = []; render(); } })));
