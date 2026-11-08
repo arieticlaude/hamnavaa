@@ -59,7 +59,8 @@
     key: '<circle cx="8" cy="15" r="4"/><path d="M10.8 12.2 21 2M16 7l3 3M14 9l2 2"/>',
     bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',
     check: '<path d="M20 6 9 17l-5-5"/>',
-    clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>'
+    clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+    wallet: '<path d="M3 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1"/><path d="M3 7v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"/><path d="M21 10h-5a2.5 2.5 0 0 0 0 5h5z"/>'
   };
   function ico(name, cls) {
     return svgEl('<svg class="ico' + (cls ? ' ' + cls : '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONS[name] || '') + '</svg>');
@@ -1201,16 +1202,447 @@
     });
   }
 
+  /* ───────────── حسابداری ساده (فقط مدیر و منشی؛ با migration-16) ─────────────
+     دفتر کل: هر ردیف یک واریز یا برداشت در «حساب ارزی» یا «حساب تومانی». جمع‌ها در مرورگر حساب می‌شوند. */
+  var ACC_FA = { fx: 'حساب ارزی', irr: 'حساب تومانی' };
+  var ACC_WHERE = { fx: 'خارج از ایران', irr: 'ایران' };
+  var FX_CUR = [['USD', 'دلار آمریکا'], ['EUR', 'یورو'], ['GBP', 'پوند'], ['CAD', 'دلار کانادا'], ['AUD', 'دلار استرالیا'], ['AED', 'درهم امارات'], ['TRY', 'لیر ترکیه'], ['USDT', 'تتر']];
+  var ACC_CATS = { 'in': [['session', 'جلسهٔ مشاوره'], ['package', 'پکیج جلسه'], ['other_in', 'سایر دریافتی‌ها'], ['transfer', 'انتقال از حساب دیگر']],
+                   out: [['counselor', 'حق‌الزحمهٔ مشاور'], ['ads', 'تبلیغات'], ['software', 'سرویس و نرم‌افزار (سرور، دامنه، اشتراک)'], ['bank', 'کارمزد بانکی و مالیات'], ['expense', 'هزینهٔ عمومی'], ['other_out', 'سایر هزینه‌ها'], ['transfer', 'انتقال به حساب دیگر']] };
+  var CAT_FA = { session: 'جلسهٔ مشاوره', 'package': 'پکیج جلسه', other_in: 'سایر دریافتی‌ها', counselor: 'حق‌الزحمهٔ مشاور', ads: 'تبلیغات', software: 'سرویس و نرم‌افزار', bank: 'کارمزد بانکی و مالیات', expense: 'هزینهٔ عمومی', transfer: 'انتقال بین حساب‌ها', other_out: 'سایر هزینه‌ها', other: 'سایر' };
+  var DOC_FA = { receipt: 'رسید پرداخت', invoice: 'فاکتور', other: 'سند' };
+  var MAX_FILE = 8 * 1024 * 1024;
+  var accMf = new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 2 });
+  function money(x) { return accMf.format(Math.round(x * 100) / 100); }
+  function accUnit(cur) { return cur === 'IRT' ? 'تومان' : ltr(cur); }
+  function accAmt(x, cur) { var f = document.createDocumentFragment(); f.appendChild(document.createTextNode(money(x) + ' ')); f.appendChild(cur === 'IRT' ? document.createTextNode('تومان') : ltr(cur)); return f; }
+  function accState() {
+    return S.acc = S.acc || { sub: 'summary', cal: 'j', year: 0, acct: 'fx', cur: { fx: 'USD', irr: 'IRT' }, q: '', fa: '', fd: '', limit: 100, rows: null, form: false, edit: null, f: null };
+  }
+  function accYM(iso, cal) {
+    var p = parseIso(iso); if (!p) return { y: 0, m: 0 };
+    if (cal === 'j') { var j = toJalali(p.gy, p.gm, p.gd); return { y: j.jy, m: j.jm }; }
+    return { y: p.gy, m: p.gm };
+  }
+  function accNow(cal) { return accYM(tehranDateInput(0), cal); }
+  function accDateNode(iso) {
+    var p = parseIso(iso), f = document.createDocumentFragment(); if (!p) return document.createTextNode(iso || '');
+    var j = toJalali(p.gy, p.gm, p.gd), g = ltr(G_MONTHS[p.gm - 1] + ' ' + p.gd + ', ' + p.gy); g.style.whiteSpace = 'nowrap';
+    f.appendChild(document.createTextNode(np(j.jd) + ' ' + J_MONTHS[j.jm - 1] + ' ' + np(j.jy) + ' ')); f.appendChild(h('small', { class: 'acc-g' }, g));
+    return f;
+  }
+  function accSum(rows) {
+    // انتقال بین دو حساب نه درآمد است نه هزینه: فقط در «موجودی» می‌آید
+    var s = { 'in': 0, out: 0, n: 0, nin: 0, bal: 0 };
+    rows.forEach(function (r) {
+      var a = +r.amount;
+      s.bal += r.direction === 'in' ? a : -a; s.n++;
+      if (r.category === 'transfer') return;
+      if (r.direction === 'in') { s['in'] += a; s.nin++; } else s.out += a;
+    });
+    s.net = s['in'] - s.out; return s;
+  }
+  function accRows(A, acct, cur) { return (A.rows || []).filter(function (r) { return r.account === acct && (!cur || r.currency === cur); }); }
+  function accCurs(A, acct) {
+    if (acct === 'irr') return ['IRT'];
+    var tot = {}; (A.rows || []).forEach(function (r) { if (r.account === 'fx') tot[r.currency] = (tot[r.currency] || 0) + (r.direction === 'in' ? +r.amount : 0) + 0.001; });
+    var list = Object.keys(tot).sort(function (a, b) { return tot[b] - tot[a]; });
+    return list.length ? list : ['USD'];
+  }
+  function accYears(A) {
+    var set = {}, now = accNow(A.cal).y; set[now] = 1;
+    (A.rows || []).forEach(function (r) { set[accYM(r.entry_date, A.cal).y] = 1; });
+    return Object.keys(set).map(Number).sort(function (a, b) { return b - a; });
+  }
+  function yLabel(A, y) { return A.cal === 'j' ? np(y) : String(y); }
+  function mLabel(A, m) { return A.cal === 'j' ? J_MONTHS[m - 1] : G_MONTHS[m - 1]; }
+  function normNum(s) {
+    return String(s || '').replace(/[۰-۹]/g, function (c) { return c.charCodeAt(0) - 1776; }).replace(/[٠-٩]/g, function (c) { return c.charCodeAt(0) - 1632; })
+      .replace(/[,٬\s]/g, '').replace(/٫/g, '.');
+  }
+
+  function loadLedger() {
+    var A = accState(); A.loading = true;
+    Promise.all([sb.from('ledger').select('*').order('entry_date', { ascending: false }).limit(5000), sb.from('ledger_files').select('*').order('created_at', { ascending: true }).limit(5000)]).then(function (res) {
+      var r = res[0]; A.loading = false;
+      if (r.error) { A.err = r.error; A.missing = /does not exist|Could not find|relation|schema cache/i.test(r.error.message || ''); }
+      else {
+        A.err = null; A.missing = false; A.rows = r.data || []; if (!A.year) A.year = accNow(A.cal).y;
+        A.filesOk = !res[1].error; A.files = {};
+        (res[1].data || []).forEach(function (x) { (A.files[x.ledger_id] = A.files[x.ledger_id] || []).push(x); });
+      }
+      if (S.view === 'staff' && S.tab === 'acc') render();
+    });
+  }
+
+  /* ── سند (فاکتور / رسید): آپلود در Storage خصوصی و دیدن با لینک موقت ── */
+  function shrinkImage(file) {
+    return new Promise(function (ok) {
+      if (!/^image\/(jpeg|png|webp)$/.test(file.type) || file.size < 1.5 * 1024 * 1024) return ok(file);
+      try {
+        var url = URL.createObjectURL(file), img = new Image();
+        img.onload = function () {
+          var k = Math.min(1, 2200 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+          c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+          c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+          c.toBlob(function (bl) { try { ok(bl && bl.size < file.size ? new File([bl], file.name.replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' }) : file); } catch (e) { ok(file); } }, 'image/jpeg', 0.86);
+        };
+        img.onerror = function () { ok(file); };
+        img.src = url;
+      } catch (e) { ok(file); }
+    });
+  }
+  function uploadDocs(ledgerId, files, kind) {
+    var done = 0, bad = 0;
+    return files.reduce(function (p, f0) {
+      return p.then(function () {
+        return shrinkImage(f0).then(function (f) {
+          var ext = (/\.(jpe?g|png|webp|pdf)$/i.exec(f.name) || [0, f.type === 'application/pdf' ? 'pdf' : 'jpg'])[1].toLowerCase();
+          var path = ledgerId + '/' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7) + '.' + ext;
+          return sb.storage.from('ledger-files').upload(path, f, { contentType: f.type || 'application/octet-stream', upsert: false }).then(function (u) {
+            if (u.error) { bad++; return; }
+            return sb.from('ledger_files').insert({ ledger_id: ledgerId, kind: kind, path: path, name: f0.name.slice(0, 120), mime: f.type || 'application/octet-stream', size: f.size, created_by: S.user.id }).then(function (r) { if (r.error) bad++; else done++; });
+          });
+        });
+      });
+    }, Promise.resolve()).then(function () { return { done: done, bad: bad }; });
+  }
+  function openDoc(x) {
+    var w = null; try { w = window.open('', '_blank'); } catch (e) { w = null; }
+    sb.storage.from('ledger-files').createSignedUrl(x.path, 300).then(function (r) {
+      if (r.error || !r.data) { if (w) w.close(); flash('err', 'باز کردن فایل انجام نشد.'); return render(); }
+      if (w) w.location.href = r.data.signedUrl; else window.location.href = r.data.signedUrl;
+    });
+  }
+  function delDoc(A, x) {
+    if (!window.confirm('این سند حذف شود؟\n' + x.name)) return;
+    sb.storage.from('ledger-files').remove([x.path]).then(function () {
+      sb.from('ledger_files').delete().eq('id', x.id).then(function (d) { flash(d.error ? 'err' : 'ok', d.error ? explain(d.error) : 'سند حذف شد.'); loadLedger(); render(); });
+    });
+  }
+  function docChips(A, r, removable) {
+    var fl = (A.files && A.files[r.id]) || [];
+    if (!fl.length) return null;
+    return h('div', { class: 'docs' }, fl.map(function (x) {
+      var mine = S.user && x.created_by === S.user.id;
+      return h('span', { class: 'doc' }, h('button', { class: 'doc__b', type: 'button', title: x.name, onclick: function () { openDoc(x); } }, '📎 ' + (DOC_FA[x.kind] || 'سند') + ' · ' + (x.mime === 'application/pdf' ? 'PDF' : 'تصویر')),
+        removable ? h('button', { class: 'doc__x', type: 'button', 'aria-label': 'حذف سند', text: '×', onclick: function () { delDoc(A, x); } }) : null);
+    }));
+  }
+
+  function accSeg(items, cur, pick, label) {
+    return h('div', { class: 'seg acc-seg', role: 'tablist', 'aria-label': label }, items.map(function (k) {
+      return h('button', { class: 'seg__b', type: 'button', role: 'tab', 'aria-selected': cur === k[0] ? 'true' : 'false', onclick: function () { pick(k[0]); } }, k[1]);
+    }));
+  }
+
+  function accOpen(A, row, dir) {
+    A.form = true; A.edit = row; A.f = null; A.pend = []; A.preset = dir || 'in'; render();
+    setTimeout(function () { var el = document.getElementById('accForm'); if (el && el.scrollIntoView) el.scrollIntoView({ block: 'start', behavior: 'smooth' }); }, 30);
+  }
+
+  function tAccounting() {
+    var A = accState();
+    if (A.rows === null && !A.err) { if (!A.loading) loadLedger(); return h('p', { class: 'empty', text: 'در حال بارگذاری…' }); }
+    if (A.missing) return h('section', { class: 'card' }, h('h2', { text: 'حسابداری' }), h('p', { class: 'warnbox', text: 'بخش حسابداری هنوز در پایگاه‌داده نصب نشده است. فایل migration-16-accounting.sql را یک‌بار در Supabase اجرا کنید.' }));
+    if (A.err) return h('p', { class: 'flash flash--err', text: explain(A.err) });
+    if (!A.year) A.year = accNow(A.cal).y;
+    var years = accYears(A);
+    if (years.indexOf(A.year) < 0) A.year = years[0];
+    var subs = [['summary', 'خلاصه'], ['monthly', 'درآمد ماهانه'], ['yearly', 'درآمد سالانه'], ['expenses', 'هزینه‌ها'], ['ledger', 'دفتر تراکنش‌ها']];
+    var yearSel = h('select', { class: 'select acc-year', 'aria-label': 'سال', onchange: function (e) { A.year = +e.target.value; render(); } },
+      years.map(function (y) { return h('option', { value: y, text: yLabel(A, y), selected: y === A.year }); }));
+    var bar = h('div', { class: 'acc-top' },
+      h('div', { class: 'subtabs', role: 'tablist' }, subs.map(function (t) {
+        return h('button', { class: 'subtab', type: 'button', role: 'tab', 'aria-selected': A.sub === t[0] ? 'true' : 'false', onclick: function () { A.sub = t[0]; render(); } }, t[1]);
+      })),
+      h('div', { class: 'acc-ctl' },
+        accSeg([['j', 'شمسی'], ['g', 'میلادی']], A.cal, function (c) { A.cal = c; A.year = accNow(c).y; render(); }, 'نوع تقویم'),
+        yearSel,
+        
+        h('button', { class: 'btn btn--small', type: 'button', text: 'خروجی CSV', onclick: accCsv }),
+        h('button', { class: 'btn btn--small', type: 'button', text: 'تازه‌سازی', onclick: function () { loadLedger(); } })));
+    var body = A.sub === 'monthly' ? accMonthly(A) : A.sub === 'yearly' ? accYearly(A) : A.sub === 'expenses' ? accExpenses(A) : A.sub === 'ledger' ? accLedger(A) : accSummary(A);
+    var cta = h('div', { class: 'acc-cta' },
+      h('button', { class: 'btn btn--primary', type: 'button', text: '+ ثبت واریز (پول آمد)', onclick: function () { accOpen(A, null, 'in'); } }),
+      h('button', { class: 'btn acc-cta__out', type: 'button', text: '+ ثبت هزینه (پول رفت)', onclick: function () { accOpen(A, null, 'out'); } }));
+    return h('div', null, cta, bar, A.form ? accForm(A) : null, body);
+  }
+
+  /* ── خلاصه: دو حساب جدا ── */
+  function accTile(label, val, cur, cls) {
+    return h('div', { class: 'anum__t' + (cls ? ' ' + cls : '') }, h('span', { text: label }), h('b', null, accAmt(val, cur)));
+  }
+  function accPanel(A, acct) {
+    var now = accNow(A.cal), curs = accCurs(A, acct);
+    var blocks = curs.map(function (cur) {
+      var rows = accRows(A, acct, cur), all = accSum(rows);
+      var yr = accSum(rows.filter(function (r) { return accYM(r.entry_date, A.cal).y === A.year; }));
+      var mo = accSum(rows.filter(function (r) { var k = accYM(r.entry_date, A.cal); return k.y === now.y && k.m === now.m; }));
+      var ins = rows.filter(function (r) { return r.direction === 'in' && r.category !== 'transfer'; }).map(function (r) { return r.entry_date; }).sort();
+      var first = ins[0], last = ins[ins.length - 1];
+      return h('div', { class: 'acur' },
+        acct === 'fx' ? h('div', { class: 'acur__h' }, h('b', null, ltr(cur)), h('span', { text: (FX_CUR.filter(function (c) { return c[0] === cur; })[0] || [0, ''])[1] })) : null,
+        h('div', { class: 'anum' },
+          accTile('کل واریزی تا امروز', all['in'], cur, 'big'),
+          accTile('واریزی سال ' + yLabel(A, A.year), yr['in'], cur),
+          accTile('واریزی این ماه (' + mLabel(A, now.m) + ')', mo['in'], cur),
+          accTile('کل هزینه‌ها و برداشت‌ها', all.out, cur),
+          accTile('موجودی حساب', all.bal, cur, all.bal < 0 ? 'neg' : '')),
+        h('p', { class: 'hint' }, all.nin ? ['اولین واریز: ', accDateNode(first), ' · آخرین واریز: ', accDateNode(last), ' · ', n(all.nin) + ' بار واریز'] : 'هنوز واریزی ثبت نشده.'));
+    });
+    return h('section', { class: 'acct acct--' + acct },
+      h('div', { class: 'acct__head' }, h('div', null, h('h2', { text: ACC_FA[acct] }), h('span', { text: ACC_WHERE[acct] })), h('span', { class: 'acct__n', text: n(accRows(A, acct).length) + ' تراکنش' })),
+      h('div', { class: 'acct__body' }, blocks));
+  }
+  function accSummary(A) {
+    var recent = (A.rows || []).slice(0, 6);
+    return h('div', null,
+      h('div', { class: 'acc-grid' }, accPanel(A, 'fx'), accPanel(A, 'irr')),
+      h('section', { class: 'card' }, h('h2', { text: 'آخرین تراکنش‌ها' }),
+        recent.length ? h('div', { class: 'lrows' }, recent.map(function (r) { return accRow(A, r, true); })) : h('p', { class: 'empty', text: 'هنوز تراکنشی ثبت نشده. با «+ ثبت تراکنش» شروع کنید.' })));
+  }
+
+  /* ── ماهانه ── */
+  function accPick(A) {
+    var curs = accCurs(A, A.acct);
+    if (curs.indexOf(A.cur[A.acct]) < 0) A.cur[A.acct] = curs[0];
+    var cs = A.acct === 'fx' ? h('select', { class: 'select acc-year', 'aria-label': 'ارز', onchange: function (e) { A.cur.fx = e.target.value; render(); } },
+      curs.map(function (c) { return h('option', { value: c, text: c, selected: c === A.cur.fx }); })) : null;
+    return h('div', { class: 'acc-ctl' }, accSeg([['fx', 'حساب ارزی'], ['irr', 'حساب تومانی']], A.acct, function (a) { A.acct = a; render(); }, 'حساب'), cs);
+  }
+  function accMonthly(A) {
+    var cur = (accPick(A), A.cur[A.acct]), rows = accRows(A, A.acct, cur), months = [];
+    var inYear = rows.filter(function (r) { return accYM(r.entry_date, A.cal).y === A.year; });
+    var max = 0, i, tot = accSum(inYear);
+    for (i = 1; i <= 12; i++) {
+      var s = accSum(inYear.filter(function (r) { return accYM(r.entry_date, A.cal).m === i; })); s.m = i; months.push(s); if (s['in'] > max) max = s['in'];
+    }
+    var trs = months.map(function (s) {
+      return h('tr', { class: s.n ? '' : 'is-zero' }, h('td', { text: mLabel(A, s.m) }), h('td', { class: 'acc-in' }, s.n ? accAmt(s['in'], cur) : '—'),
+        h('td', null, h('span', { class: 'abar' }, h('i', { style: 'width:' + (max ? Math.round(s['in'] / max * 100) : 0) + '%' }))),
+        h('td', null, s.out ? accAmt(s.out, cur) : '—'), h('td', { class: s.net < 0 ? 'acc-neg' : '' }, s.n ? accAmt(s.net, cur) : '—'), h('td', { text: s.n ? n(s.n) : '—' }));
+    });
+    var active = months.filter(function (s) { return s.nin; }).length;
+    return h('section', { class: 'card' }, h('h2', { text: 'درآمد ماهانه، سال ' + yLabel(A, A.year) }), accPick(A),
+      h('div', { class: 'tblwrap' }, h('table', { class: 'atbl' },
+        h('thead', null, h('tr', null, ['ماه', 'واریز', '', 'برداشت', 'خالص', 'تعداد'].map(function (t) { return h('th', { text: t }); }))),
+        h('tbody', null, trs),
+        h('tfoot', null, h('tr', null, h('td', { text: 'جمع سال' }), h('td', { class: 'acc-in' }, accAmt(tot['in'], cur)), h('td'), h('td', null, accAmt(tot.out, cur)), h('td', { class: tot.net < 0 ? 'acc-neg' : '' }, accAmt(tot.net, cur)), h('td', { text: n(tot.n) }))))),
+      h('p', { class: 'hint' }, active ? 'میانگین واریز در ماه‌هایی که واریز داشته: ' : 'در این سال واریزی ثبت نشده.', active ? accAmt(tot['in'] / active, cur) : null));
+  }
+
+  /* ── سالانه ── */
+  function accYearly(A) {
+    var secs = [];
+    ['fx', 'irr'].forEach(function (acct) {
+      accCurs(A, acct).forEach(function (cur) {
+        var rows = accRows(A, acct, cur), by = {};
+        rows.forEach(function (r) { var y = accYM(r.entry_date, A.cal).y; (by[y] = by[y] || []).push(r); });
+        var ys = Object.keys(by).map(Number).sort(function (a, b) { return b - a; });
+        var all = accSum(rows);
+        var trs = ys.map(function (y) {
+          var s = accSum(by[y]), mset = {}; by[y].forEach(function (r) { if (r.direction === 'in') mset[accYM(r.entry_date, A.cal).m] = 1; });
+          var mc = Object.keys(mset).length;
+          return h('tr', null, h('td', { text: yLabel(A, y) }), h('td', { class: 'acc-in' }, accAmt(s['in'], cur)), h('td', null, accAmt(s.out, cur)), h('td', { class: s.net < 0 ? 'acc-neg' : '' }, accAmt(s.net, cur)), h('td', { text: n(s.nin) }), h('td', null, mc ? accAmt(s['in'] / mc, cur) : '—'));
+        });
+        secs.push(h('section', { class: 'card' }, h('h2', null, ACC_FA[acct] + (acct === 'fx' ? ' · ' : ''), acct === 'fx' ? ltr(cur) : null),
+          ys.length ? h('div', { class: 'tblwrap' }, h('table', { class: 'atbl' },
+            h('thead', null, h('tr', null, ['سال', 'واریز', 'برداشت', 'خالص', 'تعداد واریز', 'میانگین ماهانه'].map(function (t) { return h('th', { text: t }); }))),
+            h('tbody', null, trs),
+            h('tfoot', null, h('tr', null, h('td', { text: 'مجموع' }), h('td', { class: 'acc-in' }, accAmt(all['in'], cur)), h('td', null, accAmt(all.out, cur)), h('td', { class: all.net < 0 ? 'acc-neg' : '' }, accAmt(all.net, cur)), h('td', { text: n(all.nin) }), h('td'))))) : h('p', { class: 'empty', text: 'هنوز تراکنشی ثبت نشده.' })));
+      });
+    });
+    return h('div', null, secs, h('p', { class: 'hint', text: 'سال‌ها بر اساس تقویم انتخاب‌شده (' + (A.cal === 'j' ? 'شمسی' : 'میلادی') + ') گروه‌بندی شده‌اند. «میانگین ماهانه» یعنی جمع واریز تقسیم بر تعداد ماه‌هایی که واریز داشته‌اند.' }));
+  }
+
+  /* ── هزینه‌ها ── */
+  function accExpenses(A) {
+    var cur = (accPick(A), A.cur[A.acct]), now = accNow(A.cal);
+    var rows = accRows(A, A.acct, cur).filter(function (r) { return r.direction === 'out' && r.category !== 'transfer'; });
+    var inc = accSum(accRows(A, A.acct, cur).filter(function (r) { return accYM(r.entry_date, A.cal).y === A.year; }));
+    var yr = rows.filter(function (r) { return accYM(r.entry_date, A.cal).y === A.year; });
+    var all = accSum(rows), ys = accSum(yr), mo = accSum(rows.filter(function (r) { var k = accYM(r.entry_date, A.cal); return k.y === now.y && k.m === now.m; }));
+    var tiles = h('div', { class: 'anum' }, accTile('کل هزینه‌ها تا امروز', all.out, cur, 'big'),
+      accTile('هزینهٔ سال ' + yLabel(A, A.year), ys.out, cur), accTile('هزینهٔ این ماه (' + mLabel(A, now.m) + ')', mo.out, cur),
+      accTile('درآمد سال ' + yLabel(A, A.year), inc['in'], cur), accTile('درآمد منهای هزینه', inc['in'] - ys.out, cur, inc['in'] - ys.out < 0 ? 'neg' : ''));
+    var by = {}; yr.forEach(function (r) { by[r.category] = (by[r.category] || 0) + (+r.amount); });
+    var cats = Object.keys(by).sort(function (a, b) { return by[b] - by[a]; }), top = cats.length ? by[cats[0]] : 0;
+    var catRows = cats.map(function (c) {
+      return h('tr', null, h('td', { text: CAT_FA[c] || c }), h('td', null, accAmt(by[c], cur)), h('td', null, h('span', { class: 'abar abar--out' }, h('i', { style: 'width:' + Math.round(by[c] / top * 100) + '%' }))), h('td', { text: ys.out ? np(Math.round(by[c] / ys.out * 100)) + '٪' : '' }));
+    });
+    var months = [], mx = 0, i;
+    for (i = 1; i <= 12; i++) {
+      var inM = yr.filter(function (r) { return accYM(r.entry_date, A.cal).m === i; }), s = accSum(inM); s.m = i;
+      s.docs = inM.filter(function (r) { return ((A.files || {})[r.id] || []).length; }).length; months.push(s); if (s.out > mx) mx = s.out;
+    }
+    var mRows = months.map(function (s) {
+      return h('tr', { class: s.n ? '' : 'is-zero' }, h('td', { text: mLabel(A, s.m) }), h('td', null, s.n ? accAmt(s.out, cur) : '—'), h('td', null, h('span', { class: 'abar abar--out' }, h('i', { style: 'width:' + (mx ? Math.round(s.out / mx * 100) : 0) + '%' }))), h('td', { text: s.n ? n(s.n) : '—' }), h('td', { text: s.n ? n(s.docs) + ' از ' + n(s.n) : '—' }));
+    });
+    var list = yr.slice().sort(function (a, b) { return a.entry_date < b.entry_date ? 1 : -1; });
+    var noDoc = list.filter(function (r) { return !((A.files || {})[r.id] || []).length; }).length;
+    return h('div', null,
+      h('section', { class: 'card' }, h('h2', { text: 'هزینه‌ها' }), accPick(A), tiles,
+        h('p', { class: 'hint', text: 'انتقال بین دو حساب هزینه حساب نمی‌شود. برای هر هزینه می‌توانید فاکتور یا رسید پرداخت را پیوست کنید.' })),
+      h('section', { class: 'card' }, h('h2', { text: 'هزینه به تفکیک دسته، سال ' + yLabel(A, A.year) }),
+        cats.length ? h('div', { class: 'tblwrap' }, h('table', { class: 'atbl' }, h('thead', null, h('tr', null, ['دسته', 'مبلغ', '', 'سهم'].map(function (t) { return h('th', { text: t }); }))), h('tbody', null, catRows))) : h('p', { class: 'empty', text: 'در این سال هزینه‌ای ثبت نشده.' })),
+      h('section', { class: 'card' }, h('h2', { text: 'هزینهٔ ماهانه، سال ' + yLabel(A, A.year) }),
+        h('div', { class: 'tblwrap' }, h('table', { class: 'atbl' }, h('thead', null, h('tr', null, ['ماه', 'هزینه', '', 'تعداد', 'دارای سند'].map(function (t) { return h('th', { text: t }); }))), h('tbody', null, mRows),
+          h('tfoot', null, h('tr', null, h('td', { text: 'جمع سال' }), h('td', null, accAmt(ys.out, cur)), h('td'), h('td', { text: n(ys.n) }), h('td')))))),
+      h('section', { class: 'card' }, h('h2', { text: 'فهرست هزینه‌ها و سندها' }),
+        list.length ? h('p', { class: noDoc ? 'warnbox' : 'hint', text: noDoc ? n(noDoc) + ' هزینه هنوز فاکتور یا رسید ندارد.' : 'همهٔ هزینه‌های این سال سند دارند ✓' }) : null,
+        list.length ? h('div', { class: 'lrows' }, list.map(function (r) { return accRow(A, r, false); })) : h('p', { class: 'empty', text: 'هزینه‌ای در این سال ثبت نشده. با «+ ثبت هزینه» شروع کنید.' })));
+  }
+
+  /* ── دفتر تراکنش‌ها ── */
+  function accRow(A, r, compact) {
+    var who = r.counselor_id ? nameOf(r.counselor_id) : '';
+    var acts = compact ? null : h('div', { class: 'lrow__act' },
+      h('button', { class: 'btn btn--small', type: 'button', text: 'ویرایش', onclick: function () { accOpen(A, r); } }),
+      h('button', { class: 'btn btn--small btn--danger', type: 'button', text: 'حذف', onclick: function () {
+        if (!window.confirm('این تراکنش برای همیشه حذف شود؟\n' + (r.direction === 'in' ? 'واریز ' : 'برداشت ') + money(+r.amount) + ' ' + (r.currency === 'IRT' ? 'تومان' : r.currency))) return;
+        sb.from('ledger').delete().eq('id', r.id).then(function (d) { flash(d.error ? 'err' : 'ok', d.error ? explain(d.error) : 'حذف شد.'); loadLedger(); render(); });
+      } }));
+    return h('div', { class: 'lrow lrow--' + r.direction },
+      h('div', { class: 'lrow__d' }, accDateNode(r.entry_date)),
+      h('div', { class: 'lrow__m' },
+        h('div', { class: 'chips' }, h('span', { class: 'chip ' + (r.direction === 'in' ? 'chip--ok' : 'chip--warn'), text: r.direction === 'in' ? 'واریز' : 'برداشت' }),
+          h('span', { class: 'chip ' + (r.account === 'fx' ? 'chip--fx' : 'chip--gold'), text: ACC_FA[r.account] }),
+          h('span', { class: 'chip', text: CAT_FA[r.category] || r.category })),
+        h('div', { class: 'lrow__n' }, [who, r.ref ? 'پیگیری: ' + r.ref : '', r.note].filter(Boolean).join(' · ') || ''),
+        docChips(A, r, false)),
+      h('div', { class: 'lrow__a ' + (r.direction === 'in' ? 'acc-in' : 'acc-out'), dir: 'ltr' }, (r.direction === 'in' ? '+' : '−') + ' ', accAmt(+r.amount, r.currency)),
+      acts);
+  }
+  function accLedger(A) {
+    var q = (A.q || '').trim().toLowerCase();
+    var list = (A.rows || []).filter(function (r) {
+      if (A.fa && r.account !== A.fa) return false;
+      if (A.fd && r.direction !== A.fd) return false;
+      if (q) { var hay = [r.note, r.ref, r.counselor_id ? nameOf(r.counselor_id) : '', CAT_FA[r.category] || '', r.currency, String(r.amount)].join(' ').toLowerCase(); if (hay.indexOf(q) < 0) return false; }
+      return true;
+    });
+    var qi = h('input', { class: 'input', type: 'search', value: A.q || '', placeholder: 'جست‌وجو در توضیح، شمارهٔ پیگیری، مشاور…', 'aria-label': 'جست‌وجو' });
+    qi.addEventListener('change', function () { A.q = qi.value; A.limit = 100; render(); });
+    var shown = list.slice(0, A.limit), t = accSum(list);
+    return h('section', { class: 'card' }, h('h2', { text: 'دفتر تراکنش‌ها' }),
+      h('div', { class: 'acc-ctl acc-ctl--wrap' }, accSeg([['', 'همه حساب‌ها'], ['fx', 'ارزی'], ['irr', 'تومانی']], A.fa, function (v) { A.fa = v; A.limit = 100; render(); }, 'حساب'),
+        accSeg([['', 'همه'], ['in', 'واریز'], ['out', 'برداشت']], A.fd, function (v) { A.fd = v; A.limit = 100; render(); }, 'نوع'), qi),
+      h('p', { class: 'hint', text: n(list.length) + ' تراکنش' + (A.fa || A.fd || q ? ' (فیلترشده)' : '') + (A.fa && list.length ? '' : '') }),
+      shown.length ? h('div', { class: 'lrows' }, shown.map(function (r) { return accRow(A, r, false); })) : h('p', { class: 'empty', text: 'تراکنشی پیدا نشد.' }),
+      list.length > shown.length ? h('div', { class: 'actions' }, h('button', { class: 'btn btn--small', type: 'button', text: 'نمایش بیشتر', onclick: function () { A.limit += 100; render(); } })) : null);
+  }
+
+  /* ── فرم ثبت / ویرایش ── */
+  function accForm(A) {
+    var e = A.edit;
+    if (!A.f) A.f = e ? { date: e.entry_date, account: e.account, currency: e.currency, direction: e.direction, amount: String(+e.amount), category: e.category, counselor: e.counselor_id || '', ref: e.ref || '', note: e.note || '' }
+      : { date: tehranDateInput(0), account: A.acct || 'fx', currency: 'USD', direction: A.preset || 'in', amount: '', category: A.preset === 'out' ? 'expense' : 'session', counselor: '', ref: '', note: '', dkind: A.preset === 'out' ? 'invoice' : 'receipt' };
+    var f = A.f, msg = h('p', { class: 'hint', role: 'status' }); A.pend = A.pend || [];
+    var df = dateField(f.date, function () { f.date = df.value(); });
+    var curSel = h('select', { class: 'select', 'aria-label': 'ارز' });
+    var catSel = h('select', { class: 'select', 'aria-label': 'دسته' });
+    function fillCur() {
+      curSel.textContent = '';
+      if (f.account === 'irr') { f.currency = 'IRT'; curSel.appendChild(h('option', { value: 'IRT', text: 'تومان' })); curSel.disabled = true; }
+      else {
+        curSel.disabled = false; if (f.currency === 'IRT') f.currency = 'USD';
+        FX_CUR.forEach(function (c) { curSel.appendChild(h('option', { value: c[0], text: c[0] + ' · ' + c[1], selected: c[0] === f.currency })); });
+      }
+    }
+    function fillCat() {
+      catSel.textContent = '';
+      if (!ACC_CATS[f.direction].some(function (c) { return c[0] === f.category; })) f.category = ACC_CATS[f.direction][0][0];
+      ACC_CATS[f.direction].forEach(function (c) { catSel.appendChild(h('option', { value: c[0], text: c[1], selected: c[0] === f.category })); });
+    }
+    var accSel = h('select', { class: 'select', 'aria-label': 'حساب', onchange: function (ev) { f.account = ev.target.value; fillCur(); } },
+      h('option', { value: 'fx', text: 'حساب ارزی (خارج از ایران)', selected: f.account === 'fx' }), h('option', { value: 'irr', text: 'حساب تومانی (ایران)', selected: f.account === 'irr' }));
+    var dirSel = h('select', { class: 'select', 'aria-label': 'نوع', onchange: function (ev) { f.direction = ev.target.value; fillCat(); } },
+      h('option', { value: 'in', text: 'واریز (پول آمد)', selected: f.direction === 'in' }), h('option', { value: 'out', text: 'برداشت (پول رفت)', selected: f.direction === 'out' }));
+    curSel.addEventListener('change', function (ev) { f.currency = ev.target.value; });
+    catSel.addEventListener('change', function (ev) { f.category = ev.target.value; });
+    fillCur(); fillCat();
+    var amt = h('input', { class: 'input', dir: 'ltr', inputmode: 'decimal', value: f.amount, placeholder: 'مثلاً 120 یا 4,500,000', required: true, 'aria-label': 'مبلغ' });
+    amt.addEventListener('input', function () { f.amount = amt.value; var v = parseFloat(normNum(amt.value)); msg.textContent = isFinite(v) && v > 0 ? 'مبلغ: ' + money(v) + ' ' + (f.currency === 'IRT' ? 'تومان' : f.currency) : ''; });
+    var who = h('select', { class: 'select', 'aria-label': 'مشاور', onchange: function (ev) { f.counselor = ev.target.value; } }, h('option', { value: '', text: 'بدون مشاور' }),
+      (S.data.profiles || []).filter(isProvider).map(function (p) { return h('option', { value: p.id, text: p.full_name || 'بدون نام', selected: f.counselor === p.id }); }));
+    var ref = h('input', { class: 'input', dir: 'ltr', maxlength: 80, value: f.ref, placeholder: 'شمارهٔ پیگیری / تراکنش (اختیاری)', 'aria-label': 'شمارهٔ پیگیری' });
+    ref.addEventListener('input', function () { f.ref = ref.value; });
+    var note = h('input', { class: 'input', maxlength: 300, value: f.note, placeholder: 'توضیح کوتاه (نام مراجع و مطلب بالینی ننویسید)', 'aria-label': 'توضیح' });
+    note.addEventListener('input', function () { f.note = note.value; });
+    var submit = h('button', { class: 'btn btn--primary', type: 'submit', text: e ? 'ذخیرهٔ تغییرات' : 'ثبت' });
+    var pick = h('input', { type: 'file', accept: 'image/jpeg,image/png,image/webp,application/pdf', multiple: true, class: 'acc-file', 'aria-label': 'انتخاب فایل' });
+    var plist = h('div', { class: 'docs' });
+    function drawPend() {
+      plist.textContent = '';
+      A.pend.forEach(function (x, i) {
+        plist.appendChild(h('span', { class: 'doc doc--new' }, h('span', { class: 'doc__b', text: '📎 ' + x.name + ' (' + np(Math.max(1, Math.round(x.size / 1024))) + ' کیلوبایت)' }),
+          h('button', { class: 'doc__x', type: 'button', 'aria-label': 'برداشتن', text: '×', onclick: function () { A.pend.splice(i, 1); drawPend(); } })));
+      });
+    }
+    pick.addEventListener('change', function () {
+      var bad = '';
+      Array.prototype.slice.call(pick.files || []).forEach(function (x) {
+        if (!/^(image\/(jpeg|png|webp)|application\/pdf)$/.test(x.type)) { bad = 'فقط عکس (JPG، PNG، WebP) یا PDF.'; return; }
+        if (x.size > MAX_FILE) { bad = 'هر فایل حداکثر ۸ مگابایت.'; return; }
+        A.pend.push(x);
+      });
+      pick.value = ''; drawPend(); msg.textContent = bad;
+    });
+    drawPend();
+    var dkind = h('select', { class: 'select', 'aria-label': 'نوع سند', onchange: function (ev) { f.dkind = ev.target.value; } },
+      [['receipt', 'رسید پرداخت'], ['invoice', 'فاکتور'], ['other', 'سند دیگر']].map(function (k) { return h('option', { value: k[0], text: k[1], selected: (f.dkind || 'receipt') === k[0] }); }));
+    var docs = h('div', { class: 'field' }, h('label', { text: 'فاکتور / رسید پرداخت (اختیاری، عکس یا PDF، هر فایل تا ۸ مگابایت)' }),
+      A.filesOk === false ? h('p', { class: 'warnbox', text: 'بخش سندها هنوز نصب نیست (migration-16 را کامل اجرا کنید).' }) : null,
+      e ? docChips(A, e, true) : null,
+      h('div', { class: 'row' }, dkind, pick), plist);
+    return h('form', { class: 'card', id: 'accForm', onsubmit: function (ev) {
+      ev.preventDefault();
+      var v = parseFloat(normNum(f.amount)), d = df.value() || f.date;
+      if (!isFinite(v) || v <= 0) { flash('err', 'مبلغ را درست بنویسید (عدد بزرگ‌تر از صفر).'); return render(); }
+      if (!parseIso(d)) { flash('err', 'تاریخ را انتخاب کنید.'); return render(); }
+      var row = { entry_date: d, account: f.account, currency: f.account === 'irr' ? 'IRT' : f.currency, direction: f.direction, amount: Math.round(v * 100) / 100, category: f.category, counselor_id: f.counselor || null, ref: (f.ref || '').trim(), note: (f.note || '').trim() };
+      submit.disabled = true;
+      var q = e ? sb.from('ledger').update(row).eq('id', e.id) : sb.from('ledger').insert(Object.assign({ created_by: S.user.id }, row));
+      (e ? q : q.select().single()).then(function (r) {
+        if (r.error) { submit.disabled = false; flash('err', explain(r.error)); return render(); }
+        var id = e ? e.id : (r.data && r.data.id), pend = A.pend.slice();
+        var fin = function (up) {
+          flash(up && up.bad ? 'err' : 'ok', (e ? 'تغییرات ذخیره شد ✓' : 'ثبت شد ✓') + (up && up.done ? ' · ' + n(up.done) + ' سند پیوست شد' : '') + (up && up.bad ? ' · ' + n(up.bad) + ' سند آپلود نشد' : ''));
+          A.form = false; A.edit = null; A.f = null; A.pend = []; loadLedger(); render();
+        };
+        if (id && pend.length && A.filesOk !== false) { submit.textContent = 'در حال آپلود سند…'; uploadDocs(id, pend, f.dkind || 'receipt').then(fin); } else fin(null);
+      });
+    } },
+      h('h2', { text: e ? 'ویرایش تراکنش' : 'ثبت تراکنش جدید' }),
+      h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'نوع' }), dirSel), h('div', { class: 'field' }, h('label', { text: 'تاریخ' }), df.el)),
+      h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'حساب' }), accSel), h('div', { class: 'field' }, h('label', { text: 'ارز' }), curSel)),
+      h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'مبلغ' }), amt), h('div', { class: 'field' }, h('label', { text: 'دسته' }), catSel)),
+      msg,
+      h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'مشاور (اختیاری)' }), who), h('div', { class: 'field' }, h('label', { text: 'شمارهٔ پیگیری (اختیاری)' }), ref)),
+      h('div', { class: 'field' }, h('label', { text: 'توضیح (اختیاری)' }), note), docs,
+      h('div', { class: 'actions' }, submit, h('button', { class: 'btn', type: 'button', text: 'انصراف', onclick: function () { A.form = false; A.edit = null; A.f = null; A.pend = []; render(); } })));
+  }
+
+  function accCsv() {
+    var A = accState(), out = [['تاریخ میلادی', 'تاریخ شمسی', 'حساب', 'ارز', 'نوع', 'مبلغ', 'دسته', 'مشاور', 'شمارهٔ پیگیری', 'توضیح']];
+    (A.rows || []).forEach(function (r) {
+      var p = parseIso(r.entry_date), j = p ? toJalali(p.gy, p.gm, p.gd) : null;
+      out.push([r.entry_date, j ? j.jy + '-' + (j.jm < 10 ? '0' : '') + j.jm + '-' + (j.jd < 10 ? '0' : '') + j.jd : '', ACC_FA[r.account], r.currency, r.direction === 'in' ? 'واریز' : 'برداشت', r.amount, CAT_FA[r.category] || r.category, r.counselor_id ? nameOf(r.counselor_id) : '', r.ref, r.note]);
+    });
+    csvDownload('hamnavaa-accounting-' + tehranDateInput(0) + '.csv', out);
+  }
+
   function vStaff() {
     var open = (S.data.board && S.data.board.events.length) || 0;
-    var tabList = [['board', 'اتاق‌های باز'], ['sessions', 'جلسه‌ها'], ['new', 'جلسهٔ جدید'], ['people', 'مشاورها'], ['monitor', 'پایش']];
+    var tabList = [['board', 'اتاق‌های باز'], ['sessions', 'جلسه‌ها'], ['new', 'جلسهٔ جدید'], ['people', 'مشاورها'], ['acc', 'حسابداری'], ['monitor', 'پایش']];
     if (S.profile.takes_sessions) tabList.push(['mine', 'جلسه‌های من']);
     var tabs = h('div', { class: 'tabs', role: 'tablist' }, tabList.map(function (t) {
-      return h('button', { class: 'tab', role: 'tab', 'aria-selected': S.tab === t[0] ? 'true' : 'false', onclick: function () { S.tab = t[0]; if (t[0] !== 'new') S.booked = null; if (t[0] === 'mine') loadCounselor(); if (t[0] === 'monitor') loadMonitor(); render(); if (t[0] === 'new' || t[0] === 'people' || t[0] === 'sessions') refreshProfiles(); } },
-        ico({ board: 'video', sessions: 'calendar', 'new': 'plus', people: 'users', monitor: 'activity', mine: 'user' }[t[0]] || 'calendar'),
+      return h('button', { class: 'tab', role: 'tab', 'aria-selected': S.tab === t[0] ? 'true' : 'false', onclick: function () { S.tab = t[0]; if (t[0] !== 'new') S.booked = null; if (t[0] === 'mine') loadCounselor(); if (t[0] === 'monitor') loadMonitor(); if (t[0] === 'acc') loadLedger(); render(); if (t[0] === 'new' || t[0] === 'people' || t[0] === 'sessions') refreshProfiles(); } },
+        ico({ board: 'video', sessions: 'calendar', 'new': 'plus', people: 'users', acc: 'wallet', monitor: 'activity', mine: 'user' }[t[0]] || 'calendar'),
         h('span', { text: t[1] }), t[0] === 'board' ? h('span', { class: 'badge', id: 'boardBadge', text: open ? n(open) : '' }) : null);
     }));
-    var body = S.tab === 'board' ? tBoard() : S.tab === 'new' ? tNew() : S.tab === 'people' ? tPeople() : S.tab === 'mine' ? h('div', null, counselorBody()) : S.tab === 'monitor' ? tMonitor() : tSessions();
+    var body = S.tab === 'board' ? tBoard() : S.tab === 'new' ? tNew() : S.tab === 'people' ? tPeople() : S.tab === 'mine' ? h('div', null, counselorBody()) : S.tab === 'monitor' ? tMonitor() : S.tab === 'acc' ? tAccounting() : tSessions();
     shell([tabs, body]);
     // روی گوشی نوار تب‌ها افقی اسکرول می‌شود؛ تب انتخاب‌شده باید دیده شود
     setTimeout(function () {
@@ -1730,9 +2162,9 @@
     session_created: 'جلسهٔ جدید', session_moved: 'جابه‌جایی جلسه', session_status: 'وضعیت جلسه', session_reassigned: 'انتقال جلسه', session_deleted: 'حذف جلسه',
     room_opened: 'باز شدن اتاق', signin: 'ورود به پنل', profile_created: 'پروفایل تازه', profile_changed: 'تغییر افراد', profile_deleted: 'حذف پروفایل', push_enabled: 'اعلان گوشی', account_linked: 'اتصال حساب'
   };
-  var ACTION_GROUPS = { '': 'همه', sessions: 'جلسه‌ها', rooms: 'اتاق‌ها', people: 'افراد و حساب‌ها', push: 'اعلان‌ها' };
+  var ACTION_GROUPS = { '': 'همه', sessions: 'جلسه‌ها', rooms: 'اتاق‌ها', people: 'افراد و حساب‌ها', push: 'اعلان‌ها', accounting: 'حسابداری' };
   var GROUP_OF = { session_created: 'sessions', session_moved: 'sessions', session_status: 'sessions', session_reassigned: 'sessions', session_deleted: 'sessions',
-    room_opened: 'rooms', signin: 'people', profile_created: 'people', profile_changed: 'people', profile_deleted: 'people', account_linked: 'people', push_enabled: 'push' };
+    room_opened: 'rooms', signin: 'people', profile_created: 'people', profile_changed: 'people', profile_deleted: 'people', account_linked: 'people', push_enabled: 'push', ledger_added: 'accounting', ledger_changed: 'accounting', ledger_deleted: 'accounting', ledger_file_added: 'accounting', ledger_file_deleted: 'accounting' };
   var SIGN_LABEL = { login: 'ورود', logout: 'خروج', user_signedup: 'ثبت‌نام', user_invited: 'دعوت', user_recovery_requested: 'درخواست بازیابی رمز', user_confirmation_requested: 'ایمیل تأیید' };
   var ROLE_FA = { counselor: 'مشاور', secretary: 'منشی', admin: 'مدیر' };
 
