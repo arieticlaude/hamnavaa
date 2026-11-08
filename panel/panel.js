@@ -1724,13 +1724,24 @@
     return ['سلام ' + s.client_label + ' عزیز', 'لینک اتاق مشاورهٔ شما با ' + (p.full_name || 'مشاور هم‌نوا') + ':', p.meet_url,
       'زمان: ' + dayOf(s.starts_at) + '، ساعت ' + timeOf(s.starts_at) + ' (به وقت ایران)', 'سر وقت روی لینک بزنید؛ مشاور شما را به اتاق می‌پذیرد.'].join('\n');
   }
-  function confirmText(s, p) {
+  /* راهنمای حضور در جلسه: فقط به پیام تأیید «مشاورهٔ اصلی» اضافه می‌شود، نه پیش‌مشاورهٔ ۱۵ دقیقه‌ای */
+  var SESSION_GUIDE = ['🌿 راهنمای حضور در جلسه مشاوره آنلاین', '', 'مراجع گرامی،', 'برای برگزاری جلسه‌ای آرام و مؤثر، لطفاً به نکات زیر توجه کنید:', '',
+    '۱. محیط آرام و خصوصی: در فضایی ساکت و بدون حضور یا رفت‌وآمد دیگران باشید.', '',
+    '۲. دوربین ثابت: گوشی یا لپ‌تاپ را در فاصله مناسب روی سطحی ثابت قرار دهید؛ لطفاً گوشی را در دست نگیرید.', '',
+    '۳. وسایل ضروری: حتماً کاغذ، خودکار و آب آشامیدنی در دسترس داشته باشید.', '',
+    '۴. اینترنت و تجهیزات: اتصال اینترنت، شارژ دستگاه و عملکرد دوربین و میکروفون را بررسی کنید.', '',
+    '۵. تمرکز کامل: زمان جلسه را به خود اختصاص دهید. از رانندگی، غذا خوردن، کار کردن، پاسخ دادن به پیام‌ها خودداری کنید.', '',
+    '۶. زمان‌بندی: لطفاً ۵ دقیقه زودتر آماده باشید تا جلسه به‌موقع آغاز شود.', '',
+    '۷. حریم خصوصی: از ضبط جلسه یا حضور افراد دیگر بدون هماهنگی قبلی خودداری کنید.', '',
+    '🌱 سپاس از همراهی شما', '', 'تیم روان‌شناسی هم‌نوا'];
+  function confirmText(s, p, noGuide) {
     var lines = ['سلام ' + s.client_label + ' عزیز 🌿', 'جلسهٔ شما در هم‌نوا ثبت شد.',
       'مشاور: ' + ((p && p.full_name) || 'هم‌نوا'),
       'زمان: ' + dayOf(s.starts_at) + '، ساعت ' + timeOf(s.starts_at) + ' (به وقت ایران)',
       'نوع: ' + (s.kind === 'intro' ? 'جلسهٔ رایگان پیش‌مشاوره' : 'جلسهٔ مشاوره') + ' — ' + (s.mode === 'audio' ? 'تماس صوتی' : 'تماس تصویری')];
     if (p && p.meet_url) lines.push('لینک اتاق: ' + p.meet_url, 'سر وقت روی لینک بزنید؛ مشاور شما را به اتاق می‌پذیرد.');
     else lines.push('لینک اتاق پیش از جلسه برایتان فرستاده می‌شود.');
+    if (s.kind !== 'intro') lines.push('', '──────────', '', SESSION_GUIDE.join('\n'));
     return lines.join('\n');
   }
   function reminderText(s, p) {
@@ -1778,7 +1789,7 @@
       ? h('button', { class: big ? 'btn btn--wa btn--block' : 'btn btn--wa btn--small', type: 'button', text: big ? 'خبر دادن به مشاور (واتساپ)' : 'خبر به مشاور', onclick: function () { sendToCounselor(s, p, moved); } })
       : (big ? h('p', { class: 'hint', text: 'شمارهٔ واتساپ این مشاور ثبت نشده؛ در تب «مشاورها» ثبتش کنید تا پیام آماده برایش بفرستید.' }) : null);
   }
-  function sendConfirm(s, p, phone) { window.open(waLink(phoneDigits(phone), confirmText(s, p)), '_blank', 'noopener'); }
+  function sendConfirm(s, p, phone, noGuide) { window.open(waLink(phoneDigits(phone), confirmText(s, p, noGuide)), '_blank', 'noopener'); }
   function sendReminder(s, p, phone) { window.open(waLink(phoneDigits(phone), reminderText(s, p)), '_blank', 'noopener'); }
   function sendToClient(s, p, phone) { window.open(waLink(phoneDigits(phone), clientText(s, p)), '_blank', 'noopener'); }
   function copyText(t) {
@@ -1915,7 +1926,7 @@
       var mp = profileOf(S.moved.s.counselor_id);
       moved = h('section', { class: 'card hero', role: 'status' }, h('h2', { text: 'زمان جلسه عوض شد ✓' }),
         h('p', { class: 'hint' }, nameOf(S.moved.s.counselor_id) + ' — ' + S.moved.s.client_label + ' — ', dayNode(S.moved.s.starts_at), '، ساعت ' + timeOf(S.moved.s.starts_at)),
-        guidedSend(S.moved, [S.moved.phone ? { label: 'اطلاع زمان تازه به مراجع (واتساپ)', run: function () { sendConfirm(S.moved.s, mp, S.moved.phone); } } : null, counselorStep(S.moved.s, mp, true, 'اطلاع زمان تازه به مشاور (واتساپ)')]),
+        guidedSend(S.moved, [S.moved.phone ? { label: 'اطلاع زمان تازه به مراجع (واتساپ)', run: function () { sendConfirm(S.moved.s, mp, S.moved.phone, true); } } : null, counselorStep(S.moved.s, mp, true, 'اطلاع زمان تازه به مشاور (واتساپ)')]),
         S.moved.phone ? null : h('p', { class: 'hint', text: 'شمارهٔ مراجع ثبت نشده؛ زمان تازه را خودتان به او خبر بدهید.' }),
         phoneCol() && mp && !mp.phone ? h('p', { class: 'hint', text: 'شمارهٔ واتساپ این مشاور ثبت نشده؛ در تب «مشاورها» ثبتش کنید.' }) : null,
         h('div', { class: 'actions' }, h('button', { class: 'btn btn--small', type: 'button', text: 'بستن', onclick: function () { S.moved = null; render(); } })));
