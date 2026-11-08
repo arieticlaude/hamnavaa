@@ -1212,6 +1212,12 @@
   var CAT_FA = { session: 'جلسهٔ مشاوره', 'package': 'پکیج جلسه', other_in: 'سایر دریافتی‌ها', counselor: 'حق‌الزحمهٔ مشاور', ads: 'تبلیغات', software: 'سرویس و نرم‌افزار', bank: 'کارمزد بانکی و مالیات', expense: 'هزینهٔ عمومی', transfer: 'انتقال بین حساب‌ها', other_out: 'سایر هزینه‌ها', other: 'سایر' };
   var DOC_FA = { receipt: 'رسید پرداخت', invoice: 'فاکتور', other: 'سند' };
   var MAX_FILE = 8 * 1024 * 1024;
+  var SVGH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">';
+  var UP_ICON = SVGH + '<path d="M7 18a4 4 0 0 1-.6-7.96A6 6 0 0 1 18 9a4.5 4.5 0 0 1-.5 9H7z"/><path d="M12 12v6M9.5 14.5 12 12l2.5 2.5"/></svg>';
+  var DOC_ICON = SVGH + '<rect x="4" y="3" width="16" height="18" rx="3"/><circle cx="9.5" cy="9" r="1.5"/><path d="m5 17 5-4.5 3.5 3L16 13l3 3"/></svg>';
+  var PDF_ICON = SVGH + '<path d="M7 3h7l5 5v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M14 3v5h5M8.5 15h1.8a1.2 1.2 0 0 0 0-2.4H8.5V17M13.5 17v-4.4h1c1.3 0 2 .8 2 2.2s-.7 2.2-2 2.2z"/></svg>';
+  var CAM_ICON = SVGH + '<path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.5"/></svg>';
+  var X_ICON = SVGH + '<path d="M6 6l12 12M18 6 6 18"/></svg>';
   var accMf = new Intl.NumberFormat('fa-IR', { maximumFractionDigits: 2 });
   function money(x) { return accMf.format(Math.round(x * 100) / 100); }
   function accUnit(cur) { return cur === 'IRT' ? 'تومان' : ltr(cur); }
@@ -1292,16 +1298,17 @@
       } catch (e) { ok(file); }
     });
   }
-  function uploadDocs(ledgerId, files, kind) {
-    var done = 0, bad = 0;
+  function uploadDocs(ledgerId, files, kind, onState) {
+    var done = 0, bad = 0, idx = -1, say = function (i, s) { if (onState) onState(i, s); };
     return files.reduce(function (p, f0) {
       return p.then(function () {
+        idx++; var my = idx; say(my, 'up');
         return shrinkImage(f0).then(function (f) {
           var ext = (/\.(jpe?g|png|webp|pdf)$/i.exec(f.name) || [0, f.type === 'application/pdf' ? 'pdf' : 'jpg'])[1].toLowerCase();
           var path = ledgerId + '/' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7) + '.' + ext;
           return sb.storage.from('ledger-files').upload(path, f, { contentType: f.type || 'application/octet-stream', upsert: false }).then(function (u) {
-            if (u.error) { bad++; return; }
-            return sb.from('ledger_files').insert({ ledger_id: ledgerId, kind: kind, path: path, name: f0.name.slice(0, 120), mime: f.type || 'application/octet-stream', size: f.size, created_by: S.user.id }).then(function (r) { if (r.error) bad++; else done++; });
+            if (u.error) { bad++; say(my, 'bad'); return; }
+            return sb.from('ledger_files').insert({ ledger_id: ledgerId, kind: kind, path: path, name: f0.name.slice(0, 120), mime: f.type || 'application/octet-stream', size: f.size, created_by: S.user.id }).then(function (r) { if (r.error) { bad++; say(my, 'bad'); } else { done++; say(my, 'ok'); } });
           });
         });
       });
@@ -1319,6 +1326,17 @@
     sb.storage.from('ledger-files').remove([x.path]).then(function () {
       sb.from('ledger_files').delete().eq('id', x.id).then(function (d) { flash(d.error ? 'err' : 'ok', d.error ? explain(d.error) : 'سند حذف شد.'); loadLedger(); render(); });
     });
+  }
+  function docCards(A, r) {
+    var fl = (A.files && A.files[r.id]) || [];
+    if (!fl.length) return null;
+    return h('div', { class: 'fcards fcards--old' }, h('div', { class: 'fcards__t', text: 'سندهای ثبت‌شده' }), fl.map(function (x) {
+      var pdf = x.mime === 'application/pdf';
+      return h('div', { class: 'fcard' }, h('div', { class: 'fcard__th' + (pdf ? ' is-pdf' : '') }, svgEl(pdf ? PDF_ICON : DOC_ICON)),
+        h('div', { class: 'fcard__m' }, h('b', { text: DOC_FA[x.kind] || 'سند' }), h('span', { text: (pdf ? 'PDF' : 'عکس') + ' · ' + x.name })),
+        h('button', { class: 'btn btn--small', type: 'button', text: 'مشاهده', onclick: function () { openDoc(x); } }),
+        h('button', { class: 'fcard__x', type: 'button', 'aria-label': 'حذف سند', onclick: function () { delDoc(A, x); } }, svgEl(X_ICON)));
+    }));
   }
   function docChips(A, r, removable) {
     var fl = (A.files && A.files[r.id]) || [];
@@ -1571,31 +1589,61 @@
     var note = h('input', { class: 'input', maxlength: 300, value: f.note, placeholder: 'توضیح کوتاه (نام مراجع و مطلب بالینی ننویسید)', 'aria-label': 'توضیح' });
     note.addEventListener('input', function () { f.note = note.value; });
     var submit = h('button', { class: 'btn btn--primary', type: 'submit', text: e ? 'ذخیرهٔ تغییرات' : 'ثبت' });
-    var pick = h('input', { type: 'file', accept: 'image/jpeg,image/png,image/webp,application/pdf', multiple: true, class: 'acc-file', 'aria-label': 'انتخاب فایل' });
-    var plist = h('div', { class: 'docs' });
+    var plist = h('div', { class: 'fcards' });
+    var pick = h('input', { type: 'file', accept: 'image/jpeg,image/png,image/webp,application/pdf', multiple: true, class: 'drop__in', 'aria-label': 'انتخاب فایل', tabindex: '-1' });
+    var cam = h('input', { type: 'file', accept: 'image/*', capture: 'environment', class: 'drop__in', 'aria-label': 'گرفتن عکس', tabindex: '-1' });
+    var drop = h('div', { class: 'drop' });
+    function sizeFa(b) { return b >= 1048576 ? np(Math.round(b / 104857.6) / 10) + ' مگابایت' : np(Math.max(1, Math.round(b / 1024))) + ' کیلوبایت'; }
     function drawPend() {
       plist.textContent = '';
       A.pend.forEach(function (x, i) {
-        plist.appendChild(h('span', { class: 'doc doc--new' }, h('span', { class: 'doc__b', text: '📎 ' + x.name + ' (' + np(Math.max(1, Math.round(x.size / 1024))) + ' کیلوبایت)' }),
-          h('button', { class: 'doc__x', type: 'button', 'aria-label': 'برداشتن', text: '×', onclick: function () { A.pend.splice(i, 1); drawPend(); } })));
+        var st = (A.pendState || {})[i], isImg = /^image\//.test(x.type);
+        var th = h('div', { class: 'fcard__th' });
+        if (isImg) { try { th.appendChild(h('img', { src: x.__url || (x.__url = URL.createObjectURL(x)), alt: '' })); } catch (e1) { th.appendChild(svgEl(DOC_ICON)); } } else { th.classList.add('is-pdf'); th.appendChild(svgEl(PDF_ICON)); }
+        plist.appendChild(h('div', { class: 'fcard' + (st ? ' is-' + st : '') }, th,
+          h('div', { class: 'fcard__m' }, h('b', { text: x.name }), h('span', { text: (isImg ? 'عکس' : 'PDF') + ' · ' + sizeFa(x.size) + (st === 'up' ? ' · در حال آپلود…' : st === 'ok' ? ' · آپلود شد ✓' : st === 'bad' ? ' · آپلود نشد' : '') })),
+          st ? null : h('button', { class: 'fcard__x', type: 'button', 'aria-label': 'برداشتن فایل', onclick: function () { A.pend.splice(i, 1); drawPend(); } }, svgEl(X_ICON))));
       });
+      drop.classList.toggle('has-files', A.pend.length > 0);
+      count.textContent = A.pend.length ? np(A.pend.length) + ' فایل آمادهٔ آپلود' : '';
     }
-    pick.addEventListener('change', function () {
+    var count = h('div', { class: 'drop__count', role: 'status' });
+    function addFiles(list) {
       var bad = '';
-      Array.prototype.slice.call(pick.files || []).forEach(function (x) {
-        if (!/^(image\/(jpeg|png|webp)|application\/pdf)$/.test(x.type)) { bad = 'فقط عکس (JPG، PNG، WebP) یا PDF.'; return; }
-        if (x.size > MAX_FILE) { bad = 'هر فایل حداکثر ۸ مگابایت.'; return; }
+      Array.prototype.slice.call(list || []).forEach(function (x) {
+        if (!/^(image\/(jpeg|png|webp)|application\/pdf)$/.test(x.type)) { bad = 'فقط عکس (JPG، PNG، WebP) یا PDF قابل قبول است.'; return; }
+        if (x.size > MAX_FILE) { bad = 'هر فایل حداکثر ۸ مگابایت است.'; return; }
         A.pend.push(x);
       });
-      pick.value = ''; drawPend(); msg.textContent = bad;
-    });
+      drawPend(); msg.textContent = bad;
+    }
+    pick.addEventListener('change', function () { addFiles(pick.files); pick.value = ''; });
+    cam.addEventListener('change', function () { addFiles(cam.files); cam.value = ''; });
+    ['dragenter', 'dragover'].forEach(function (ev) { drop.addEventListener(ev, function (x) { x.preventDefault(); drop.classList.add('is-over'); }); });
+    ['dragleave', 'drop'].forEach(function (ev) { drop.addEventListener(ev, function (x) { x.preventDefault(); drop.classList.remove('is-over'); }); });
+    drop.addEventListener('drop', function (x) { addFiles(x.dataTransfer && x.dataTransfer.files); });
+    var kinds = [['receipt', 'رسید پرداخت'], ['invoice', 'فاکتور'], ['other', 'سند دیگر']], pills = h('div', { class: 'kpills', role: 'radiogroup', 'aria-label': 'نوع سند' });
+    function drawKinds() {
+      pills.textContent = '';
+      kinds.forEach(function (k) {
+        pills.appendChild(h('button', { class: 'kpill', type: 'button', role: 'radio', 'aria-checked': (f.dkind || 'receipt') === k[0] ? 'true' : 'false', onclick: function () { f.dkind = k[0]; drawKinds(); } }, k[1]));
+      });
+    }
+    drawKinds();
+    var touch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    drop.appendChild(h('div', { class: 'drop__top' }, h('span', { class: 'drop__ic' }, svgEl(UP_ICON)),
+      h('div', { class: 'drop__t' }, h('b', { text: 'فاکتور یا رسید پرداخت را اینجا بیندازید' }), h('span', { text: 'یا از دکمه‌های زیر انتخاب کنید' }))));
+    drop.appendChild(h('div', { class: 'drop__lbl' }, 'این فایل چیست؟'));
+    drop.appendChild(pills);
+    drop.appendChild(h('div', { class: 'drop__btns' },
+      h('button', { class: 'btn btn--small drop__btn', type: 'button', onclick: function () { pick.click(); } }, svgEl(DOC_ICON), 'انتخاب فایل (عکس یا PDF)'),
+      touch ? h('button', { class: 'btn btn--small drop__btn', type: 'button', onclick: function () { cam.click(); } }, svgEl(CAM_ICON), 'گرفتن عکس') : null));
+    drop.appendChild(h('small', { class: 'drop__h', text: 'JPG، PNG، WebP یا PDF · هر فایل تا ۸ مگابایت · عکس‌های بزرگ خودکار کوچک می‌شوند' }));
+    drop.appendChild(pick); drop.appendChild(cam); drop.appendChild(count); drop.appendChild(plist);
     drawPend();
-    var dkind = h('select', { class: 'select', 'aria-label': 'نوع سند', onchange: function (ev) { f.dkind = ev.target.value; } },
-      [['receipt', 'رسید پرداخت'], ['invoice', 'فاکتور'], ['other', 'سند دیگر']].map(function (k) { return h('option', { value: k[0], text: k[1], selected: (f.dkind || 'receipt') === k[0] }); }));
-    var docs = h('div', { class: 'field' }, h('label', { text: 'فاکتور / رسید پرداخت (اختیاری، عکس یا PDF، هر فایل تا ۸ مگابایت)' }),
+    var docs = h('div', { class: 'field docs-field' }, h('label', { text: 'فاکتور و رسید پرداخت (اختیاری)' }),
       A.filesOk === false ? h('p', { class: 'warnbox', text: 'بخش سندها هنوز نصب نیست (migration-16 را کامل اجرا کنید).' }) : null,
-      e ? docChips(A, e, true) : null,
-      h('div', { class: 'row' }, dkind, pick), plist);
+      e ? docCards(A, e) : null, A.filesOk === false ? null : drop);
     return h('form', { class: 'card', id: 'accForm', onsubmit: function (ev) {
       ev.preventDefault();
       var v = parseFloat(normNum(f.amount)), d = df.value() || f.date;
@@ -1611,10 +1659,10 @@
           flash(up && up.bad ? 'err' : 'ok', (e ? 'تغییرات ذخیره شد ✓' : 'ثبت شد ✓') + (up && up.done ? ' · ' + n(up.done) + ' سند پیوست شد' : '') + (up && up.bad ? ' · ' + n(up.bad) + ' سند آپلود نشد' : ''));
           A.form = false; A.edit = null; A.f = null; A.pend = []; loadLedger(); render();
         };
-        if (id && pend.length && A.filesOk !== false) { submit.textContent = 'در حال آپلود سند…'; uploadDocs(id, pend, f.dkind || 'receipt').then(fin); } else fin(null);
+        if (id && pend.length && A.filesOk !== false) { submit.textContent = 'در حال آپلود سند…'; A.pendState = {}; drawPend(); uploadDocs(id, pend, f.dkind || 'receipt', function (i, s) { A.pendState[i] = s; drawPend(); }).then(function (up) { A.pendState = null; fin(up); }); } else fin(null);
       });
     } },
-      h('h2', { text: e ? 'ویرایش تراکنش' : 'ثبت تراکنش جدید' }),
+      h('h2', { text: e ? 'ویرایش تراکنش' : (A.preset === 'out' ? 'ثبت هزینهٔ جدید' : 'ثبت واریز جدید') }),
       h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'نوع' }), dirSel), h('div', { class: 'field' }, h('label', { text: 'تاریخ' }), df.el)),
       h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'حساب' }), accSel), h('div', { class: 'field' }, h('label', { text: 'ارز' }), curSel)),
       h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'مبلغ' }), amt), h('div', { class: 'field' }, h('label', { text: 'دسته' }), catSel)),
