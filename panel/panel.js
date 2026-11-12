@@ -2296,6 +2296,8 @@
         M.kpi = (r[0].data && r[0].data[0]) || null; M.stats = r[1].data || []; M.daily = r[2].data || [];
         done();
       });
+    } else if (M.sub === 'site') {
+      sb.rpc('site_stats', { p_days: M.days || 30 }).then(function (r) { if (r.error) M.err = r.error; M.site = r.data || null; done(); });
     } else if (M.sub === 'logins') {
       Promise.all([sb.rpc('staff_people'), sb.rpc('staff_signins', { p_limit: 300 }), sb.from('activity_log').select('*').eq('action', 'signin').order('at', { ascending: false }).limit(300)]).then(function (r) {
         if (r[0].error) M.err = r[0].error;
@@ -2313,15 +2315,15 @@
 
   function tMonitor() {
     var M = S.mon = S.mon || { sub: 'overview', group: '', q: '', limit: 200 };
-    var subs = [['overview', 'نمای کلی'], ['logins', 'ورودها'], ['activity', 'گزارش فعالیت']];
+    var subs = [['overview', 'نمای کلی'], ['site', 'آمار سایت'], ['logins', 'ورودها'], ['activity', 'گزارش فعالیت']];
     var bar = h('div', { class: 'subtabs', role: 'tablist' }, subs.map(function (t) {
       return h('button', { class: 'subtab', type: 'button', role: 'tab', 'aria-selected': M.sub === t[0] ? 'true' : 'false', onclick: function () { M.sub = t[0]; loadMonitor(); render(); } }, t[1]);
     }), h('button', { class: 'btn btn--small', type: 'button', text: 'تازه‌سازی', onclick: function () { loadMonitor(); render(); } }));
     var body;
     if (M.loading && !M.loaded) body = h('p', { class: 'empty', text: 'در حال بارگذاری…' });
-    else if (M.err) body = h('p', { class: 'flash flash--err', text: /does not exist|Could not find|function/i.test(M.err.message || '') ? 'بخش پایش هنوز در پایگاه‌داده نصب نشده است (migration-08).' : explain(M.err) });
-    else body = M.sub === 'overview' ? mOverview(M) : M.sub === 'logins' ? mLogins(M) : mActivity(M);
-    if (M.sub === 'overview' ? M.kpi !== undefined : M.sub === 'logins' ? M.people !== undefined : M.log !== undefined) M.loaded = true;
+    else if (M.err) body = h('p', { class: 'flash flash--err', text: /does not exist|Could not find|function/i.test(M.err.message || '') ? (M.sub === 'site' ? 'آمار سایت هنوز در پایگاه‌داده نصب نشده است (migration-17).' : 'بخش پایش هنوز در پایگاه‌داده نصب نشده است (migration-08).') : explain(M.err) });
+    else body = M.sub === 'overview' ? mOverview(M) : M.sub === 'site' ? mSite(M) : M.sub === 'logins' ? mLogins(M) : mActivity(M);
+    if (M.sub === 'overview' ? M.kpi !== undefined : M.sub === 'site' ? M.site !== undefined : M.sub === 'logins' ? M.people !== undefined : M.log !== undefined) M.loaded = true;
     return h('div', null, bar, body);
   }
 
@@ -2358,6 +2360,44 @@
       h('section', { class: 'card' }, h('h2', { text: 'جلسه‌ها در ۱۴ روز گذشته' }), h('p', { class: 'hint', text: 'ستون روشن: همهٔ جلسه‌ها. بخش تیره: انجام‌شده.' }), chart),
       h('section', { class: 'card' }, h('h2', { text: 'مشاورها' }), h('p', { class: 'hint', text: 'وضعیت هر مشاور: ورود، لینک اتاق، اعلان گوشی و آمار ۳۰ روز اخیر.' }), rows.length ? rows : h('p', { class: 'empty', text: 'هنوز مشاوری نیست.' })));
   }
+  /* آمار سایت: بازدیدها از track.js می‌آیند (بدون کوکی و بدون IP). منطقهٔ زمانی مرورگر نشانهٔ تقریبی کشور است. */
+  var TZ_FA = { 'Asia/Tehran': 'ایران', 'Europe/Berlin': 'آلمان', 'America/Toronto': 'کانادا', 'America/Vancouver': 'کانادا', 'America/Edmonton': 'کانادا', 'America/Winnipeg': 'کانادا', 'America/Halifax': 'کانادا', 'America/Montreal': 'کانادا',
+    'America/New_York': 'آمریکا', 'America/Chicago': 'آمریکا', 'America/Denver': 'آمریکا', 'America/Los_Angeles': 'آمریکا', 'America/Phoenix': 'آمریکا', 'Europe/London': 'بریتانیا', 'Europe/Istanbul': 'ترکیه', 'Asia/Dubai': 'امارات',
+    'Europe/Paris': 'فرانسه', 'Europe/Amsterdam': 'هلند', 'Europe/Stockholm': 'سوئد', 'Europe/Oslo': 'نروژ', 'Europe/Copenhagen': 'دانمارک', 'Europe/Madrid': 'اسپانیا', 'Europe/Rome': 'ایتالیا', 'Europe/Vienna': 'اتریش', 'Europe/Zurich': 'سوئیس',
+    'Europe/Brussels': 'بلژیک', 'Europe/Helsinki': 'فنلاند', 'Europe/Dublin': 'ایرلند', 'Asia/Muscat': 'عمان', 'Asia/Qatar': 'قطر', 'Asia/Kuwait': 'کویت', 'Asia/Riyadh': 'عربستان', 'Asia/Kolkata': 'هند', 'Asia/Calcutta': 'هند', 'Asia/Dhaka': 'بنگلادش',
+    'Australia/Sydney': 'استرالیا', 'Australia/Melbourne': 'استرالیا', 'Australia/Perth': 'استرالیا', 'Australia/Brisbane': 'استرالیا', 'Pacific/Auckland': 'نیوزیلند', 'Asia/Kabul': 'افغانستان', 'Asia/Baku': 'آذربایجان', 'Asia/Yerevan': 'ارمنستان',
+    'Asia/Tbilisi': 'گرجستان', 'Asia/Kuala_Lumpur': 'مالزی', 'Asia/Singapore': 'سنگاپور', 'Europe/Moscow': 'روسیه', 'Africa/Cairo': 'مصر', 'Asia/Baghdad': 'عراق', 'Asia/Karachi': 'پاکستان', 'Europe/Kiev': 'اوکراین', 'Europe/Kyiv': 'اوکراین' };
+  function mSite(M) {
+    var s = M.site;
+    var days = h('div', { class: 'chips' }, [7, 30, 90].map(function (d) {
+      return h('button', { class: 'btn btn--small' + ((M.days || 30) === d ? ' btn--primary' : ''), type: 'button', text: np(d) + ' روز', onclick: function () { M.days = d; loadMonitor(); render(); } });
+    }));
+    if (!s) return h('div', null, days, h('p', { class: 'empty', text: 'داده‌ای نیست.' }));
+    var t = s.totals || {}, d = s.days || [], max = Math.max.apply(null, d.map(function (x) { return x.views; }).concat([1]));
+    var tiles = h('div', { class: 'kpis' }, tile('بازدید امروز', n(t.today_views || 0), 'ورود تازه: ' + n(t.today_entries || 0)), tile('بازدید صفحه، ' + np(M.days || 30) + ' روز', n(t.views || 0)),
+      tile('ورود تازه به سایت', n(t.entries || 0), 'هر بار که کسی از بیرون می‌آید'), tile('میانگین روزانه', n(Math.round((t.views || 0) / Math.max(1, d.length)))));
+    var step = d.length > 40 ? Math.ceil(d.length / 30) : 1;
+    var chart = h('div', { class: 'bars bars--thin', role: 'img', 'aria-label': 'بازدید روزانه' }, d.map(function (x, i) {
+      var dt = new Date(x.day + 'T12:00:00Z'), jd = toJalali(dt.getUTCFullYear(), dt.getUTCMonth() + 1, dt.getUTCDate());
+      return h('div', { class: 'bar', title: np(jd.jd) + ' ' + J_MONTHS[jd.jm - 1] + ': ' + n(x.views) + ' بازدید، ' + n(x.entries) + ' ورود تازه' },
+        h('i', { style: 'height:' + Math.round(x.views * 100 / max) + '%' }, h('u', { style: 'height:' + (x.views ? Math.round(x.entries * 100 / x.views) : 0) + '%' })),
+        h('span', { text: i % step === 0 ? np(jd.jd) : '' }));
+    }));
+    var list = function (title, hint, rows, fmt) {
+      rows = rows || []; var m = Math.max.apply(null, rows.map(function (r) { return r.n; }).concat([1]));
+      return h('section', { class: 'card' }, h('h2', { text: title }), hint ? h('p', { class: 'hint', text: hint }) : null,
+        rows.length ? rows.map(function (r) { return h('div', { class: 'srow' }, h('span', { class: 'srow__k' }, fmt ? fmt(r.k) : r.k), h('i', { style: 'width:' + Math.max(3, Math.round(r.n * 100 / m)) + '%' }), h('b', { text: n(r.n) })); }) : h('p', { class: 'empty', text: 'هنوز داده‌ای نیست.' }));
+    };
+    var country = {}; (s.tz || []).forEach(function (r) { var k = TZ_FA[r.k] || (r.k === '?' ? 'نامشخص' : r.k); country[k] = (country[k] || 0) + r.n; });
+    var countries = Object.keys(country).map(function (k) { return { k: k, n: country[k] }; }).sort(function (a, b) { return b.n - a.n; });
+    return h('div', null, days, tiles,
+      h('section', { class: 'card' }, h('h2', { text: 'بازدید روزانه' }), h('p', { class: 'hint', text: 'ستون روشن: همهٔ بازدیدها. بخش تیره: ورود تازه. روزها به وقت ایران.' }), chart),
+      list('صفحه‌های پربازدید', null, s.pages, function (k) { return ltr(k); }),
+      list('از کجا آمدند؟', 'فقط ورودهای تازه. «مستقیم» یعنی لینک بدون منبع (مثلاً پیام یا نوشتن آدرس). برای شمردن لینک بیو، به آدرس ?utm_source=instagram اضافه کنید.', s.refs),
+      list('کشور (تقریبی)', 'از منطقهٔ زمانی مرورگر حدس زده می‌شود؛ دقیق نیست و با VPN عوض می‌شود.', countries),
+      list('دستگاه', null, s.dev), list('زبان مرورگر', null, s.lang));
+  }
+
   function num(label, v) { return h('div', null, h('b', { text: n(v || 0) }), h('span', { text: label })); }
 
   function device(ua) {

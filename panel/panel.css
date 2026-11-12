@@ -660,3 +660,8 @@ input[type=checkbox]{accent-color:var(--teal);width:18px;height:18px;vertical-al
 .preset b{font-size:15px;font-weight:800}
 .preset small{font-size:11.5px;color:#7A6128}
 .preset:hover{transform:translateY(-1px);box-shadow:0 8px 16px -10px rgba(138,107,57,.8)}
+
+/* آمار سایت */
+.srow{display:grid;grid-template-columns:minmax(80px,38%) 1fr auto;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(32,48,43,.07)}
+.srow__k{font-size:.92rem;word-break:break-all}.srow i{display:block;height:8px;border-radius:6px;background:linear-gradient(90deg,#6FB3A5,#3D6B61)}.srow b{font-size:.95rem;color:#3D6B61;min-width:30px;text-align:left}
+.bars--thin{gap:3px}.bars--thin .bar span{font-size:.62rem}
