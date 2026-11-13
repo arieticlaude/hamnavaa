@@ -2476,5 +2476,23 @@
     } else boot();
   }
   start();
-  if ('serviceWorker' in navigator && !MOCK) navigator.serviceWorker.register('sw.js').catch(function () { /* the panel works without it */ });
+  if ('serviceWorker' in navigator && !MOCK) {
+    /* به‌روزرسانی خودکار: نسخهٔ تازه بدون Ctrl+F5 می‌آید.
+       ۱) sw.js هرگز از کش مرورگر خوانده نمی‌شود؛ ۲) هر بار برنامه به جلو برمی‌گردد (و هر ۳۰ دقیقه) دنبال نسخهٔ تازه می‌گردد؛
+       ۳) وقتی سرویس‌ورکر تازه کنترل را گرفت، صفحه یک‌بار خودش تازه می‌شود (مگر کسی همان لحظه در حال نوشتن باشد). */
+    var hadCtl = !!navigator.serviceWorker.controller, swReloaded = false;
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(function (reg) {
+      var chk = function () { try { reg.update(); } catch (e) { /* مهم نیست */ } };
+      document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') chk(); });
+      window.addEventListener('online', chk);
+      setInterval(chk, 30 * 60 * 1000);
+    }).catch(function () { /* the panel works without it */ });
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (!hadCtl) { hadCtl = true; return; }                 // اولین نصب: چیزی برای تازه‌کردن نیست
+      if (swReloaded) return;
+      var a = document.activeElement;
+      if ((a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) || document.getElementById('accForm')) return;   // نوشته‌های کسی پاک نشود؛ دفعهٔ بعد که باز کرد تازه است
+      swReloaded = true; location.reload();
+    });
+  }
 })();
