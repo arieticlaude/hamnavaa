@@ -1319,10 +1319,17 @@
   }
   function openDoc(x) {
     var w = null; try { w = window.open('', '_blank'); } catch (e) { w = null; }
+    var say = function (t) { if (!w) return; try { w.document.open(); w.document.write('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><body dir="rtl" style="font:16px/1.9 system-ui,Tahoma,sans-serif;padding:28px;color:#1b3a35;background:#f6f2e8">' + t + '</body>'); w.document.close(); } catch (e) { /* مهم نیست */ } };
+    say('در حال باز کردن فایل…');
+    var fail = function (why) {
+      var msg = 'باز کردن فایل انجام نشد' + (why ? ': ' + why : '.');
+      say('<p><b>' + msg + '</b></p><p>این پنجره را ببندید و چند لحظه بعد دوباره امتحان کنید. اگر تکرار شد، شمارهٔ فایل را برای مدیر بفرستید:<br><code dir="ltr">' + String(x.path || '') + '</code></p>');
+      flash('err', msg); render();
+    };
     sb.storage.from('ledger-files').createSignedUrl(x.path, 300).then(function (r) {
-      if (r.error || !r.data) { if (w) w.close(); flash('err', 'باز کردن فایل انجام نشد.'); return render(); }
+      if (r.error || !r.data || !r.data.signedUrl) { return fail(r.error && r.error.message ? String(r.error.message).slice(0, 140) : 'اتصال به فایل‌ها برقرار نشد'); }
       if (w) w.location.href = r.data.signedUrl; else window.location.href = r.data.signedUrl;
-    });
+    }, function (e) { fail(e && e.message ? String(e.message).slice(0, 140) : 'خطای شبکه'); });
   }
   function delDoc(A, x) {
     if (!window.confirm('این سند حذف شود؟\n' + x.name)) return;
