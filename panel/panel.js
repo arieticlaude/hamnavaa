@@ -2203,9 +2203,19 @@
       if (!r.error) { window.alert('«' + nm + '» حذف نشد. یا دسترسی ندارید، یا این فرد قبلاً حذف شده است.'); return loadStaff(); }
       var m = String(r.error.message || '') + ' ' + String(r.error.code || '');
       if (/foreign key|violates|23503/i.test(m)) {
-        if (p.active && window.confirm('«' + nm + '» جلسه یا سابقه دارد و حذف کامل نمی‌شود (سابقهٔ جلسه‌ها نباید بی‌صاحب شود).\n\nبه‌جایش غیرفعال شود؟ از فهرست ثبت جلسه بیرون می‌رود و سابقه‌اش می‌ماند.')) return upd(p.id, { active: false });
-        if (!p.active) window.alert('«' + nm + '» جلسه یا سابقه دارد و حذف کامل نمی‌شود. او از قبل غیرفعال است و در فهرست ثبت جلسه نمی‌آید.');
-        return loadStaff();
+        /* فهرست «جلسه‌ها» فقط بازهٔ تاریخ انتخاب‌شده را نشان می‌دهد؛ پس «جلسه ندارد» دیده‌شده می‌تواند جلسهٔ قدیمی‌تر یا اتاق‌باز‌کردنِ ثبت‌شده باشد. شمارش واقعی را از دیتابیس می‌پرسیم. */
+        var cnt = function (t, col) { return sb.from(t).select('id', { count: 'exact', head: true }).eq(col, p.id).then(function (x) { return x.error ? -1 : (x.count || 0); }); };
+        return Promise.all([cnt('sessions', 'counselor_id'), cnt('sessions', 'created_by'), cnt('room_events', 'counselor_id')]).then(function (c) {
+          var parts = [];
+          if (c[0] > 0) parts.push(c[0] + ' جلسه (به‌عنوان مشاور، در هر تاریخی، از جمله گذشته‌های دور)');
+          if (c[1] > 0) parts.push(c[1] + ' جلسه که خودش ثبت کرده');
+          if (c[2] > 0) parts.push(c[2] + ' بار باز شدن اتاق');
+          if (!parts.length) parts.push('سابقه‌ای که از این‌جا شمرده نمی‌شود (مثلاً ثبت پرداخت)');
+          var why = '«' + nm + '» به این‌ها وصل است:\n• ' + parts.join('\n• ') + '\n\nبرای همین حذف کامل نمی‌شود (سابقه نباید بی‌صاحب شود).';
+          if (p.active && window.confirm(why + '\n\nبه‌جایش غیرفعال شود؟ از فهرست ثبت جلسه بیرون می‌رود و سابقه‌اش می‌ماند.')) return upd(p.id, { active: false });
+          if (!p.active) window.alert(why + '\n\nاو از قبل غیرفعال است و در فهرست ثبت جلسه نمی‌آید.');
+          loadStaff();
+        });
       }
       window.alert('«' + nm + '» حذف نشد. ' + explain(r.error)); loadStaff();
     });
