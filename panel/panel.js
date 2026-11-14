@@ -2197,7 +2197,8 @@
   function deletePerson(p) {
     if (!window.confirm('«' + (p.full_name || 'بدون نام') + '» حذف شود؟\nاگر جلسه‌ای به او وصل باشد حذف نمی‌شود؛ در آن حالت غیرفعالش کنید.')) return;
     var nm = p.full_name || 'بدون نام';
-    sb.from('profiles').delete().eq('id', p.id).select('id').then(function (r) {
+    /* راه اصلی: تابع staff_delete_person (migration-18) که ثبت‌های «باز شدن اتاق» همین فرد را هم پاک می‌کند؛ اگر هنوز در دیتابیس نبود، همان حذف مستقیم قبلی */
+    var handle = function (r) {
       if (!r.error && r.data && r.data.length) { flash('ok', 'حذف شد.'); return loadStaff(); }
       /* پیام شناور بالای صفحه را کسی که پایین صفحه است نمی‌بیند و فهرست فقط تازه می‌شد؛ پس خطا همین‌جا و روی صفحه گفته می‌شود */
       if (!r.error) { window.alert('«' + nm + '» حذف نشد. یا دسترسی ندارید، یا این فرد قبلاً حذف شده است.'); return loadStaff(); }
@@ -2218,6 +2219,15 @@
         });
       }
       window.alert('«' + nm + '» حذف نشد. ' + explain(r.error)); loadStaff();
+    };
+    sb.rpc('staff_delete_person', { p_id: p.id }).then(function (r0) {
+      if (!r0.error) { flash('ok', 'حذف شد.'); return loadStaff(); }
+      var m0 = String(r0.error.message || '') + String(r0.error.code || '');
+      if (!/could not find the function|PGRST202/i.test(m0)) {
+        if (/not allowed/i.test(m0)) { window.alert('فقط مدیر می‌تواند حذف کند.'); return loadStaff(); }
+        return handle(r0);
+      }
+      sb.from('profiles').delete().eq('id', p.id).select('id').then(handle);
     });
   }
   function addPersonCard() {
