@@ -2196,8 +2196,18 @@
   /* ───────────── ابزار مدیر: افزودن و حذف ───────────── */
   function deletePerson(p) {
     if (!window.confirm('«' + (p.full_name || 'بدون نام') + '» حذف شود؟\nاگر جلسه‌ای به او وصل باشد حذف نمی‌شود؛ در آن حالت غیرفعالش کنید.')) return;
-    sb.from('profiles').delete().eq('id', p.id).then(function (r) {
-      flash(r.error ? 'err' : 'ok', r.error ? explain(r.error) : 'حذف شد.'); loadStaff();
+    var nm = p.full_name || 'بدون نام';
+    sb.from('profiles').delete().eq('id', p.id).select('id').then(function (r) {
+      if (!r.error && r.data && r.data.length) { flash('ok', 'حذف شد.'); return loadStaff(); }
+      /* پیام شناور بالای صفحه را کسی که پایین صفحه است نمی‌بیند و فهرست فقط تازه می‌شد؛ پس خطا همین‌جا و روی صفحه گفته می‌شود */
+      if (!r.error) { window.alert('«' + nm + '» حذف نشد. یا دسترسی ندارید، یا این فرد قبلاً حذف شده است.'); return loadStaff(); }
+      var m = String(r.error.message || '') + ' ' + String(r.error.code || '');
+      if (/foreign key|violates|23503/i.test(m)) {
+        if (p.active && window.confirm('«' + nm + '» جلسه یا سابقه دارد و حذف کامل نمی‌شود (سابقهٔ جلسه‌ها نباید بی‌صاحب شود).\n\nبه‌جایش غیرفعال شود؟ از فهرست ثبت جلسه بیرون می‌رود و سابقه‌اش می‌ماند.')) return upd(p.id, { active: false });
+        if (!p.active) window.alert('«' + nm + '» جلسه یا سابقه دارد و حذف کامل نمی‌شود. او از قبل غیرفعال است و در فهرست ثبت جلسه نمی‌آید.');
+        return loadStaff();
+      }
+      window.alert('«' + nm + '» حذف نشد. ' + explain(r.error)); loadStaff();
     });
   }
   function addPersonCard() {
