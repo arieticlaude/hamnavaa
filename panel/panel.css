@@ -665,3 +665,31 @@ input[type=checkbox]{accent-color:var(--teal);width:18px;height:18px;vertical-al
 .srow{display:grid;grid-template-columns:minmax(80px,38%) 1fr auto;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid rgba(32,48,43,.07)}
 .srow__k{font-size:.92rem;word-break:break-all}.srow i{display:block;height:8px;border-radius:6px;background:linear-gradient(90deg,#6FB3A5,#3D6B61)}.srow b{font-size:.95rem;color:#3D6B61;min-width:30px;text-align:left}
 .bars--thin{gap:3px}.bars--thin .bar span{font-size:.62rem}
+
+/* حقوق مشاورها (حسابداری) */
+.acc-who{min-width:210px;max-width:100%}
+.acc-cta--one{grid-template-columns:1fr}
+.actions--top{margin:0 0 8px}
+.tact{display:flex;gap:6px;flex-wrap:wrap;min-width:96px}
+.payinfo{margin-top:6px;display:grid;gap:6px}
+.payd summary{cursor:pointer;color:var(--teal);font-weight:700;font-size:13px}
+.xrows{display:grid;gap:6px;margin-top:8px}
+.xrow{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;padding:7px 12px;border:1px solid var(--line);border-radius:12px;background:#FDFBF6;font-size:13.5px}
+.xrow__t{font-weight:700}
+.xrow__n{color:var(--muted)}
+.paybox{border:1px solid #E6D3A8;background:#FFFBF1;border-radius:16px;padding:14px 16px;margin:6px 0 14px}
+.paybox[hidden]{display:none}
+.paybox__h{font-weight:800;color:#5C431B;margin-bottom:10px}
+.paybox .field{margin-bottom:10px}
+.mchips{display:flex;flex-wrap:wrap;gap:6px}
+.mchip{border:1.5px solid #E6D3A8;background:#fff;border-radius:999px;padding:4px 14px;font:inherit;font-weight:700;font-size:13px;color:#5C431B;cursor:pointer;transition:all .15s}
+.mchip.is-on{background:var(--teal);border-color:var(--teal);color:#fff}
+.psel{display:grid;gap:6px;margin-top:10px;max-height:340px;overflow:auto;padding:2px}
+.psel__r{display:flex;align-items:center;gap:10px;cursor:pointer}
+.psel__r .xrow{flex:1}
+.psel__r input{width:20px;height:20px;accent-color:var(--teal);flex:none}
+.psel__r.is-off{opacity:.55;cursor:not-allowed}
+.paysum{margin-top:10px;font-weight:800;color:var(--teal-deep)}
+@media (max-width:560px){.acc-who{min-width:0;width:100%}}
+.anum__t.gold{background:linear-gradient(135deg,#F8EFD9,#fff);border-color:#E6D3A8}
+.anum__t.gold b{color:#5C431B;font-size:1.3rem}
