@@ -693,3 +693,16 @@ input[type=checkbox]{accent-color:var(--teal);width:18px;height:18px;vertical-al
 @media (max-width:560px){.acc-who{min-width:0;width:100%}}
 .anum__t.gold{background:linear-gradient(135deg,#F8EFD9,#fff);border-color:#E6D3A8}
 .anum__t.gold b{color:#5C431B;font-size:1.3rem}
+.row--3{grid-template-columns:1.2fr 1fr 1fr}
+.prows{display:grid;gap:8px;margin-top:8px}
+.prow{border:1px solid var(--line);border-radius:14px;background:#fff;padding:8px 10px;border-right:4px solid #E7B8B3}
+.prow.is-paid{border-right-color:#B5D9C3;background:#FBFDFB}
+.prow__h{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px}
+.prow__h .xrow{flex:1;min-width:240px;border:0;background:transparent;padding:4px 2px}
+.prow__r{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.prow__r small{color:var(--muted)}
+.payform{margin-top:10px;padding:12px;border:1px dashed #E6D3A8;background:#FFFBF1;border-radius:12px}
+.bulk{margin-top:12px;border:1px solid #E6D3A8;background:#FFFBF1;border-radius:14px;padding:10px 14px}
+.bulk summary{cursor:pointer;font-weight:800;color:#5C431B}
+.bulk .payform{border:0;background:transparent;padding:10px 0 0}
+@media (max-width:640px){.row--3{grid-template-columns:1fr}}

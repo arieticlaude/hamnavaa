@@ -1228,7 +1228,7 @@
   function accUnit(cur) { return cur === 'IRT' ? 'تومان' : ltr(cur); }
   function accAmt(x, cur) { var f = document.createDocumentFragment(); f.appendChild(document.createTextNode(money(x) + ' ')); f.appendChild(cur === 'IRT' ? document.createTextNode('تومان') : ltr(cur)); return f; }
   function accState() {
-    return S.acc = S.acc || { sub: 'summary', cal: 'j', year: 0, acct: 'fx', cur: { fx: 'USD', irr: 'IRT' }, q: '', fa: '', fd: '', limit: 100, rows: null, form: false, edit: null, f: null, dc: '', dm: 0, sess: null, links: {}, paidSess: {}, linksOk: false };
+    return S.acc = S.acc || { sub: 'summary', cal: 'j', year: 0, acct: 'fx', cur: { fx: 'USD', irr: 'IRT' }, q: '', fa: '', fd: '', limit: 100, rows: null, form: false, edit: null, f: null, dc: '', dm: 0, sess: null, links: {}, paidSess: {}, linksOk: false, lastPay: {}, payOpen: null, rowById: {} };
   }
   function accYM(iso, cal) {
     var p = parseIso(iso); if (!p) return { y: 0, m: 0 };
@@ -1299,6 +1299,7 @@
       if (r.error) { A.err = r.error; A.missing = /does not exist|Could not find|relation|schema cache/i.test(r.error.message || ''); }
       else {
         A.err = null; A.missing = false; A.rows = r.data || []; if (!A.year) A.year = accNow(A.cal).y;
+        A.rowById = {}; A.rows.forEach(function (x) { A.rowById[x.id] = x; });
         A.filesOk = !res[1].error; A.files = {};
         (res[1].data || []).forEach(function (x) { (A.files[x.ledger_id] = A.files[x.ledger_id] || []).push(x); });
         // حقوق مشاور (migration-19): بازهٔ پرداخت و جلسه‌های وصل‌شده
@@ -1462,26 +1463,6 @@
     if (ir) f.appendChild(amtSplit(m, true));
     return f;
   }
-  function docStats(A, cid, dm) {
-    var now = Date.now(), inS = function (ym) { return ym.y === A.year && (!dm || ym.m === dm); };
-    var st = { main: 0, noshow: 0, cancelled: 0, unmarked: 0, unpaidMain: 0, unpaid: [] };
-    (A.sess || []).forEach(function (s) {
-      if (s.counselor_id !== cid || !inS(sessYM(s, A.cal))) return;
-      if (s.status === 'done') {
-        st.main++;
-        if (!A.paidSess[s.id]) { st.unpaidMain++; st.unpaid.push(s); }
-      } else if (s.status === 'client_no_show') st.noshow++;
-      else if (s.status === 'scheduled') { if (new Date(s.starts_at).getTime() < now) st.unmarked++; }
-      else st.cancelled++;
-    });
-    var rows = (A.rows || []).filter(function (r) { return r.counselor_id === cid && inS(accYM(r.entry_date, A.cal)); });
-    st.deposits = rows.filter(function (r) { return r.direction === 'in' && r.category !== 'transfer'; });
-    st.payouts = rows.filter(function (r) { return r.direction === 'out' && r.category === 'counselor'; });
-    st.dep = sumBy(st.deposits); st.paid = sumBy(st.payouts);
-    st.last = st.payouts.map(function (r) { return r.entry_date; }).sort().pop() || '';
-    st.unpaidN = st.unpaidMain;
-    return st;
-  }
   function sessChips(s) {
     return [h('span', { class: 'chip chip--gold', text: KIND[s.kind] || 'جلسه' }),
       h('span', { class: 'chip ' + (s.status === 'done' ? 'chip--ok' : s.status === 'client_no_show' ? 'chip--warn' : ''), text: STATUS[s.status] || '' })];
@@ -1505,7 +1486,7 @@
     if (r.period_from) chips.push(h('span', { class: 'chip chip--gold' }, periodNode(r.period_from, r.period_to)));
     if (A.linksOk) {
       chips.push(ls.length ? h('span', { class: 'chip chip--ok', text: 'برای ' + n(ls.length) + ' مشاوره' })
-        : h('span', { class: 'chip chip--warn', text: 'جلسه‌ای به این پرداخت وصل نشده؛ با «ویرایش» وصل کنید' }));
+        : h('span', { class: 'chip', text: 'بدون جلسهٔ وصل‌شده' }));
       if (ls.length) det = h('details', { class: 'payd' }, h('summary', { text: 'دیدن جلسه‌های این پرداخت (' + n(ls.length) + ')' }),
         h('div', { class: 'xrows' }, ls.slice().sort(function (a, b) { return a.starts_at < b.starts_at ? -1 : 1; }).map(function (l) {
           var live = l.session_id && A.sessBy && A.sessBy[l.session_id];
@@ -1515,93 +1496,154 @@
     }
     return chips.length ? h('div', { class: 'payinfo' }, h('div', { class: 'chips' }, chips), det) : null;
   }
-  function accOpenPay(A, cid, unpaid) {
-    var pre = { cat: 'counselor', counselor: cid || '' };
-    if (unpaid && unpaid.length) { var ds = unpaid.map(sessIso).sort(); pre.from = ds[0]; pre.to = ds[ds.length - 1]; }
-    accOpen(A, null, 'out', pre);
+  // آمار یک مشاور: جلسه‌های برگزارشده‌اش در ماه/سالِ انتخاب‌شده، کدام‌ها پرداخت شده و چقدر، و واریزی‌های ثبت‌شده برایش
+  function docStats(A, cid, dm) {
+    var now = Date.now(), inS = function (ym) { return ym.y === A.year && (!dm || ym.m === dm); };
+    var st = { list: [], unpaid: [], paidN: 0, paid: {}, loose: [] };
+    (A.sess || []).forEach(function (s) {
+      if (s.counselor_id !== cid || !inS(sessYM(s, A.cal)) || PAY_SKIP[s.status]) return;
+      if (s.status === 'scheduled' && new Date(s.starts_at).getTime() >= now) return;      // هنوز برگزار نشده
+      st.list.push(s);
+      var lid = A.paidSess[s.id];
+      if (lid) {
+        st.paidN++;
+        var r = A.rowById[lid], k = (A.links[lid] || []).length || 1;
+        if (r) st.paid[r.currency] = (st.paid[r.currency] || 0) + (+r.amount) / k;
+      } else st.unpaid.push(s);
+    });
+    var rows = (A.rows || []).filter(function (r) { return r.counselor_id === cid && inS(accYM(r.entry_date, A.cal)); });
+    // حقوقی که مبلغش ثبت شده ولی به هیچ جلسه‌ای وصل نیست (مثلاً ثبت دستی)
+    st.loose = rows.filter(function (r) { return r.direction === 'out' && r.category === 'counselor' && !((A.links[r.id] || []).length); });
+    st.loose.forEach(function (r) { st.paid[r.currency] = (st.paid[r.currency] || 0) + (+r.amount); });
+    st.deposits = rows.filter(function (r) { return r.direction === 'in' && r.category !== 'transfer'; });
+    st.dep = sumBy(st.deposits);
+    st.n = st.list.length; st.unpaidN = st.unpaid.length;
+    return st;
+  }
+
+  /* ── پرداخت حقوق: برای هر جلسه «پرداخت» می‌زنید، مبلغ را می‌نویسید، تمام ── */
+  var PAYC = [['IRT', 'تومان']].concat(FX_CUR.map(function (c) { return [c[0], c[0] + ' · ' + c[1]]; }));
+  // هر جلسه یک ردیف مالیِ جدا می‌شود (مبلغ خودش) و به همان جلسه وصل می‌ماند
+  function paySessions(A, d, list, amount, cur, date) {
+    var acct = cur === 'IRT' ? 'irr' : 'fx', rows = [], links = [];
+    list.forEach(function (s) {
+      var id = newGroupId(), day = sessIso(s);
+      rows.push({ id: id, entry_date: date, account: acct, currency: cur, direction: 'out', amount: amount, category: 'counselor', counselor_id: d.id, ref: '', note: '', period_from: day, period_to: day, created_by: S.user.id });
+      links.push({ ledger_id: id, session_id: s.id, starts_at: s.starts_at, kind: s.kind, duration_min: s.duration_min, status: s.status, created_by: S.user.id });
+    });
+    return sb.from('ledger').insert(rows).then(function (r) {
+      if (r.error) return { error: r.error };
+      return sb.from('ledger_sessions').insert(links).then(function (l) {
+        if (!l.error) return { n: rows.length };
+        // وصل‌کردن به جلسه نشد: ردیف‌های مالی را برمی‌گردانیم تا پولِ بی‌جلسه در دفتر نماند
+        return sb.from('ledger').delete().in('id', rows.map(function (x) { return x.id; })).then(function () { return { error: l.error }; });
+      });
+    });
+  }
+  function payForm(A, d, list, bulk) {
+    var last = (A.lastPay || (A.lastPay = {}))[d.id] || { cur: 'IRT' }, date = tehranDateInput(0);
+    var amt = h('input', { class: 'input', dir: 'ltr', inputmode: 'decimal', placeholder: bulk ? 'مبلغ هر جلسه' : 'مبلغ', 'aria-label': bulk ? 'مبلغ هر جلسه' : 'مبلغ پرداخت' });
+    var cur = h('select', { class: 'select', 'aria-label': 'ارز پرداخت' }, PAYC.map(function (c) { return h('option', { value: c[0], text: c[1], selected: c[0] === last.cur }); }));
+    var df = dateField(date, function () { date = df.value(); });
+    var msg = h('p', { class: 'hint', role: 'status' });
+    function unit() { return cur.value === 'IRT' ? 'تومان' : cur.value; }
+    function note() { var v = parseFloat(normNum(amt.value)); msg.className = 'hint'; msg.textContent = isFinite(v) && v > 0 ? (bulk ? n(list.length) + ' جلسه × ' + money(v) + ' = ' + money(v * list.length) : money(v)) + ' ' + unit() : ''; }
+    amt.addEventListener('input', note); cur.addEventListener('change', note);
+    var go = h('button', { class: 'btn btn--primary btn--small', type: 'submit', text: bulk ? 'پرداخت شد (همهٔ ' + n(list.length) + ' جلسه)' : 'پرداخت شد ✓' });
+    var cancel = bulk ? null : h('button', { class: 'btn btn--small', type: 'button', text: 'انصراف', onclick: function () { A.payOpen = null; render(); } });
+    return h('form', { class: 'payform', onsubmit: function (ev) {
+      ev.preventDefault();
+      var v = parseFloat(normNum(amt.value)); date = df.value() || date;
+      if (!isFinite(v) || v <= 0) { msg.className = 'warnbox'; msg.textContent = 'مبلغ را درست بنویسید (عدد بزرگ‌تر از صفر).'; return; }
+      v = Math.round(v * 100) / 100;
+      if (bulk && !window.confirm('برای ' + n(list.length) + ' جلسه، هر کدام ' + money(v) + ' ' + unit() + ' ثبت شود؟\nجمع: ' + money(v * list.length) + ' ' + unit())) return;
+      go.disabled = true;
+      paySessions(A, d, list, v, cur.value, date).then(function (res) {
+        if (res.error) { go.disabled = false; flash('err', explain(res.error)); return render(); }
+        A.lastPay[d.id] = { cur: cur.value }; A.payOpen = null;
+        flash('ok', 'پرداخت ثبت شد ✓ ' + (res.n > 1 ? '(' + n(res.n) + ' جلسه)' : ''));
+        loadLedger(); render();
+      });
+    } }, h('div', { class: 'row row--3' }, h('div', { class: 'field' }, h('label', { text: bulk ? 'مبلغ هر جلسه' : 'مبلغ' }), amt), h('div', { class: 'field' }, h('label', { text: 'به' }), cur), h('div', { class: 'field' }, h('label', { text: 'تاریخ پرداخت' }), df.el)),
+      msg, h('div', { class: 'actions' }, go, cancel));
+  }
+  function unpay(A, lid) {
+    var r = A.rowById[lid], k = (A.links[lid] || []).length;
+    if (!window.confirm('پرداخت این جلسه لغو شود؟' + (r ? '\n' + money(+r.amount) + ' ' + (r.currency === 'IRT' ? 'تومان' : r.currency) : '') + (k > 1 ? '\n(این پرداخت به ' + n(k) + ' جلسه وصل است؛ همهٔ آن‌ها بدون پرداخت می‌شوند.)' : ''))) return;
+    sb.from('ledger').delete().eq('id', lid).then(function (d) { flash(d.error ? 'err' : 'ok', d.error ? explain(d.error) : 'پرداخت لغو شد.'); loadLedger(); render(); });
+  }
+  function payRow(A, d, s) {
+    var lid = A.paidSess[s.id], r = lid && A.rowById[lid], open = A.payOpen === s.id, k = lid ? ((A.links[lid] || []).length || 1) : 1;
+    var right;
+    if (lid) right = h('div', { class: 'prow__r' }, h('span', { class: 'chip chip--ok', text: 'پرداخت شد ✓' }),
+      r ? h('b', { class: 'acc-out' }, accAmt((+r.amount) / k, r.currency)) : null, r ? h('small', null, accDateNode(r.entry_date)) : null,
+      h('button', { class: 'linkbtn', type: 'button', text: 'لغو پرداخت', onclick: function () { unpay(A, lid); } }));
+    else right = h('div', { class: 'prow__r' }, h('span', { class: 'chip chip--warn', text: 'پرداخت نشده' }),
+      h('button', { class: 'btn btn--small btn--primary', type: 'button', text: open ? 'بستن' : 'پرداخت', onclick: function () { A.payOpen = open ? null : s.id; render(); } }));
+    return h('div', { class: 'prow' + (lid ? ' is-paid' : '') }, h('div', { class: 'prow__h' }, sessRow(s), right), !lid && open ? payForm(A, d, [s], false) : null);
   }
 
   function accDocTable(A, dm, title) {
-    var docs = accDocs(A), tot = { main: 0, dep: {}, paid: {}, un: 0 };
+    var docs = accDocs(A), tot = { n: 0, paidN: 0, un: 0, paid: {} };
     var trs = docs.map(function (d) {
       var st = docStats(A, d.id, dm);
-      tot.main += st.main; tot.dep = addMaps(tot.dep, st.dep); tot.paid = addMaps(tot.paid, st.paid); tot.un += st.unpaidN;
-      var zero = !st.main && !hasAmt(st.paid) && !hasAmt(st.dep);
-      return h('tr', { class: zero ? 'is-zero' : '' }, h('td', null, h('b', { text: d.name })), h('td', { text: n(st.main) }),
-        h('td', { class: 'acc-out' }, amtSplit(st.paid, false)), h('td', { class: 'acc-out' }, amtSplit(st.paid, true)), h('td', null, amtBoth(st.dep)),
-        h('td', null, st.last ? accDateNode(st.last) : '—'), h('td', { class: st.unpaidN ? 'acc-neg' : '' }, st.unpaidN ? n(st.unpaidN) : '—'),
-        h('td', null, h('div', { class: 'tact' },
-          h('button', { class: 'btn btn--small', type: 'button', text: 'جزئیات', onclick: function () { A.sub = 'doctors'; A.dc = d.id; render(); window.scrollTo(0, 0); } }),
-          h('button', { class: 'btn btn--small', type: 'button', text: 'ثبت حقوق', onclick: function () { accOpenPay(A, d.id, st.unpaid); } }))));
+      tot.n += st.n; tot.paidN += st.paidN; tot.un += st.unpaidN; tot.paid = addMaps(tot.paid, st.paid);
+      return h('tr', { class: st.n || hasAmt(st.paid) ? '' : 'is-zero' }, h('td', null, h('b', { text: d.name })), h('td', { text: n(st.n) }), h('td', { text: n(st.paidN) }),
+        h('td', { class: st.unpaidN ? 'acc-neg' : '' }, st.unpaidN ? n(st.unpaidN) : '—'),
+        h('td', { class: 'acc-out' }, amtSplit(st.paid, false)), h('td', { class: 'acc-out' }, amtSplit(st.paid, true)),
+        h('td', null, h('button', { class: 'btn btn--small', type: 'button', text: 'باز کردن', onclick: function () { A.sub = 'doctors'; A.dc = d.id; render(); window.scrollTo(0, 0); } })));
     });
     return h('section', { class: 'card' }, h('h2', { text: title }),
-      h('div', { class: 'actions actions--top' }, h('button', { class: 'btn btn--small btn--primary', type: 'button', text: '+ ثبت حقوق مشاور', onclick: function () { accOpenPay(A, '', null); } })),
       docs.length ? h('div', { class: 'tblwrap' }, h('table', { class: 'atbl' },
-        h('thead', null, h('tr', null, ['مشاور', 'مشاوره', 'حقوق دریافتی (ارزی)', 'حقوق دریافتی (تومانی)', 'واریزی ثبت‌شده برای او', 'آخرین پرداخت', 'جلسه‌های بدون پرداخت', ''].map(function (t) { return h('th', { text: t }); }))),
+        h('thead', null, h('tr', null, ['مشاور', 'جلسه‌ها', 'پرداخت‌شده', 'پرداخت‌نشده', 'حقوق (ارزی)', 'حقوق (تومانی)', ''].map(function (t) { return h('th', { text: t }); }))),
         h('tbody', null, trs),
-        h('tfoot', null, h('tr', null, h('td', { text: 'جمع' }), h('td', { text: n(tot.main) }), h('td', null, amtSplit(tot.paid, false)), h('td', null, amtSplit(tot.paid, true)), h('td', null, amtBoth(tot.dep)), h('td'), h('td', { text: n(tot.un) }), h('td')))))
+        h('tfoot', null, h('tr', null, h('td', { text: 'جمع' }), h('td', { text: n(tot.n) }), h('td', { text: n(tot.paidN) }), h('td', { text: n(tot.un) }), h('td', null, amtSplit(tot.paid, false)), h('td', null, amtSplit(tot.paid, true)), h('td')))))
         : h('p', { class: 'empty', text: 'هنوز مشاوری ثبت نشده.' }),
-      h('p', { class: 'hint', text: 'مشاوره یعنی جلسه‌ای که وضعیتش «انجام‌شد» است (پیش‌مشاورهٔ رایگان در حسابداری نمی‌آید). حقوق هر مشاور جدا برای حساب ارزی (به تفکیک ارز) و حساب تومانی نشان داده می‌شود. «جلسه‌های بدون پرداخت» جلسه‌های انجام‌شده‌ای است که هنوز در هیچ پرداخت حقوقی نیامده.' }));
+      h('p', { class: 'hint', text: 'جلسه‌ها یعنی مشاوره‌های برگزارشده (انجام‌شده یا غیبت مراجع). برای پرداخت، مشاور را باز کنید. حقوق ارزی و تومانی جدا نشان داده می‌شود.' }));
   }
 
   function accDoctors(A) {
     if (A.sess === null || A.sess === undefined) { if (!A.sLoading) loadAccSessions(); return h('p', { class: 'empty', text: 'در حال بارگذاری جلسه‌ها…' }); }
+    if (!A.dmInit) { A.dmInit = true; A.dm = accNow(A.cal).m; }       // پیش‌فرض: ماه جاری
     var docs = accDocs(A), me = docs.filter(function (d) { return d.id === A.dc; })[0];
     if (!me) A.dc = '';
-    var whoSel = h('select', { class: 'select acc-year acc-who', 'aria-label': 'مشاور', onchange: function (e) { A.dc = e.target.value; render(); } },
-      h('option', { value: '', text: 'همهٔ مشاورها (مرور کلی)', selected: !A.dc }), docs.map(function (d) { return h('option', { value: d.id, text: d.name, selected: d.id === A.dc }); }));
-    var months = [h('option', { value: 0, text: 'کل سال ' + yLabel(A, A.year), selected: !A.dm })];
+    var whoSel = h('select', { class: 'select acc-who', 'aria-label': 'مشاور', onchange: function (e) { A.dc = e.target.value; A.payOpen = null; render(); } },
+      h('option', { value: '', text: 'همهٔ مشاورها', selected: !A.dc }), docs.map(function (d) { return h('option', { value: d.id, text: d.name, selected: d.id === A.dc }); }));
+    var months = [h('option', { value: 0, text: 'کل سال', selected: !A.dm })];
     for (var i = 1; i <= 12; i++) months.push(h('option', { value: i, text: mLabel(A, i), selected: A.dm === i }));
-    var monSel = h('select', { class: 'select acc-year', 'aria-label': 'ماه', onchange: function (e) { A.dm = +e.target.value; render(); } }, months);
-    var head = h('section', { class: 'card' }, h('h2', { text: 'حساب مشاورها' }),
-      h('p', { class: 'hint', text: 'یک مشاور را انتخاب کنید تا ببینید چند جلسه داشته، چه حقوقی (ارزی و تومانی) به او داده‌اید، آن حقوق برای کدام جلسه‌ها بوده و چه واریزی‌ای برایش ثبت شده. سال را از بالای صفحه عوض کنید.' }),
-      h('div', { class: 'acc-ctl acc-ctl--wrap' }, whoSel, monSel),
-      A.sErr ? h('p', { class: 'warnbox', text: 'خواندن جلسه‌ها انجام نشد؛ شمارش جلسه‌ها کامل نیست.' }) : null,
-      !A.linksOk ? h('p', { class: 'warnbox', text: 'وصل‌کردن حقوق به جلسه‌ها هنوز نصب نشده است. فایل migration-19-counselor-payouts.sql را یک‌بار در Supabase اجرا کنید. تا آن زمان جلسه‌ها و واریزی‌ها دیده می‌شوند و حقوق فقط به‌صورت مبلغ ثبت می‌شود.' }) : null);
-    if (!A.dc) return h('div', null, head, accDocTable(A, A.dm, 'همهٔ مشاورها — ' + (A.dm ? mLabel(A, A.dm) + ' ' : 'سال ') + yLabel(A, A.year)));
-    return h('div', null, head, accDoctor(A, me));
+    var monSel = h('select', { class: 'select acc-year', 'aria-label': 'ماه', onchange: function (e) { A.dm = +e.target.value; A.payOpen = null; render(); } }, months);
+    var yearSel2 = h('select', { class: 'select acc-year', 'aria-label': 'سال انتخاب', onchange: function (e) { A.year = +e.target.value; A.payOpen = null; render(); } },
+      accYears(A).map(function (y) { return h('option', { value: y, text: yLabel(A, y), selected: y === A.year }); }));
+    var head = h('section', { class: 'card' }, h('h2', { text: 'حقوق مشاورها' }),
+      h('div', { class: 'acc-ctl acc-ctl--wrap' }, whoSel, monSel, yearSel2),
+      A.sErr ? h('p', { class: 'warnbox', text: 'خواندن جلسه‌ها انجام نشد؛ فهرست جلسه‌ها کامل نیست.' }) : null,
+      !A.linksOk ? h('p', { class: 'warnbox', text: 'ثبت پرداخت برای هر جلسه هنوز نصب نشده است (migration-19-counselor-payouts.sql را یک‌بار در Supabase اجرا کنید).' }) : null,
+      !A.dc ? h('p', { class: 'hint', text: 'یک مشاور را انتخاب کنید تا جلسه‌هایش را ببینید و پرداخت را ثبت کنید.' }) : null);
+    var when = (A.dm ? mLabel(A, A.dm) + ' ' : 'سال ') + yLabel(A, A.year);
+    if (!A.dc) return h('div', null, head, accDocTable(A, A.dm, 'همهٔ مشاورها — ' + when));
+    return h('div', null, head, accDoctor(A, me, when));
   }
-  function accDoctor(A, d) {
-    var st = docStats(A, d.id, A.dm), when = A.dm ? mLabel(A, A.dm) + ' ' + yLabel(A, A.year) : 'سال ' + yLabel(A, A.year);
+  function accDoctor(A, d, when) {
+    var st = docStats(A, d.id, A.dm);
     var cnt = function (label, val, cls) { return h('div', { class: 'anum__t' + (cls ? ' ' + cls : '') }, h('span', { text: label }), h('b', { text: n(val) })); };
     var tiles = h('div', { class: 'anum' },
-      h('div', { class: 'anum__t gold' }, h('span', { text: 'حقوق دریافتی — حساب ارزی' }), h('b', null, amtSplit(st.paid, false))),
-      h('div', { class: 'anum__t gold' }, h('span', { text: 'حقوق دریافتی — حساب تومانی' }), h('b', null, amtSplit(st.paid, true))),
-      cnt('مشاورهٔ انجام‌شده', st.main),
-      h('div', { class: 'anum__t' }, h('span', { text: 'واریزی ثبت‌شده برای این مشاور' }), h('b', null, amtBoth(st.dep))),
-      cnt('جلسه‌های بدون پرداخت حقوق', st.unpaidN, st.unpaidN ? 'neg' : ''),
-      cnt('غیبت مراجع', st.noshow), cnt('لغوشده', st.cancelled), cnt('گذشته ولی وضعیتش ثبت نشده', st.unmarked, st.unmarked ? 'neg' : ''));
-    var cta = h('div', { class: 'acc-cta acc-cta--one' }, h('button', { class: 'btn acc-cta__out', type: 'button', text: '+ ثبت حقوق برای ' + d.name, onclick: function () { accOpenPay(A, d.id, st.unpaid); } }));
-    var secs = [h('section', { class: 'card' }, h('h2', { text: d.name + ' — ' + when }), tiles)];
-    if (!A.dm) {   // ماه‌به‌ماه
-      var trs = [], i, tot = docStats(A, d.id, 0);
-      for (i = 1; i <= 12; i++) {
-        var m = docStats(A, d.id, i), zero = !m.main && !hasAmt(m.dep) && !hasAmt(m.paid) && !m.unpaidN;
-        trs.push(h('tr', { class: zero ? 'is-zero' : '' }, h('td', { text: mLabel(A, i) }), h('td', { text: m.main ? n(m.main) : '—' }),
-          h('td', { class: 'acc-out' }, amtSplit(m.paid, false)), h('td', { class: 'acc-out' }, amtSplit(m.paid, true)), h('td', null, amtBoth(m.dep)), h('td', { class: m.unpaidN ? 'acc-neg' : '' }, m.unpaidN ? n(m.unpaidN) : '—')));
-      }
-      secs.push(h('section', { class: 'card' }, h('h2', { text: 'ماه‌به‌ماه، سال ' + yLabel(A, A.year) }),
-        h('div', { class: 'tblwrap' }, h('table', { class: 'atbl' },
-          h('thead', null, h('tr', null, ['ماه', 'مشاوره', 'حقوق دریافتی (ارزی)', 'حقوق دریافتی (تومانی)', 'واریزی ثبت‌شده برای او', 'جلسه‌های بدون پرداخت'].map(function (t) { return h('th', { text: t }); }))),
-          h('tbody', null, trs),
-          h('tfoot', null, h('tr', null, h('td', { text: 'جمع سال' }), h('td', { text: n(tot.main) }), h('td', null, amtSplit(tot.paid, false)), h('td', null, amtSplit(tot.paid, true)), h('td', null, amtBoth(tot.dep)), h('td', { text: n(tot.unpaidN) }))))),
-        h('p', { class: 'hint', text: 'حقوق در ماهِ پرداخت شمرده می‌شود (نه ماهِ جلسه‌ها). برای دیدن اینکه هر پرداخت بابت کدام ماه و کدام جلسه‌ها بوده، فهرست پایین را ببینید.' })));
-    }
-    var pays = st.payouts.slice().sort(function (a, b) { return a.entry_date < b.entry_date ? 1 : -1; });
-    secs.push(h('section', { class: 'card' }, h('h2', { text: 'حقوق‌های پرداخت‌شده (' + n(pays.length) + ')' }),
-      pays.length ? h('div', { class: 'lrows' }, pays.map(function (r) { return accRow(A, r, false); })) : h('p', { class: 'empty', text: 'در این بازه حقوقی به این مشاور ثبت نشده.' })));
-    var un = st.unpaid.slice().sort(function (a, b) { return a.starts_at < b.starts_at ? -1 : 1; });
-    secs.push(h('section', { class: 'card' }, h('h2', { text: 'جلسه‌های انجام‌شدهٔ بدون پرداخت حقوق (' + n(un.length) + ')' }),
-      un.length ? [h('div', { class: 'xrows' }, un.slice(0, 60).map(function (s) { return sessRow(s); })),
-        un.length > 60 ? h('p', { class: 'hint', text: 'فقط ۶۰ جلسهٔ اول نشان داده شد؛ بقیه هنگام «ثبت حقوق» در فهرست انتخاب می‌آید.' }) : null,
-        h('div', { class: 'actions' }, h('button', { class: 'btn btn--small btn--primary', type: 'button', text: 'ثبت حقوق برای این جلسه‌ها', onclick: function () { accOpenPay(A, d.id, un); } }))]
-        : h('p', { class: 'empty', text: 'همهٔ جلسه‌های انجام‌شدهٔ این بازه در یک پرداخت حقوق آمده‌اند ✓' })));
-    if (st.deposits.length) secs.push(h('section', { class: 'card' }, h('h2', { text: 'واریزی‌های ثبت‌شده برای این مشاور (' + n(st.deposits.length) + ')' }),
-      h('div', { class: 'lrows' }, st.deposits.slice().sort(function (a, b) { return a.entry_date < b.entry_date ? 1 : -1; }).map(function (r) { return accRow(A, r, false); })),
-      h('p', { class: 'hint', text: 'این‌ها واریزهایی است که هنگام ثبت، این مشاور را در آن‌ها انتخاب کرده‌اید.' })));
-    else secs.push(h('section', { class: 'card' }, h('h2', { text: 'واریزی‌های ثبت‌شده برای این مشاور' }),
-      h('p', { class: 'empty', text: 'واریزی‌ای با نام این مشاور ثبت نشده. هنگام «+ ثبت واریز» می‌توانید مشاور را انتخاب کنید.' })));
-    return h('div', null, cta, secs);
+      cnt('جلسه‌ها', st.n), cnt('پرداخت‌شده', st.paidN), cnt('پرداخت‌نشده', st.unpaidN, st.unpaidN ? 'neg' : ''),
+      h('div', { class: 'anum__t gold' }, h('span', { text: 'حقوق پرداخت‌شده — ارزی' }), h('b', null, amtSplit(st.paid, false))),
+      h('div', { class: 'anum__t gold' }, h('span', { text: 'حقوق پرداخت‌شده — تومانی' }), h('b', null, amtSplit(st.paid, true))),
+      h('div', { class: 'anum__t' }, h('span', { text: 'واریزی ثبت‌شده برای این مشاور' }), h('b', null, amtBoth(st.dep))));
+    var secs = [h('section', { class: 'card' }, h('h2', { text: d.name + ' — ' + when }), tiles,
+      st.unpaidN > 1 ? h('details', { class: 'bulk', open: A.bulkOpen ? true : null }, h('summary', { text: 'پرداخت همهٔ ' + n(st.unpaidN) + ' جلسهٔ پرداخت‌نشده با یک مبلغ', onclick: function () { A.bulkOpen = !A.bulkOpen; } }), payForm(A, d, st.unpaid, true)) : null)];
+    var shown = st.list.slice().sort(function (a, b) { return a.starts_at < b.starts_at ? -1 : 1; });
+    var cap = A.dm ? 400 : 150, over = shown.length > cap;
+    secs.push(h('section', { class: 'card' }, h('h2', { text: 'جلسه‌ها (' + n(st.n) + ')' }),
+      shown.length ? h('div', { class: 'prows' }, shown.slice(0, cap).map(function (s) { return payRow(A, d, s); })) : h('p', { class: 'empty', text: 'در این ماه جلسهٔ برگزارشده‌ای برای این مشاور نیست.' }),
+      over ? h('p', { class: 'hint', text: 'فقط ' + n(cap) + ' جلسهٔ اول نشان داده شد؛ ماه را مشخص کنید.' }) : null));
+    if (st.loose.length) secs.push(h('section', { class: 'card' }, h('h2', { text: 'حقوق ثبت‌شده بدون جلسه (' + n(st.loose.length) + ')' }),
+      h('div', { class: 'lrows' }, st.loose.slice().sort(function (a, b) { return a.entry_date < b.entry_date ? 1 : -1; }).map(function (r) { return accRow(A, r, false); })),
+      h('p', { class: 'hint', text: 'این‌ها مبلغ‌هایی است که پیش‌تر به‌صورت دستی ثبت شده و به جلسه وصل نیست؛ در جمع حقوق بالا آمده‌اند.' })));
+    if (st.deposits.length) secs.push(h('section', { class: 'card' }, h('details', null, h('summary', { text: 'واریزی‌های ثبت‌شده برای این مشاور (' + n(st.deposits.length) + ')' }),
+      h('div', { class: 'lrows' }, st.deposits.slice().sort(function (a, b) { return a.entry_date < b.entry_date ? 1 : -1; }).map(function (r) { return accRow(A, r, false); })))));
+    return h('div', null, secs);
   }
 
   /* ── خلاصه: دو حساب جدا ── */
@@ -1774,17 +1816,10 @@
 
   /* ── فرم ثبت / ویرایش ── */
   function accForm(A) {
-    var e = A.edit, pre = A.pre || {};
+    var e = A.edit;
     if (!A.f) {
-      if (e) {
-        var mine = (A.links[e.id] || []).filter(function (l) { return l.session_id; }), sel0 = {};
-        mine.forEach(function (l) { sel0[l.session_id] = true; });
-        A.f = { date: e.entry_date, account: e.account, currency: e.currency, direction: e.direction, amount: String(+e.amount), category: e.category, counselor: e.counselor_id || '', ref: e.ref || '', note: e.note || '',
-          pfrom: e.period_from || '', pto: e.period_to || '', sel: sel0, selKey: (e.counselor_id || '') + '|' + (e.period_from || '') + '|' + (e.period_to || ''), r1: '', r2: '' };
-      } else {
-        A.f = { date: tehranDateInput(0), account: A.acct || 'fx', currency: A.cur.fx || 'USD', direction: A.preset || 'in', amount: '', category: A.preset === 'out' ? (pre.cat || 'expense') : 'session', counselor: pre.counselor || '', ref: '', note: '', dkind: A.preset === 'out' ? 'invoice' : 'receipt',
-          pfrom: pre.from || '', pto: pre.to || '', sel: null, selKey: '', r1: '', r2: '' };
-      }
+      A.f = e ? { date: e.entry_date, account: e.account, currency: e.currency, direction: e.direction, amount: String(+e.amount), category: e.category, counselor: e.counselor_id || '', ref: e.ref || '', note: e.note || '' }
+        : { date: tehranDateInput(0), account: A.acct || 'fx', currency: A.cur.fx || 'USD', direction: A.preset || 'in', amount: '', category: A.preset === 'out' ? 'expense' : 'session', counselor: '', ref: '', note: '', dkind: A.preset === 'out' ? 'invoice' : 'receipt' };
     }
     var f = A.f, msg = h('p', { class: 'hint', role: 'status' }); A.pend = A.pend || [];
     var df = dateField(f.date, function () { f.date = df.value(); });
@@ -1805,10 +1840,10 @@
     }
     var accSel = h('select', { class: 'select', 'aria-label': 'حساب', onchange: function (ev) { f.account = ev.target.value; fillCur(); amtUi(); } },
       h('option', { value: 'fx', text: 'حساب ارزی (خارج از ایران)', selected: f.account === 'fx' }), h('option', { value: 'irr', text: 'حساب تومانی (ایران)', selected: f.account === 'irr' }));
-    var dirSel = h('select', { class: 'select', 'aria-label': 'نوع', onchange: function (ev) { f.direction = ev.target.value; fillCat(); amtUi(); drawPay(); } },
+    var dirSel = h('select', { class: 'select', 'aria-label': 'نوع', onchange: function (ev) { f.direction = ev.target.value; fillCat(); amtUi(); } },
       h('option', { value: 'in', text: 'واریز (پول آمد)', selected: f.direction === 'in' }), h('option', { value: 'out', text: 'برداشت (پول رفت)', selected: f.direction === 'out' }));
     curSel.addEventListener('change', function (ev) { f.currency = ev.target.value; if (typeof amtUi === 'function') amtUi(); });
-    catSel.addEventListener('change', function (ev) { f.category = ev.target.value; drawPay(); });
+    catSel.addEventListener('change', function (ev) { f.category = ev.target.value; });
     fillCur(); fillCat();
     var amt = h('input', { class: 'input', dir: 'ltr', inputmode: 'decimal', value: f.amount, placeholder: 'مثلاً 26.90', required: true, 'aria-label': 'مبلغ' });
     amt.addEventListener('input', function () { f.amount = amt.value; var v = parseFloat(normNum(amt.value)); msg.textContent = isFinite(v) && v > 0 ? 'مبلغ: ' + money(v) + ' ' + (f.currency === 'IRT' ? 'تومان' : f.currency) : ''; });
@@ -1829,89 +1864,9 @@
       });
     }
     amtUi();
-    var who = h('select', { class: 'select', 'aria-label': 'مشاور', onchange: function (ev) { f.counselor = ev.target.value; drawPay(); } }, h('option', { value: '', text: 'بدون مشاور' }),
+    var who = h('select', { class: 'select', 'aria-label': 'مشاور', onchange: function (ev) { f.counselor = ev.target.value; } }, h('option', { value: '', text: 'بدون مشاور' }),
       accDocs(A).map(function (d) { return h('option', { value: d.id, text: d.name, selected: f.counselor === d.id }); }));
 
-    /* ── حقوق مشاور: بازهٔ زمانی + جلسه‌هایی که این پرداخت بابتشان است (با migration-19) ── */
-    var payBox = h('div', { class: 'paybox' }), toF = null;
-    var fromF = dateField(f.pfrom, function () { f.pfrom = fromF.value(); if (f.pto && f.pto < f.pfrom) { f.pto = f.pfrom; toF.set(f.pto); } drawPay(); });
-    toF = dateField(f.pto, function () { f.pto = toF.value(); if (f.pfrom && f.pto < f.pfrom) { f.pfrom = f.pto; fromF.set(f.pfrom); } drawPay(); });
-    var r1 = h('input', { class: 'input', dir: 'ltr', inputmode: 'decimal', value: f.r1, placeholder: 'اختیاری', 'aria-label': 'مبلغ هر مشاوره' });
-    var sumBox = h('p', { class: 'paysum', role: 'status' });
-    function monthRange(y, m) {
-      if (A.cal === 'j') { var a = toGregorian(y, m, 1), b = toGregorian(y, m, jMonthLen(y, m)); return [isoOf(a.gy, a.gm, a.gd), isoOf(b.gy, b.gm, b.gd)]; }
-      return [isoOf(y, m, 1), isoOf(y, m, new Date(Date.UTC(y, m, 0)).getUTCDate())];
-    }
-    function payCands() {
-      if (!f.counselor || !f.pfrom || !f.pto) return [];
-      return (A.sess || []).filter(function (s) {
-        var d = sessIso(s);
-        return s.counselor_id === f.counselor && d >= f.pfrom && d <= f.pto && !PAY_SKIP[s.status] && (s.status !== 'scheduled' || new Date(s.starts_at).getTime() < Date.now());
-      }).sort(function (a, b) { return a.starts_at < b.starts_at ? -1 : 1; });
-    }
-    function paidElsewhere(s) { return A.paidSess[s.id] && !(e && A.paidSess[s.id] === e.id); }
-    function pickSess() {   // مشاور یا بازه عوض شد: همهٔ جلسه‌های «انجام‌شدهٔ» پرداخت‌نشده را پیش‌فرض انتخاب کن
-      var key = f.counselor + '|' + f.pfrom + '|' + f.pto;
-      if (f.sel && f.selKey === key) return;
-      f.sel = {}; f.selKey = key;
-      payCands().forEach(function (s) { if (s.status === 'done' && !paidElsewhere(s)) f.sel[s.id] = true; });
-    }
-    function selCounts() {
-      var c = { main: 0 };
-      payCands().forEach(function (s) { if (f.sel && f.sel[s.id]) c.main++; });
-      return c;
-    }
-    function calc() {   // اگر مبلغ هر جلسه را نوشته باشند، مبلغ کل خودکار حساب می‌شود
-      f.r1 = r1.value;
-      var a = parseFloat(normNum(r1.value));
-      var c = selCounts();
-      if (isFinite(a)) {
-        var total = a * c.main;
-        total = Math.round(total * 100) / 100; amt.value = total ? String(total) : ''; f.amount = amt.value;
-        msg.textContent = total ? 'مبلغ: ' + money(total) + ' ' + (f.currency === 'IRT' ? 'تومان' : f.currency) + ' (حساب‌شده از تعداد جلسه‌ها)' : '';
-      }
-      sumBox.textContent = c.main ? 'انتخاب‌شده: ' + n(c.main) + ' مشاوره' : 'هنوز جلسه‌ای انتخاب نشده.';
-    }
-    r1.addEventListener('input', calc);
-    function drawPay() {
-      var on = f.direction === 'out' && f.category === 'counselor';
-      payBox.hidden = !on; payBox.textContent = '';
-      if (!on) return;
-      payBox.appendChild(h('div', { class: 'paybox__h', text: 'این حقوق بابت کدام جلسه‌هاست؟' }));
-      if (!A.linksOk) { payBox.appendChild(h('p', { class: 'warnbox', text: 'ثبت حقوق به تفکیک جلسه هنوز نصب نشده است (migration-19 را یک‌بار در Supabase اجرا کنید). فعلاً فقط مبلغ و مشاور ثبت می‌شود.' })); return; }
-      if (!f.counselor) { payBox.appendChild(h('p', { class: 'hint', text: 'اول بالا «مشاور» را انتخاب کنید.' })); return; }
-      if (A.sess === null || A.sess === undefined) { if (!A.sLoading) loadAccSessions(); payBox.appendChild(h('p', { class: 'hint', text: 'در حال بارگذاری جلسه‌ها…' })); return; }
-      pickSess();
-      var now = accNow(A.cal), chips = h('div', { class: 'mchips', role: 'group', 'aria-label': 'ماه حقوق' }), y = now.y, m = now.m, k;
-      for (k = 0; k < 6; k++) {
-        (function (y, m) {
-          var rg = monthRange(y, m), on2 = f.pfrom === rg[0] && f.pto === rg[1];
-          chips.appendChild(h('button', { class: 'mchip' + (on2 ? ' is-on' : ''), type: 'button', 'aria-pressed': on2 ? 'true' : 'false', text: mLabel(A, m) + ' ' + yLabel(A, y),
-            onclick: function () { f.pfrom = rg[0]; f.pto = rg[1]; fromF.set(rg[0]); toF.set(rg[1]); drawPay(); } }));
-        })(y, m);
-        m--; if (m < 1) { m = 12; y--; }
-      }
-      payBox.appendChild(h('div', { class: 'field' }, h('label', { text: 'حقوق کدام ماه (یا بازه) است؟' }), chips));
-      payBox.appendChild(h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'از تاریخ' }), fromF.el), h('div', { class: 'field' }, h('label', { text: 'تا تاریخ' }), toF.el)));
-      if (!f.pfrom || !f.pto) { payBox.appendChild(h('p', { class: 'hint', text: 'ماه یا بازه را انتخاب کنید تا جلسه‌های آن بازه بیاید.' })); return; }
-      var list = payCands();
-      payBox.appendChild(h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'مبلغ هر مشاوره (اختیاری)' }), r1)));
-      payBox.appendChild(h('p', { class: 'hint', text: 'اگر مبلغ هر مشاوره را بنویسید، مبلغ کل خودکار از روی جلسه‌های انتخاب‌شده حساب می‌شود؛ وگرنه مبلغ را خودتان بالا بنویسید.' }));
-      if (!list.length) { payBox.appendChild(h('p', { class: 'empty', text: 'در این بازه جلسه‌ای برای این مشاور پیدا نشد.' })); calc(); return; }
-      var all = h('button', { class: 'btn btn--small', type: 'button', text: 'انتخاب همهٔ انجام‌شده‌ها', onclick: function () { f.sel = {}; list.forEach(function (s) { if (s.status === 'done' && !paidElsewhere(s)) f.sel[s.id] = true; }); drawPay(); } });
-      var none = h('button', { class: 'btn btn--small', type: 'button', text: 'برداشتن همه', onclick: function () { f.sel = {}; drawPay(); } });
-      payBox.appendChild(h('div', { class: 'acc-ctl' }, all, none));
-      var box = h('div', { class: 'psel' });
-      list.forEach(function (s) {
-        var off = paidElsewhere(s);
-        var cb = h('input', { type: 'checkbox', 'aria-label': 'انتخاب جلسه' });
-        cb.checked = !!(f.sel && f.sel[s.id]); cb.disabled = !!off;
-        cb.addEventListener('change', function () { if (cb.checked) f.sel[s.id] = true; else delete f.sel[s.id]; calc(); });
-        box.appendChild(h('label', { class: 'psel__r' + (off ? ' is-off' : '') }, cb, sessRow(s, off ? h('span', { class: 'chip chip--warn', text: 'قبلاً در پرداخت دیگری آمده' }) : (s.status === 'scheduled' ? h('span', { class: 'chip', text: 'گذشته ولی وضعیتش ثبت نشده' }) : null))));
-      });
-      payBox.appendChild(box); payBox.appendChild(sumBox); calc();
-    }
-    drawPay();
     var ref = h('input', { class: 'input', dir: 'ltr', maxlength: 80, value: f.ref, placeholder: 'شمارهٔ پیگیری / تراکنش (اختیاری)', 'aria-label': 'شمارهٔ پیگیری' });
     ref.addEventListener('input', function () { f.ref = ref.value; });
     var note = h('input', { class: 'input', maxlength: 300, value: f.note, placeholder: 'توضیح کوتاه (نام مراجع و مطلب بالینی ننویسید)', 'aria-label': 'توضیح' });
@@ -1980,48 +1935,24 @@
       var isPay = f.direction === 'out' && f.category === 'counselor';
       if (isPay && !f.counselor) { flash('err', 'برای حقوق مشاور، اول مشاور را انتخاب کنید.'); return render(); }
       var row = { entry_date: d, account: f.account, currency: f.account === 'irr' ? 'IRT' : f.currency, direction: f.direction, amount: Math.round(v * 100) / 100, category: f.category, counselor_id: f.counselor || null, ref: (f.ref || '').trim(), note: (f.note || '').trim() };
-      if (A.linksOk) { row.period_from = isPay && f.pfrom && f.pto ? f.pfrom : null; row.period_to = isPay && f.pfrom && f.pto ? f.pto : null; }
       submit.disabled = true;
       var q = e ? sb.from('ledger').update(row).eq('id', e.id) : sb.from('ledger').insert(Object.assign({ created_by: S.user.id }, row));
       (e ? q : q.select().single()).then(function (r) {
         if (r.error) { submit.disabled = false; flash('err', explain(r.error)); return render(); }
         var id = e ? e.id : (r.data && r.data.id), pend = A.pend.slice();
-        var fin = function (up, lk) {
-          var bad = (up && up.bad) || (lk && lk.error);
-          flash(bad ? 'err' : 'ok', (e ? 'تغییرات ذخیره شد ✓' : 'ثبت شد ✓') + (lk && lk.added ? ' · ' + n(lk.added) + ' جلسه وصل شد' : '') + (up && up.done ? ' · ' + n(up.done) + ' سند پیوست شد' : '')
-            + (up && up.bad ? ' · ' + n(up.bad) + ' سند آپلود نشد' : '') + (lk && lk.error ? ' · اما وصل‌کردن جلسه‌ها انجام نشد: ' + explain(lk.error) + ' (پرداخت را با «ویرایش» دوباره باز کنید)' : ''));
+        var fin = function (up) {
+          flash(up && up.bad ? 'err' : 'ok', (e ? 'تغییرات ذخیره شد ✓' : 'ثبت شد ✓') + (up && up.done ? ' · ' + n(up.done) + ' سند پیوست شد' : '') + (up && up.bad ? ' · ' + n(up.bad) + ' سند آپلود نشد' : ''));
           A.form = false; A.edit = null; A.f = null; A.pend = []; loadLedger(); render();
         };
-        // جلسه‌هایی که این پرداخت بابتشان است: اول آن‌هایی که برداشته شده‌اند حذف، بعد تازه‌ها اضافه می‌شوند (هر جلسه فقط یک بار می‌تواند در یک پرداخت بیاید)
-        var syncLinks = function () {
-          if (!A.linksOk || !id) return Promise.resolve(null);
-          var have = {}, existing = (A.links[id] || []), want = isPay ? Object.keys(f.sel || {}) : [], keep = {};
-          want.forEach(function (sid) { keep[sid] = true; });
-          existing.forEach(function (l) { if (l.session_id) have[l.session_id] = true; });
-          var del = isPay ? existing.filter(function (l) { return l.session_id && !keep[l.session_id]; }) : existing;
-          var add = want.filter(function (sid) { return !have[sid]; }).map(function (sid) {
-            var s = A.sessBy && A.sessBy[sid];
-            return s ? { ledger_id: id, session_id: sid, starts_at: s.starts_at, kind: s.kind, duration_min: s.duration_min, status: s.status, created_by: S.user.id } : null;
-          }).filter(Boolean);
-          var p = del.length ? sb.from('ledger_sessions').delete().in('id', del.map(function (l) { return l.id; })).then(function (x) { return x.error ? x : null; }) : Promise.resolve(null);
-          return p.then(function (bad) {
-            if (bad) return { error: bad.error };
-            if (!add.length) return { added: 0 };
-            return sb.from('ledger_sessions').insert(add).then(function (x) { return x.error ? { error: x.error } : { added: add.length }; });
-          });
-        };
-        syncLinks().then(function (lk) {
-          if (id && pend.length && A.filesOk !== false) { submit.textContent = 'در حال آپلود سند…'; A.pendState = {}; drawPend(); uploadDocs(id, pend, f.dkind || 'receipt', function (i, s) { A.pendState[i] = s; drawPend(); }).then(function (up) { A.pendState = null; fin(up, lk); }); } else fin(null, lk);
-        });
+        if (id && pend.length && A.filesOk !== false) { submit.textContent = 'در حال آپلود سند…'; A.pendState = {}; drawPend(); uploadDocs(id, pend, f.dkind || 'receipt', function (i, s) { A.pendState[i] = s; drawPend(); }).then(function (up) { A.pendState = null; fin(up); }); } else fin(null);
       });
     } },
-      h('h2', { text: e ? 'ویرایش تراکنش' : (A.preset === 'out' ? (f.category === 'counselor' ? 'ثبت حقوق مشاور' : 'ثبت هزینهٔ جدید') : 'ثبت واریز جدید') }),
+      h('h2', { text: e ? 'ویرایش تراکنش' : (A.preset === 'out' ? 'ثبت هزینهٔ جدید' : 'ثبت واریز جدید') }),
       h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'نوع' }), dirSel), h('div', { class: 'field' }, h('label', { text: 'تاریخ' }), df.el)),
       h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'حساب' }), accSel), h('div', { class: 'field' }, h('label', { text: 'ارز' }), curSel)),
       h('div', { class: 'row' }, h('div', { class: 'field' }, amtLbl, amt), h('div', { class: 'field' }, h('label', { text: 'دسته' }), catSel)),
       presetBox, msg,
-      h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'مشاور (برای حقوق مشاور لازم است)' }), who), h('div', { class: 'field' }, h('label', { text: 'شمارهٔ پیگیری (اختیاری)' }), ref)),
-      payBox,
+      h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'مشاور (اگر مربوط به یک مشاور است)' }), who), h('div', { class: 'field' }, h('label', { text: 'شمارهٔ پیگیری (اختیاری)' }), ref)),
       h('div', { class: 'field' }, h('label', { text: 'توضیح (اختیاری)' }), note), docs,
       h('div', { class: 'actions' }, submit, h('button', { class: 'btn', type: 'button', text: 'انصراف', onclick: function () { A.form = false; A.edit = null; A.f = null; A.pend = []; render(); } })));
   }
