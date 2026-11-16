@@ -1268,8 +1268,11 @@
   function yLabel(A, y) { return A.cal === 'j' ? np(y) : String(y); }
   function mLabel(A, m) { return A.cal === 'j' ? J_MONTHS[m - 1] : G_MONTHS[m - 1]; }
   function normNum(s) {
-    return String(s || '').replace(/[۰-۹]/g, function (c) { return c.charCodeAt(0) - 1776; }).replace(/[٠-٩]/g, function (c) { return c.charCodeAt(0) - 1632; })
-      .replace(/[,٬\s]/g, '').replace(/٫/g, '.');
+    var t = String(s || '').replace(/[۰-۹]/g, function (c) { return c.charCodeAt(0) - 1776; }).replace(/[٠-٩]/g, function (c) { return c.charCodeAt(0) - 1632; })
+      .replace(/[٬\s]/g, '').replace(/٫/g, '.');
+    // «26,90» یعنی ۲۶٫۹۰ (ویرگول اعشار)؛ ولی «1,500» و «4,500,000» جداکنندهٔ هزارگان‌اند
+    if (t.indexOf('.') < 0 && /,\d{1,2}$/.test(t)) t = t.replace(/,(\d{1,2})$/, '.$1');
+    return t.replace(/,/g, '');
   }
 
   /* سرور هر درخواست را به ۱۰۰۰ ردیف محدود می‌کند؛ برای فهرست‌های بلند صفحه‌صفحه می‌خوانیم تا چیزی جا نیفتد. */
@@ -1310,7 +1313,7 @@
     var A = accState(); if (A.sLoading) return; A.sLoading = true;
     pageAll(function (a, b) { return sb.from('sessions').select('id,counselor_id,starts_at,kind,status,duration_min,client_label').order('starts_at', { ascending: true }).order('id', { ascending: true }).range(a, b); }).then(function (r) {
       A.sLoading = false;
-      if (r.error) { A.sErr = r.error; A.sess = []; } else { A.sErr = null; A.sess = r.data || []; }
+      if (r.error) { A.sErr = r.error; A.sess = []; } else { A.sErr = null; A.sess = (r.data || []).filter(function (s) { return s.kind !== 'intro'; }); }   // پیش‌مشاوره رایگان است و در حسابداری نمی‌آید
       A.sessBy = {}; A.sess.forEach(function (s) { A.sessBy[s.id] = s; });
       if (S.view === 'staff' && S.tab === 'acc') render();
     });
@@ -1461,12 +1464,12 @@
   }
   function docStats(A, cid, dm) {
     var now = Date.now(), inS = function (ym) { return ym.y === A.year && (!dm || ym.m === dm); };
-    var st = { main: 0, intro: 0, noshow: 0, cancelled: 0, unmarked: 0, unpaidMain: 0, unpaidIntro: 0, unpaid: [] };
+    var st = { main: 0, noshow: 0, cancelled: 0, unmarked: 0, unpaidMain: 0, unpaid: [] };
     (A.sess || []).forEach(function (s) {
       if (s.counselor_id !== cid || !inS(sessYM(s, A.cal))) return;
       if (s.status === 'done') {
-        var intro = s.kind === 'intro'; st[intro ? 'intro' : 'main']++;
-        if (!A.paidSess[s.id]) { st[intro ? 'unpaidIntro' : 'unpaidMain']++; st.unpaid.push(s); }
+        st.main++;
+        if (!A.paidSess[s.id]) { st.unpaidMain++; st.unpaid.push(s); }
       } else if (s.status === 'client_no_show') st.noshow++;
       else if (s.status === 'scheduled') { if (new Date(s.starts_at).getTime() < now) st.unmarked++; }
       else st.cancelled++;
@@ -1476,7 +1479,7 @@
     st.payouts = rows.filter(function (r) { return r.direction === 'out' && r.category === 'counselor'; });
     st.dep = sumBy(st.deposits); st.paid = sumBy(st.payouts);
     st.last = st.payouts.map(function (r) { return r.entry_date; }).sort().pop() || '';
-    st.unpaidN = st.unpaidMain + st.unpaidIntro;
+    st.unpaidN = st.unpaidMain;
     return st;
   }
   function sessChips(s) {
@@ -1501,8 +1504,7 @@
     var ls = (A.links && A.links[r.id]) || [], chips = [], det = null;
     if (r.period_from) chips.push(h('span', { class: 'chip chip--gold' }, periodNode(r.period_from, r.period_to)));
     if (A.linksOk) {
-      var main = ls.filter(function (l) { return l.kind !== 'intro'; }).length, intro = ls.length - main;
-      chips.push(ls.length ? h('span', { class: 'chip chip--ok', text: 'برای ' + n(main) + ' مشاوره' + (intro ? ' + ' + n(intro) + ' پیش‌مشاوره' : '') })
+      chips.push(ls.length ? h('span', { class: 'chip chip--ok', text: 'برای ' + n(ls.length) + ' مشاوره' })
         : h('span', { class: 'chip chip--warn', text: 'جلسه‌ای به این پرداخت وصل نشده؛ با «ویرایش» وصل کنید' }));
       if (ls.length) det = h('details', { class: 'payd' }, h('summary', { text: 'دیدن جلسه‌های این پرداخت (' + n(ls.length) + ')' }),
         h('div', { class: 'xrows' }, ls.slice().sort(function (a, b) { return a.starts_at < b.starts_at ? -1 : 1; }).map(function (l) {
@@ -1520,12 +1522,12 @@
   }
 
   function accDocTable(A, dm, title) {
-    var docs = accDocs(A), tot = { main: 0, intro: 0, dep: {}, paid: {}, un: 0 };
+    var docs = accDocs(A), tot = { main: 0, dep: {}, paid: {}, un: 0 };
     var trs = docs.map(function (d) {
       var st = docStats(A, d.id, dm);
-      tot.main += st.main; tot.intro += st.intro; tot.dep = addMaps(tot.dep, st.dep); tot.paid = addMaps(tot.paid, st.paid); tot.un += st.unpaidN;
-      var zero = !st.main && !st.intro && !hasAmt(st.paid) && !hasAmt(st.dep);
-      return h('tr', { class: zero ? 'is-zero' : '' }, h('td', null, h('b', { text: d.name })), h('td', { text: n(st.main) }), h('td', { text: n(st.intro) }),
+      tot.main += st.main; tot.dep = addMaps(tot.dep, st.dep); tot.paid = addMaps(tot.paid, st.paid); tot.un += st.unpaidN;
+      var zero = !st.main && !hasAmt(st.paid) && !hasAmt(st.dep);
+      return h('tr', { class: zero ? 'is-zero' : '' }, h('td', null, h('b', { text: d.name })), h('td', { text: n(st.main) }),
         h('td', { class: 'acc-out' }, amtSplit(st.paid, false)), h('td', { class: 'acc-out' }, amtSplit(st.paid, true)), h('td', null, amtBoth(st.dep)),
         h('td', null, st.last ? accDateNode(st.last) : '—'), h('td', { class: st.unpaidN ? 'acc-neg' : '' }, st.unpaidN ? n(st.unpaidN) : '—'),
         h('td', null, h('div', { class: 'tact' },
@@ -1535,11 +1537,11 @@
     return h('section', { class: 'card' }, h('h2', { text: title }),
       h('div', { class: 'actions actions--top' }, h('button', { class: 'btn btn--small btn--primary', type: 'button', text: '+ ثبت حقوق مشاور', onclick: function () { accOpenPay(A, '', null); } })),
       docs.length ? h('div', { class: 'tblwrap' }, h('table', { class: 'atbl' },
-        h('thead', null, h('tr', null, ['مشاور', 'مشاوره', 'پیش‌مشاوره', 'حقوق دریافتی (ارزی)', 'حقوق دریافتی (تومانی)', 'واریزی ثبت‌شده برای او', 'آخرین پرداخت', 'جلسه‌های بدون پرداخت', ''].map(function (t) { return h('th', { text: t }); }))),
+        h('thead', null, h('tr', null, ['مشاور', 'مشاوره', 'حقوق دریافتی (ارزی)', 'حقوق دریافتی (تومانی)', 'واریزی ثبت‌شده برای او', 'آخرین پرداخت', 'جلسه‌های بدون پرداخت', ''].map(function (t) { return h('th', { text: t }); }))),
         h('tbody', null, trs),
-        h('tfoot', null, h('tr', null, h('td', { text: 'جمع' }), h('td', { text: n(tot.main) }), h('td', { text: n(tot.intro) }), h('td', null, amtSplit(tot.paid, false)), h('td', null, amtSplit(tot.paid, true)), h('td', null, amtBoth(tot.dep)), h('td'), h('td', { text: n(tot.un) }), h('td')))))
+        h('tfoot', null, h('tr', null, h('td', { text: 'جمع' }), h('td', { text: n(tot.main) }), h('td', null, amtSplit(tot.paid, false)), h('td', null, amtSplit(tot.paid, true)), h('td', null, amtBoth(tot.dep)), h('td'), h('td', { text: n(tot.un) }), h('td')))))
         : h('p', { class: 'empty', text: 'هنوز مشاوری ثبت نشده.' }),
-      h('p', { class: 'hint', text: 'مشاوره و پیش‌مشاوره یعنی جلسه‌هایی که وضعیتشان «انجام‌شد» است. حقوق هر مشاور جدا برای حساب ارزی (به تفکیک ارز) و حساب تومانی نشان داده می‌شود. «جلسه‌های بدون پرداخت» جلسه‌های انجام‌شده‌ای است که هنوز در هیچ پرداخت حقوقی نیامده.' }));
+      h('p', { class: 'hint', text: 'مشاوره یعنی جلسه‌ای که وضعیتش «انجام‌شد» است (پیش‌مشاورهٔ رایگان در حسابداری نمی‌آید). حقوق هر مشاور جدا برای حساب ارزی (به تفکیک ارز) و حساب تومانی نشان داده می‌شود. «جلسه‌های بدون پرداخت» جلسه‌های انجام‌شده‌ای است که هنوز در هیچ پرداخت حقوقی نیامده.' }));
   }
 
   function accDoctors(A) {
@@ -1565,7 +1567,7 @@
     var tiles = h('div', { class: 'anum' },
       h('div', { class: 'anum__t gold' }, h('span', { text: 'حقوق دریافتی — حساب ارزی' }), h('b', null, amtSplit(st.paid, false))),
       h('div', { class: 'anum__t gold' }, h('span', { text: 'حقوق دریافتی — حساب تومانی' }), h('b', null, amtSplit(st.paid, true))),
-      cnt('مشاورهٔ انجام‌شده', st.main), cnt('پیش‌مشاورهٔ انجام‌شده', st.intro),
+      cnt('مشاورهٔ انجام‌شده', st.main),
       h('div', { class: 'anum__t' }, h('span', { text: 'واریزی ثبت‌شده برای این مشاور' }), h('b', null, amtBoth(st.dep))),
       cnt('جلسه‌های بدون پرداخت حقوق', st.unpaidN, st.unpaidN ? 'neg' : ''),
       cnt('غیبت مراجع', st.noshow), cnt('لغوشده', st.cancelled), cnt('گذشته ولی وضعیتش ثبت نشده', st.unmarked, st.unmarked ? 'neg' : ''));
@@ -1574,15 +1576,15 @@
     if (!A.dm) {   // ماه‌به‌ماه
       var trs = [], i, tot = docStats(A, d.id, 0);
       for (i = 1; i <= 12; i++) {
-        var m = docStats(A, d.id, i), zero = !m.main && !m.intro && !hasAmt(m.dep) && !hasAmt(m.paid) && !m.unpaidN;
-        trs.push(h('tr', { class: zero ? 'is-zero' : '' }, h('td', { text: mLabel(A, i) }), h('td', { text: m.main ? n(m.main) : '—' }), h('td', { text: m.intro ? n(m.intro) : '—' }),
+        var m = docStats(A, d.id, i), zero = !m.main && !hasAmt(m.dep) && !hasAmt(m.paid) && !m.unpaidN;
+        trs.push(h('tr', { class: zero ? 'is-zero' : '' }, h('td', { text: mLabel(A, i) }), h('td', { text: m.main ? n(m.main) : '—' }),
           h('td', { class: 'acc-out' }, amtSplit(m.paid, false)), h('td', { class: 'acc-out' }, amtSplit(m.paid, true)), h('td', null, amtBoth(m.dep)), h('td', { class: m.unpaidN ? 'acc-neg' : '' }, m.unpaidN ? n(m.unpaidN) : '—')));
       }
       secs.push(h('section', { class: 'card' }, h('h2', { text: 'ماه‌به‌ماه، سال ' + yLabel(A, A.year) }),
         h('div', { class: 'tblwrap' }, h('table', { class: 'atbl' },
-          h('thead', null, h('tr', null, ['ماه', 'مشاوره', 'پیش‌مشاوره', 'حقوق دریافتی (ارزی)', 'حقوق دریافتی (تومانی)', 'واریزی ثبت‌شده برای او', 'جلسه‌های بدون پرداخت'].map(function (t) { return h('th', { text: t }); }))),
+          h('thead', null, h('tr', null, ['ماه', 'مشاوره', 'حقوق دریافتی (ارزی)', 'حقوق دریافتی (تومانی)', 'واریزی ثبت‌شده برای او', 'جلسه‌های بدون پرداخت'].map(function (t) { return h('th', { text: t }); }))),
           h('tbody', null, trs),
-          h('tfoot', null, h('tr', null, h('td', { text: 'جمع سال' }), h('td', { text: n(tot.main) }), h('td', { text: n(tot.intro) }), h('td', null, amtSplit(tot.paid, false)), h('td', null, amtSplit(tot.paid, true)), h('td', null, amtBoth(tot.dep)), h('td', { text: n(tot.unpaidN) }))))),
+          h('tfoot', null, h('tr', null, h('td', { text: 'جمع سال' }), h('td', { text: n(tot.main) }), h('td', null, amtSplit(tot.paid, false)), h('td', null, amtSplit(tot.paid, true)), h('td', null, amtBoth(tot.dep)), h('td', { text: n(tot.unpaidN) }))))),
         h('p', { class: 'hint', text: 'حقوق در ماهِ پرداخت شمرده می‌شود (نه ماهِ جلسه‌ها). برای دیدن اینکه هر پرداخت بابت کدام ماه و کدام جلسه‌ها بوده، فهرست پایین را ببینید.' })));
     }
     var pays = st.payouts.slice().sort(function (a, b) { return a.entry_date < b.entry_date ? 1 : -1; });
@@ -1835,7 +1837,6 @@
     var fromF = dateField(f.pfrom, function () { f.pfrom = fromF.value(); if (f.pto && f.pto < f.pfrom) { f.pto = f.pfrom; toF.set(f.pto); } drawPay(); });
     toF = dateField(f.pto, function () { f.pto = toF.value(); if (f.pfrom && f.pto < f.pfrom) { f.pfrom = f.pto; fromF.set(f.pfrom); } drawPay(); });
     var r1 = h('input', { class: 'input', dir: 'ltr', inputmode: 'decimal', value: f.r1, placeholder: 'اختیاری', 'aria-label': 'مبلغ هر مشاوره' });
-    var r2 = h('input', { class: 'input', dir: 'ltr', inputmode: 'decimal', value: f.r2, placeholder: 'اختیاری', 'aria-label': 'مبلغ هر پیش‌مشاوره' });
     var sumBox = h('p', { class: 'paysum', role: 'status' });
     function monthRange(y, m) {
       if (A.cal === 'j') { var a = toGregorian(y, m, 1), b = toGregorian(y, m, jMonthLen(y, m)); return [isoOf(a.gy, a.gm, a.gd), isoOf(b.gy, b.gm, b.gd)]; }
@@ -1856,22 +1857,22 @@
       payCands().forEach(function (s) { if (s.status === 'done' && !paidElsewhere(s)) f.sel[s.id] = true; });
     }
     function selCounts() {
-      var c = { main: 0, intro: 0 };
-      payCands().forEach(function (s) { if (f.sel && f.sel[s.id]) c[s.kind === 'intro' ? 'intro' : 'main']++; });
+      var c = { main: 0 };
+      payCands().forEach(function (s) { if (f.sel && f.sel[s.id]) c.main++; });
       return c;
     }
     function calc() {   // اگر مبلغ هر جلسه را نوشته باشند، مبلغ کل خودکار حساب می‌شود
-      f.r1 = r1.value; f.r2 = r2.value;
-      var a = parseFloat(normNum(r1.value)), b = parseFloat(normNum(r2.value));
+      f.r1 = r1.value;
+      var a = parseFloat(normNum(r1.value));
       var c = selCounts();
-      if (isFinite(a) || isFinite(b)) {
-        var total = (isFinite(a) ? a * c.main : 0) + (isFinite(b) ? b * c.intro : 0);
+      if (isFinite(a)) {
+        var total = a * c.main;
         total = Math.round(total * 100) / 100; amt.value = total ? String(total) : ''; f.amount = amt.value;
         msg.textContent = total ? 'مبلغ: ' + money(total) + ' ' + (f.currency === 'IRT' ? 'تومان' : f.currency) + ' (حساب‌شده از تعداد جلسه‌ها)' : '';
       }
-      sumBox.textContent = c.main || c.intro ? 'انتخاب‌شده: ' + n(c.main) + ' مشاوره' + (c.intro ? ' + ' + n(c.intro) + ' پیش‌مشاوره' : '') : 'هنوز جلسه‌ای انتخاب نشده.';
+      sumBox.textContent = c.main ? 'انتخاب‌شده: ' + n(c.main) + ' مشاوره' : 'هنوز جلسه‌ای انتخاب نشده.';
     }
-    r1.addEventListener('input', calc); r2.addEventListener('input', calc);
+    r1.addEventListener('input', calc);
     function drawPay() {
       var on = f.direction === 'out' && f.category === 'counselor';
       payBox.hidden = !on; payBox.textContent = '';
@@ -1894,8 +1895,8 @@
       payBox.appendChild(h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'از تاریخ' }), fromF.el), h('div', { class: 'field' }, h('label', { text: 'تا تاریخ' }), toF.el)));
       if (!f.pfrom || !f.pto) { payBox.appendChild(h('p', { class: 'hint', text: 'ماه یا بازه را انتخاب کنید تا جلسه‌های آن بازه بیاید.' })); return; }
       var list = payCands();
-      payBox.appendChild(h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'مبلغ هر مشاوره (اختیاری)' }), r1), h('div', { class: 'field' }, h('label', { text: 'مبلغ هر پیش‌مشاوره (اختیاری)' }), r2)));
-      payBox.appendChild(h('p', { class: 'hint', text: 'اگر مبلغ هر جلسه را بنویسید، مبلغ کل خودکار از روی جلسه‌های انتخاب‌شده حساب می‌شود؛ وگرنه مبلغ را خودتان بالا بنویسید.' }));
+      payBox.appendChild(h('div', { class: 'row' }, h('div', { class: 'field' }, h('label', { text: 'مبلغ هر مشاوره (اختیاری)' }), r1)));
+      payBox.appendChild(h('p', { class: 'hint', text: 'اگر مبلغ هر مشاوره را بنویسید، مبلغ کل خودکار از روی جلسه‌های انتخاب‌شده حساب می‌شود؛ وگرنه مبلغ را خودتان بالا بنویسید.' }));
       if (!list.length) { payBox.appendChild(h('p', { class: 'empty', text: 'در این بازه جلسه‌ای برای این مشاور پیدا نشد.' })); calc(); return; }
       var all = h('button', { class: 'btn btn--small', type: 'button', text: 'انتخاب همهٔ انجام‌شده‌ها', onclick: function () { f.sel = {}; list.forEach(function (s) { if (s.status === 'done' && !paidElsewhere(s)) f.sel[s.id] = true; }); drawPay(); } });
       var none = h('button', { class: 'btn btn--small', type: 'button', text: 'برداشتن همه', onclick: function () { f.sel = {}; drawPay(); } });
@@ -2026,12 +2027,12 @@
   }
 
   function accCsv() {
-    var A = accState(), out = [['تاریخ میلادی', 'تاریخ شمسی', 'حساب', 'ارز', 'نوع', 'مبلغ', 'دسته', 'مشاور', 'شمارهٔ پیگیری', 'توضیح', 'حقوق از (میلادی)', 'حقوق تا (میلادی)', 'تعداد مشاوره', 'تعداد پیش‌مشاوره']];
+    var A = accState(), out = [['تاریخ میلادی', 'تاریخ شمسی', 'حساب', 'ارز', 'نوع', 'مبلغ', 'دسته', 'مشاور', 'شمارهٔ پیگیری', 'توضیح', 'حقوق از (میلادی)', 'حقوق تا (میلادی)', 'تعداد مشاوره']];
     (A.rows || []).forEach(function (r) {
       var p = parseIso(r.entry_date), j = p ? toJalali(p.gy, p.gm, p.gd) : null, ls = (A.links && A.links[r.id]) || [];
       var pay = r.direction === 'out' && r.category === 'counselor';
       out.push([r.entry_date, j ? j.jy + '-' + (j.jm < 10 ? '0' : '') + j.jm + '-' + (j.jd < 10 ? '0' : '') + j.jd : '', ACC_FA[r.account], r.currency, r.direction === 'in' ? 'واریز' : 'برداشت', r.amount, CAT_FA[r.category] || r.category, r.counselor_id ? nameOf(r.counselor_id) : '', r.ref, r.note,
-        r.period_from || '', r.period_to || '', pay ? ls.filter(function (l) { return l.kind !== 'intro'; }).length : '', pay ? ls.filter(function (l) { return l.kind === 'intro'; }).length : '']);
+        r.period_from || '', r.period_to || '', pay ? ls.length : '']);
     });
     csvDownload('hamnavaa-accounting-' + tehranDateInput(0) + '.csv', out);
   }
