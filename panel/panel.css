@@ -706,3 +706,9 @@ input[type=checkbox]{accent-color:var(--teal);width:18px;height:18px;vertical-al
 .bulk summary{cursor:pointer;font-weight:800;color:#5C431B}
 .bulk .payform{border:0;background:transparent;padding:10px 0 0}
 @media (max-width:640px){.row--3{grid-template-columns:1fr}}
+.psel--tall{max-height:none;overflow:visible}
+.paybar{border-color:#E6D3A8;background:#FFFBF1}
+.paybar h2{font-size:17px}
+.paygo{position:sticky;bottom:16px;z-index:6;display:flex;justify-content:center;margin-top:10px;pointer-events:none}
+.paygo .btn{pointer-events:auto;box-shadow:0 14px 30px -12px rgba(22,57,50,.85)}
+@media (max-width:960px){.paygo{bottom:100px}}
