@@ -1,0 +1,82 @@
+/* Hamnavaa blog — article + hub pages. Uses the site's own CSS variables. */
+.blog-lead{max-width:760px;font-size:1.12rem;line-height:2;color:var(--muted);margin:14px 0 0}
+.blog-meta{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:18px;font-size:.88rem;color:var(--muted)}
+.blog-meta span{position:relative}
+.blog-meta span + span::before{content:"";position:absolute;inset-inline-start:-12px;top:50%;width:4px;height:4px;border-radius:50%;background:var(--gold);transform:translateY(-50%)}
+.blog-hero .hero-fig{margin-top:26px}
+
+.blog-layout{display:grid;grid-template-columns:260px minmax(0,1fr);gap:46px;align-items:start}
+.blog-toc{position:sticky;top:96px}
+.blog-toc__box{padding:20px 22px;border-radius:16px;background:var(--glass-bg);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow)}
+.blog-toc h2{margin:0 0 12px;font-size:1rem;color:var(--teal-deep)}
+.blog-toc ol{margin:0;padding:0;list-style:none;counter-reset:t;display:grid;gap:9px}
+.blog-toc li{counter-increment:t;display:flex;gap:8px;font-size:.92rem;line-height:1.7}
+.blog-toc li::before{content:counter(t,persian);flex:none;color:var(--gold-deep);font-weight:800}
+.blog-toc a{color:var(--ink);text-decoration:none}
+.blog-toc a:hover{color:var(--teal-deep);text-decoration:underline}
+
+.blog-body{max-width:760px;font-size:1.06rem;line-height:2.1;color:var(--ink)}
+.blog-body h2{margin:44px 0 12px;font-size:1.55rem;line-height:1.6;color:var(--teal-deep);scroll-margin-top:96px}
+.blog-body h3{margin:26px 0 8px;font-size:1.2rem;color:var(--teal-deep)}
+.blog-body p{margin:0 0 16px}
+.blog-body ul,.blog-body ol{margin:0 0 18px;padding-inline-start:1.5em}
+.blog-body ul{list-style:disc}
+.blog-body ol{list-style:persian}
+.blog-body li{margin-bottom:6px}
+.blog-body li::marker{color:var(--gold-deep);font-weight:800}
+.blog-when ul{list-style:disc}
+.blog-body a{color:var(--teal-deep);text-decoration:underline;text-underline-offset:3px}
+.blog-body .cite{font-size:.72em;line-height:0;margin-inline-start:2px;white-space:nowrap}
+.blog-body .cite a{text-decoration:none;color:var(--gold-deep);font-weight:800;padding:0 1px}
+
+.blog-summary{margin:0 0 8px;padding:22px 26px;border-radius:16px;background:rgba(63,143,160,.09);border:1px solid var(--line);border-inline-start:5px solid var(--teal-deep)}
+.blog-summary h2{margin:0 0 10px;font-size:1.15rem}
+.blog-summary p:last-child,.blog-summary ul:last-child{margin-bottom:0}
+.blog-callout{margin:22px 0;padding:18px 24px;border-radius:14px;background:rgba(183,138,70,.12);border:1px solid rgba(183,138,70,.35)}
+.blog-callout p{margin:0}
+.blog-callout--note{background:var(--white);border-inline-start:5px solid var(--gold)}
+.blog-when{margin:36px 0 10px;padding:22px 26px;border-radius:16px;background:var(--white);border:1px solid var(--line);border-inline-start:5px solid var(--gold)}
+.blog-when h2{margin:0 0 10px;font-size:1.3rem}
+.blog-when ul{margin:0;padding-inline-start:1.4em}
+.blog-faq{margin:0 0 10px;border:1px solid var(--line);border-radius:14px;background:var(--white)}
+.blog-faq summary{cursor:pointer;padding:14px 20px;font-weight:700;color:var(--teal-deep);list-style-position:inside}
+.blog-faq p{margin:0;padding:0 20px 16px}
+.blog-try{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;margin:40px 0 8px;padding:22px 26px;border-radius:16px;background:var(--glass-bg);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow)}
+.blog-try h3{margin:0 0 4px;font-size:1.1rem}
+.blog-try p{margin:0;font-size:.95rem;color:var(--muted);line-height:1.8}
+.blog-sources{margin:0 0 20px;padding-inline-start:1.6em;font-size:.95rem;line-height:1.9;color:var(--muted)}
+.blog-sources li{margin-bottom:8px;scroll-margin-top:96px}
+.blog-sources li:target{background:rgba(183,138,70,.16);border-radius:6px}
+.blog-sources .src-org{font-weight:700;color:var(--ink)}
+.blog-sources .src-date{font-size:.85em}
+.blog-sources a{overflow-wrap:anywhere}
+.blog-disclaimer{margin-top:20px;padding:16px 20px;border-radius:12px;background:rgba(35,70,63,.06);font-size:.9rem;line-height:1.9;color:var(--muted)}
+
+.blog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:22px;margin-top:26px}
+.blog-card{display:flex;flex-direction:column;gap:8px;padding:0 0 20px;background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:18px;box-shadow:var(--glass-shadow);overflow:hidden;color:var(--ink);text-decoration:none;transition:transform .26s ease,box-shadow .26s ease}
+.blog-card:hover,.blog-card:focus-visible{transform:translateY(-4px);box-shadow:var(--glass-shadow-hover)}
+.blog-card img{width:100%;height:170px;object-fit:cover;object-position:center}
+.blog-card b,.blog-card small,.blog-card span{padding-inline:20px}
+.blog-card__cat{align-self:flex-start;margin-top:6px;margin-inline:20px;padding:3px 12px !important;border-radius:999px;background:rgba(183,138,70,.14);color:var(--gold-deep);font-size:.78rem;font-weight:700}
+.blog-card b{font-size:1.1rem;line-height:1.7;color:var(--teal-deep)}
+.blog-card small{font-size:.9rem;line-height:1.85;color:var(--muted)}
+.blog-card__meta{margin-top:auto;font-size:.8rem;color:var(--muted)}
+
+.blog-catnav{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+.blog-catnav a{padding:8px 18px;border-radius:999px;border:1px solid var(--line);background:var(--glass-bg);color:var(--teal-deep);font-weight:700;text-decoration:none}
+.blog-catnav a:hover{background:var(--glass-bg-hover)}
+.blog-cat{scroll-margin-top:90px}
+.blog-cat:nth-of-type(even){background:rgba(255,255,255,.35)}
+.blog-cat__head{display:flex;align-items:center;gap:22px}
+.blog-cat__head img{width:150px;height:116px;object-fit:cover;border-radius:16px;flex:none}
+.blog-cat__head h2{margin:0 0 6px;font-size:1.7rem;color:var(--teal-deep)}
+.blog-cat__head p{margin:0;color:var(--muted);line-height:1.9;max-width:640px}
+
+@media(max-width:900px){
+  .blog-layout{grid-template-columns:1fr;gap:26px}
+  .blog-toc{position:static}
+  .blog-body{font-size:1.02rem}
+  .blog-body h2{font-size:1.35rem}
+  .blog-cat__head{flex-direction:column;align-items:flex-start}
+}
+@counter-style persian{system:numeric;symbols:"۰" "۱" "۲" "۳" "۴" "۵" "۶" "۷" "۸" "۹"}
