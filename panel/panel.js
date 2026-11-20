@@ -2680,7 +2680,128 @@
     'Europe/Paris': 'فرانسه', 'Europe/Amsterdam': 'هلند', 'Europe/Stockholm': 'سوئد', 'Europe/Oslo': 'نروژ', 'Europe/Copenhagen': 'دانمارک', 'Europe/Madrid': 'اسپانیا', 'Europe/Rome': 'ایتالیا', 'Europe/Vienna': 'اتریش', 'Europe/Zurich': 'سوئیس',
     'Europe/Brussels': 'بلژیک', 'Europe/Helsinki': 'فنلاند', 'Europe/Dublin': 'ایرلند', 'Asia/Muscat': 'عمان', 'Asia/Qatar': 'قطر', 'Asia/Kuwait': 'کویت', 'Asia/Riyadh': 'عربستان', 'Asia/Kolkata': 'هند', 'Asia/Calcutta': 'هند', 'Asia/Dhaka': 'بنگلادش',
     'Australia/Sydney': 'استرالیا', 'Australia/Melbourne': 'استرالیا', 'Australia/Perth': 'استرالیا', 'Australia/Brisbane': 'استرالیا', 'Pacific/Auckland': 'نیوزیلند', 'Asia/Kabul': 'افغانستان', 'Asia/Baku': 'آذربایجان', 'Asia/Yerevan': 'ارمنستان',
-    'Asia/Tbilisi': 'گرجستان', 'Asia/Kuala_Lumpur': 'مالزی', 'Asia/Singapore': 'سنگاپور', 'Europe/Moscow': 'روسیه', 'Africa/Cairo': 'مصر', 'Asia/Baghdad': 'عراق', 'Asia/Karachi': 'پاکستان', 'Europe/Kiev': 'اوکراین', 'Europe/Kyiv': 'اوکراین' };
+    'Asia/Tbilisi': 'گرجستان', 'Asia/Kuala_Lumpur': 'مالزی', 'Asia/Singapore': 'سنگاپور', 'Europe/Moscow': 'روسیه', 'Africa/Cairo': 'مصر', 'Asia/Baghdad': 'عراق', 'Asia/Karachi': 'پاکستان', 'Europe/Kiev': 'اوکراین', 'Europe/Kyiv': 'اوکراین', 'Europe/Lisbon': 'پرتغال', 'Europe/Athens': 'یونان', 'Europe/Warsaw': 'لهستان', 'Europe/Prague': 'چک', 'Europe/Budapest': 'مجارستان', 'Europe/Bucharest': 'رومانی', 'Europe/Sofia': 'بلغارستان', 'Europe/Belgrade': 'صربستان', 'Europe/Zagreb': 'کرواسی', 'Europe/Luxembourg': 'لوکزامبورگ', 'Europe/Malta': 'مالت', 'Europe/Riga': 'لتونی', 'Europe/Vilnius': 'لیتوانی', 'Europe/Tallinn': 'استونی', 'Europe/Bratislava': 'اسلواکی', 'Europe/Ljubljana': 'اسلوونی', 'Europe/Minsk': 'بلاروس', 'Atlantic/Reykjavik': 'ایسلند', 'America/Anchorage': 'آمریکا', 'America/Detroit': 'آمریکا', 'America/Indiana/Indianapolis': 'آمریکا', 'America/Boise': 'آمریکا', 'Pacific/Honolulu': 'آمریکا', 'America/St_Johns': 'کانادا', 'America/Regina': 'کانادا', 'America/Mexico_City': 'مکزیک', 'America/Sao_Paulo': 'برزیل', 'America/Argentina/Buenos_Aires': 'آرژانتین', 'America/Bogota': 'کلمبیا', 'America/Santiago': 'شیلی', 'America/Lima': 'پرو', 'Asia/Bangkok': 'تایلند', 'Asia/Tokyo': 'ژاپن', 'Asia/Seoul': 'کره جنوبی', 'Asia/Shanghai': 'چین', 'Asia/Hong_Kong': 'هنگ‌کنگ', 'Asia/Manila': 'فیلیپین', 'Asia/Jakarta': 'اندونزی', 'Asia/Colombo': 'سری‌لانکا', 'Asia/Tashkent': 'ازبکستان', 'Asia/Almaty': 'قزاقستان', 'Asia/Bahrain': 'بحرین', 'Asia/Beirut': 'لبنان', 'Asia/Amman': 'اردن', 'Asia/Jerusalem': 'اسرائیل', 'Asia/Tel_Aviv': 'اسرائیل', 'Asia/Damascus': 'سوریه', 'Asia/Kathmandu': 'نپال', 'Asia/Ho_Chi_Minh': 'ویتنام', 'Asia/Taipei': 'تایوان', 'Africa/Johannesburg': 'آفریقای جنوبی', 'Africa/Lagos': 'نیجریه', 'Africa/Nairobi': 'کنیا', 'Africa/Casablanca': 'مراکش', 'Africa/Algiers': 'الجزایر', 'Africa/Tunis': 'تونس', 'Australia/Adelaide': 'استرالیا', 'Australia/Darwin': 'استرالیا', 'Australia/Hobart': 'استرالیا', 'Australia/Canberra': 'استرالیا', 'Asia/Aden': 'یمن', 'Asia/Bishkek': 'قرقیزستان', 'Asia/Ashgabat': 'ترکمنستان', 'Asia/Dushanbe': 'تاجیکستان' };
+  /* نام فارسی صفحه‌ها در «صفحه‌های پربازدید»؛ آدرس‌های ناشناخته (مثلاً مقاله‌ها) همان مسیر انگلیسی می‌مانند. */
+  var PAGE_FA = {
+    '/': 'صفحهٔ اصلی',
+    '/services/': 'خدمات مشاوره',
+    '/counselors/': 'مشاوران',
+    '/tests/': 'آزمون‌ها (فهرست)',
+    '/about/': 'دربارهٔ هم‌نوا',
+    '/reviews/': 'نظرات مراجعان',
+    '/pricing/': 'تعرفه‌ها',
+    '/countries/': 'مشاوره در کشورهای مختلف',
+    '/payment/': 'پرداخت',
+    '/blog/': 'مقاله‌ها (فهرست)',
+    '/tests/depression/': 'آزمون افسردگی',
+    '/tests/self-esteem/': 'آزمون عزت‌نفس',
+    '/tests/depression-anxiety-stress/': 'آزمون افسردگی، اضطراب و استرس',
+    '/tests/mood/': 'آزمون عاطفهٔ مثبت و منفی',
+    '/tests/adhd/': 'آزمون بیش‌فعالی بزرگسالان',
+    '/tests/big-five/': 'آزمون شخصیت پنج‌عاملی',
+    '/tests/personality-types/': 'آزمون ۱۶ تیپ شخصیتی',
+    '/tests/enneagram/': 'آزمون انیاگرام',
+    '/tests/disc/': 'آزمون سبک رفتاری DISC',
+    '/tests/schema/': 'آزمون طرحواره‌های ناسازگار',
+    '/tests/attachment/': 'آزمون سبک دلبستگی',
+    '/tests/ocd/': 'آزمون وسواس',
+    '/countries/canada/': 'روان‌شناس فارسی‌زبان در کانادا',
+    '/countries/usa/': 'روان‌شناس فارسی‌زبان در آمریکا',
+    '/countries/germany/': 'روان‌شناس فارسی‌زبان در آلمان',
+    '/countries/uk/': 'روان‌شناس فارسی‌زبان در بریتانیا',
+    '/countries/sweden/': 'روان‌شناس فارسی‌زبان در سوئد',
+    '/countries/australia/': 'روان‌شناس فارسی‌زبان در استرالیا',
+    '/countries/netherlands/': 'روان‌شناس فارسی‌زبان در هلند',
+    '/countries/france/': 'روان‌شناس فارسی‌زبان در فرانسه',
+    '/countries/turkey/': 'روان‌شناس فارسی‌زبان در ترکیه',
+    '/countries/uae/': 'روان‌شناس فارسی‌زبان در امارات',
+    '/blog/homesickness-immigration/': 'مقاله: دلتنگی در مهاجرت',
+    '/blog/culture-shock-adaptation/': 'مقاله: شوک فرهنگی',
+    '/blog/loneliness-abroad/': 'مقاله: تنهایی در غربت',
+    '/blog/depression-symptoms-treatment/': 'مقاله: افسردگی چیست؟',
+    '/blog/sadness-vs-depression/': 'مقاله: غم یا افسردگی؟',
+    '/blog/grief-and-loss/': 'مقاله: سوگ و از دست دادن',
+    '/blog/anxiety-disorders/': 'مقاله: اضطراب فراگیر',
+    '/blog/panic-attack/': 'مقاله: حملهٔ پانیک',
+    '/blog/stress-management/': 'مقاله: مدیریت استرس',
+    '/blog/ocd-basics/': 'مقاله: وسواس فکری-عملی',
+    '/blog/attachment-styles/': 'مقاله: سبک‌های دلبستگی',
+    '/blog/healthy-communication/': 'مقاله: ارتباط سالم در رابطه',
+    '/blog/healthy-boundaries/': 'مقاله: مرزگذاری سالم',
+    '/blog/schema-therapy-intro/': 'مقاله: طرحواره‌درمانی',
+    '/blog/self-esteem/': 'مقاله: عزت‌نفس',
+    '/blog/emotion-regulation/': 'مقاله: تنظیم هیجان',
+    '/blog/online-therapy-effectiveness/': 'مقاله: اثربخشی مشاورهٔ آنلاین',
+    '/blog/cbt-explained/': 'مقاله: درمان شناختی-رفتاری (CBT)',
+    '/blog/choosing-a-therapist/': 'مقاله: انتخاب درمانگر مناسب',
+    '/en/': 'انگلیسی · صفحهٔ اصلی',
+    '/en/services/': 'انگلیسی · خدمات مشاوره',
+    '/en/counselors/': 'انگلیسی · مشاوران',
+    '/en/about/': 'انگلیسی · دربارهٔ هم‌نوا',
+    '/en/reviews/': 'انگلیسی · نظرات مراجعان',
+    '/en/pricing/': 'انگلیسی · تعرفه‌ها',
+    '/en/countries/': 'انگلیسی · مشاوره در کشورهای مختلف',
+    '/en/countries/canada/': 'انگلیسی · روان‌شناس فارسی‌زبان در کانادا',
+    '/en/countries/usa/': 'انگلیسی · روان‌شناس فارسی‌زبان در آمریکا',
+    '/en/countries/germany/': 'انگلیسی · روان‌شناس فارسی‌زبان در آلمان',
+    '/en/countries/uk/': 'انگلیسی · روان‌شناس فارسی‌زبان در بریتانیا',
+    '/en/countries/sweden/': 'انگلیسی · روان‌شناس فارسی‌زبان در سوئد',
+    '/en/countries/australia/': 'انگلیسی · روان‌شناس فارسی‌زبان در استرالیا',
+    '/en/countries/netherlands/': 'انگلیسی · روان‌شناس فارسی‌زبان در هلند',
+    '/en/countries/france/': 'انگلیسی · روان‌شناس فارسی‌زبان در فرانسه',
+    '/en/countries/turkey/': 'انگلیسی · روان‌شناس فارسی‌زبان در ترکیه',
+    '/en/countries/uae/': 'انگلیسی · روان‌شناس فارسی‌زبان در امارات' };
+  function pageName(k) {
+    var fa = PAGE_FA[k]; if (!fa) return ltr(k);
+    return h('span', null, fa, ' ', h('small', { style: 'opacity:.55;margin-inline-start:6px' }, ltr(k)));
+  }
+  /* نام فارسیِ منبع ورود: «ig» و «instagram» و l.instagram.com یکی حساب می‌شوند؛ بقیه همان نام انگلیسی می‌مانند. */
+  function refKey(k) {
+    var l = String(k == null ? '' : k).toLowerCase();
+    var T = function (re) { return re.test(l); };
+    if (T(/^(ig|instagram)$/) || T(/(^|\.)instagram\.com$/)) return 'اینستاگرام';
+    if (T(/^(fb|facebook)$/) || T(/(^|\.)facebook\.com$/)) return 'فیسبوک';
+    if (T(/^(tg|telegram)$/) || l === 't.me' || T(/(^|\.)telegram\.(org|me)$/)) return 'تلگرام';
+    if (T(/^(wa|whatsapp)$/) || T(/(^|\.)whatsapp\.com$/) || l === 'wa.me') return 'واتساپ';
+    if (l === 'chatgpt.com' || l === 'chat.openai.com' || l === 'openai.com') return 'ChatGPT';
+    if (l === 'claude.ai') return 'Claude';
+    if (l === 'gemini.google.com' || l === 'bard.google.com') return 'Gemini';
+    if (T(/(^|\.)perplexity\.ai$/)) return 'Perplexity';
+    if (T(/(^|\.)copilot\.microsoft\.com$/)) return 'Copilot';
+    if (T(/^google\./) || T(/\.google\./) || l === 'google') return 'گوگل';
+    if (T(/(^|\.)bing\.com$/)) return 'بینگ';
+    if (T(/(^|\.)duckduckgo\.com$/)) return 'DuckDuckGo';
+    if (T(/(^|\.)yahoo\.com$/)) return 'یاهو';
+    if (T(/(^|\.)yandex\./)) return 'یاندکس';
+    if (l === 't.co' || T(/(^|\.)twitter\.com$/) || T(/(^|\.)x\.com$/)) return 'ایکس (توییتر)';
+    if (T(/(^|\.)linkedin\.com$/) || l === 'lnkd.in') return 'لینکدین';
+    if (T(/(^|\.)youtube\.com$/) || l === 'youtu.be') return 'یوتیوب';
+    if (T(/(^|\.)reddit\.com$/)) return 'ردیت';
+    if (T(/(^|\.)pinterest\./)) return 'پینترست';
+    if (T(/(^|\.)tiktok\.com$/)) return 'تیک‌تاک';
+    if (T(/(^|\.)github\.com$/)) return 'GitHub';
+    return k;
+  }
+  function refList(rows) {
+    var acc = {}, order = [];
+    (rows || []).forEach(function (r) { var key = refKey(r.k); if (!(key in acc)) { acc[key] = 0; order.push(key); } acc[key] += r.n; });
+    return order.map(function (k) { return { k: k, n: acc[k] }; }).sort(function (a, b) { return b.n - a.n; });
+  }
+  function refName(k) { return /[؀-ۿ]/.test(String(k)) ? k : ltr(k); }
+  /* دستگاه و زبان: «?» یعنی مرورگر نگفته؛ کد زبان (fa، en، de …) با نام فارسی نشان داده می‌شود، هر زبانی که باشد. */
+  function devName(k) { return k === '?' ? 'نامشخص' : k; }
+  function langName(k) {
+    if (k === '?' || !k) return 'نامشخص';
+    var nm = ''; try { nm = new Intl.DisplayNames(['fa'], { type: 'language' }).of(k) || ''; } catch (e) { nm = ''; }
+    return nm && nm !== k ? h('span', null, nm, ' ', h('small', { style: 'opacity:.55;margin-inline-start:6px' }, ltr(k))) : ltr(k);
+  }
+  /* منطقهٔ زمانی ناشناخته: «نامشخص» به‌همراه نام شهرِ منطقه تا معلوم باشد چیست. */
+  function tzCountry(k) {
+    if (k === '?' || !k) return 'نامشخص';
+    if (TZ_FA[k]) return TZ_FA[k];
+    var city = String(k).split('/').pop().replace(/_/g, ' ');
+    return 'نامشخص · ' + city;
+  }
   function mSite(M) {
     var s = M.site;
     var days = h('div', { class: 'chips' }, [7, 30, 90].map(function (d) {
@@ -2702,14 +2823,14 @@
       return h('section', { class: 'card' }, h('h2', { text: title }), hint ? h('p', { class: 'hint', text: hint }) : null,
         rows.length ? rows.map(function (r) { return h('div', { class: 'srow' }, h('span', { class: 'srow__k' }, fmt ? fmt(r.k) : r.k), h('i', { style: 'width:' + Math.max(3, Math.round(r.n * 100 / m)) + '%' }), h('b', { text: n(r.n) })); }) : h('p', { class: 'empty', text: 'هنوز داده‌ای نیست.' }));
     };
-    var country = {}; (s.tz || []).forEach(function (r) { var k = TZ_FA[r.k] || (r.k === '?' ? 'نامشخص' : r.k); country[k] = (country[k] || 0) + r.n; });
+    var country = {}; (s.tz || []).forEach(function (r) { var k = tzCountry(r.k); country[k] = (country[k] || 0) + r.n; });
     var countries = Object.keys(country).map(function (k) { return { k: k, n: country[k] }; }).sort(function (a, b) { return b.n - a.n; });
     return h('div', null, days, tiles,
       h('section', { class: 'card' }, h('h2', { text: 'بازدید روزانه' }), h('p', { class: 'hint', text: 'ستون روشن: همهٔ بازدیدها. بخش تیره: ورود تازه. روزها به وقت ایران.' }), chart),
-      list('صفحه‌های پربازدید', null, s.pages, function (k) { return ltr(k); }),
-      list('از کجا آمدند؟', 'فقط ورودهای تازه. «مستقیم» یعنی لینک بدون منبع (مثلاً پیام یا نوشتن آدرس). برای شمردن لینک بیو، به آدرس ?utm_source=instagram اضافه کنید.', s.refs),
-      list('کشور (تقریبی)', 'از منطقهٔ زمانی مرورگر حدس زده می‌شود؛ دقیق نیست و با VPN عوض می‌شود.', countries),
-      list('دستگاه', null, s.dev), list('زبان مرورگر', null, s.lang));
+      list('صفحه‌های پربازدید', null, s.pages, pageName),
+      list('از کجا آمدند؟', 'فقط ورودهای تازه. «مستقیم» یعنی لینک بدون منبع (مثلاً پیام یا نوشتن آدرس). «اینستاگرام» یعنی لینکی که از اینستاگرام باز شده (بیو، استوری، پست). برای شمردن لینک بیو، به آدرس ?utm_source=instagram اضافه کنید.', refList(s.refs), refName),
+      list('کشور (تقریبی)', 'از منطقهٔ زمانی مرورگر حدس زده می‌شود؛ دقیق نیست و با VPN عوض می‌شود. «نامشخص» یعنی مرورگر منطقهٔ زمانی نداده یا کشورش در فهرست ما نیست (نام شهر کنارش آمده).', countries, refName),
+      list('دستگاه', null, s.dev, devName), list('زبان مرورگر', 'زبانِ تنظیم‌شدهٔ مرورگر بازدیدکننده (نه لزوماً زبانی که صحبت می‌کند).', s.lang, langName));
   }
 
   function num(label, v) { return h('div', null, h('b', { text: n(v || 0) }), h('span', { text: label })); }
