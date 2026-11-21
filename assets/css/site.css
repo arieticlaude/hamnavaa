@@ -1012,10 +1012,19 @@
   @media (prefers-reduced-motion: reduce){ .btn--cool-pulse{animation:none;} }
   .btn > span, .btn__arrow{position:relative; z-index:1;}
   .btn--primary:hover .btn__arrow{transform:translateX(-4px);}
+  /* secondary button: a soft outlined pill (it used to be a bare underlined word, and a square outline on dark bands) */
   .btn--ghost{
-    color:var(--teal-deep); font-weight:600; border-bottom:1.5px solid var(--teal-deep); border-radius:0; padding:6px 0;
+    color:var(--teal-deep); font-weight:700; padding:12px 24px; border-radius:999px;
+    border:1.5px solid rgba(58,98,89,.38); background:rgba(58,98,89,.06);
+    transition:transform .25s ease, box-shadow .25s ease, background .25s ease, color .25s ease, border-color .25s ease;
   }
-  .btn--ghost:hover{color:var(--gold-deep); border-color:var(--gold-deep);}
+  .btn--ghost:hover{
+    color:#fff; background:var(--teal-deep); border-color:var(--teal-deep);
+    transform:translateY(-2px); box-shadow:0 14px 28px -14px rgba(22,36,31,.55);
+  }
+  /* on the dark call-to-action bands */
+  .page-cta .btn.btn--ghost{color:#fff; border:1.5px solid rgba(255,255,255,.55); background:rgba(255,255,255,.08); backdrop-filter:blur(2px);}
+  .page-cta .btn.btn--ghost:hover{background:rgba(255,255,255,.2); border-color:#fff; color:#fff; box-shadow:0 14px 28px -16px rgba(0,0,0,.6);}
 
   /* ---------- Hero ---------- */
   .hero{padding:84px 0 0; position:relative; overflow:hidden;}

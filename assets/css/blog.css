@@ -83,3 +83,4 @@
 
 /* ghost buttons were dark-on-dark inside the dark CTA card */
 .page-cta .btn--ghost{color:#fff;border:1.5px solid rgba(255,255,255,.6)}.page-cta .btn--ghost:hover{background:rgba(255,255,255,.12)}
+.blog-body a.btn{text-decoration:none}
