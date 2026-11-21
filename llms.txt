@@ -196,11 +196,15 @@ Depression, grief and mood:
 - سوگ و از دست دادن: چه چیزی طبیعی است و کی باید کمک گرفت: https://www.hamnavaa.com/blog/grief-and-loss/
 - افسردگی فصلی (SAD): نشانه‌ها، علت‌ها و درمان: https://www.hamnavaa.com/blog/seasonal-affective-disorder/
 - افسردگی پس از زایمان: نشانه‌ها، علت‌ها و کمک: https://www.hamnavaa.com/blog/postnatal-depression/
+- اختلال دوقطبی چیست؟ نشانه‌ها، تشخیص و درمان: https://www.hamnavaa.com/blog/bipolar-disorder/
+- اختلال‌های خوردن: انواع، نشانه‌ها و راه‌های کمک گرفتن: https://www.hamnavaa.com/blog/eating-disorders/
 
 Migration and life abroad:
 - دلتنگی در مهاجرت: وقتی غربت سنگین می‌شود: https://www.hamnavaa.com/blog/homesickness-immigration/
 - شوک فرهنگی و مراحل سازگاری بعد از مهاجرت: https://www.hamnavaa.com/blog/culture-shock-adaptation/
 - تنهایی در غربت و ساختن شبکهٔ حمایتی: https://www.hamnavaa.com/blog/loneliness-abroad/
+- فرزندپروری در مهاجرت و سلامت روان فرزندان: https://www.hamnavaa.com/blog/parenting-abroad/
+- هویت دوفرهنگی: چه چیزی در مهاجرت کمک می‌کند؟: https://www.hamnavaa.com/blog/bicultural-identity/
 
 Anxiety, stress, OCD and trauma:
 - اضطراب فراگیر: نشانه‌ها، علت‌ها و درمان‌های مؤثر: https://www.hamnavaa.com/blog/anxiety-disorders/
@@ -209,16 +213,20 @@ Anxiety, stress, OCD and trauma:
 - وسواس فکری-عملی (OCD): نشانه‌ها، علت‌ها و درمان: https://www.hamnavaa.com/blog/ocd-basics/
 - اضطراب اجتماعی: فقط خجالتی بودن نیست: https://www.hamnavaa.com/blog/social-anxiety/
 - PTSD و تروما: نشانه‌ها، علت‌ها و درمان‌های مؤثر: https://www.hamnavaa.com/blog/ptsd-trauma/
+- اضطراب سلامت: وقتی نگرانی از بیماری زندگی را می‌گیرد: https://www.hamnavaa.com/blog/health-anxiety/
+- فوبیا چیست؟ انواع، نشانه‌ها و درمان ترس‌های شدید: https://www.hamnavaa.com/blog/phobias/
 
 Focus, sleep and burnout:
 - ADHD در بزرگسالان: نشانه‌ها، تشخیص و درمان: https://www.hamnavaa.com/blog/adhd-in-adults/
 - بی‌خوابی: علت‌ها، عادت‌های خواب و درمان CBT-I: https://www.hamnavaa.com/blog/insomnia-sleep-habits/
 - فرسودگی شغلی چیست و چطور از آن بیرون بیاییم؟: https://www.hamnavaa.com/blog/burnout-at-work/
+- ورزش و سلامت روان: چقدر و چه نوع ورزشی به خلق کمک می‌کند؟: https://www.hamnavaa.com/blog/exercise-and-mental-health/
 
 Relationships, attachment and family:
 - سبک‌های دلبستگی: چرا در رابطه‌ها این‌طور رفتار می‌کنیم؟: https://www.hamnavaa.com/blog/attachment-styles/
 - ارتباط سالم در رابطه: دعوا، ترمیم و درک متقابل: https://www.hamnavaa.com/blog/healthy-communication/
 - مرزگذاری سالم با خانواده، به‌ویژه در خانواده‌های مهاجر: https://www.hamnavaa.com/blog/healthy-boundaries/
+- خشونت در رابطه: انواع، پیامدها و چرا نباید تنها بمانید: https://www.hamnavaa.com/blog/intimate-partner-violence/
 
 Self-knowledge and personal growth:
 - طرحواره‌درمانی چیست؟ الگوهای تکراری زندگی: https://www.hamnavaa.com/blog/schema-therapy-intro/
@@ -226,10 +234,14 @@ Self-knowledge and personal growth:
 - تنظیم هیجان: مهارت‌های ساده و شواهد علمی: https://www.hamnavaa.com/blog/emotion-regulation/
 - ذهن‌آگاهی (Mindfulness) چیست و چقدر شواهد دارد؟: https://www.hamnavaa.com/blog/mindfulness-basics/
 - خشم: چرا پیش می‌آید و چطور مدیریتش کنیم؟: https://www.hamnavaa.com/blog/anger-management/
+- کمال‌گرایی: کی انگیزه است و کی فشار روانی؟: https://www.hamnavaa.com/blog/perfectionism/
+- شفقت به خود: مهربانی با خود چه ربطی به سلامت روان دارد؟: https://www.hamnavaa.com/blog/self-compassion/
+- سندرم ایمپاستر (حس شیاد بودن): چقدر شایع است و چه می‌دانیم؟: https://www.hamnavaa.com/blog/impostor-syndrome/
 
 Counseling and psychotherapy:
 - مشاورهٔ آنلاین چقدر مؤثر است؟ مرور متاآنالیزها: https://www.hamnavaa.com/blog/online-therapy-effectiveness/
 - درمان شناختی-رفتاری (CBT) چیست و چه کاری می‌کند؟: https://www.hamnavaa.com/blog/cbt-explained/
 - چطور درمانگر مناسب پیدا کنیم و جلسهٔ اول چطور است؟: https://www.hamnavaa.com/blog/choosing-a-therapist/
+- داروهای ضدافسردگی: کاربرد، زمان اثر و قطع تدریجی: https://www.hamnavaa.com/blog/antidepressants-explained/
 
 <!-- /blog -->
