@@ -10,7 +10,7 @@
 Site: https://www.hamnavaa.com/
 Languages: Persian (default) and English. Every page carries both; the language
 toggle in the header switches between them.
-Last updated: 2026-11-19
+Last updated: 2026-11-21
 
 ## What Hamnavaa is
 
@@ -164,42 +164,6 @@ Overview and time-zone guide: https://www.hamnavaa.com/countries/ (English: http
 - Turkey: https://www.hamnavaa.com/countries/turkey/ (English: https://www.hamnavaa.com/en/countries/turkey/)
 - the United Arab Emirates: https://www.hamnavaa.com/countries/uae/ (English: https://www.hamnavaa.com/en/countries/uae/)
 
-## Blog (Persian)
-Evidence-based psychology articles in Persian for Persian speakers abroad, each with a numbered source list (WHO, NHS, NICE, NIMH and peer-reviewed meta-analyses). Not medical advice. Hub: https://www.hamnavaa.com/blog/
-
-
-Depression, grief and mood:
-- افسردگی چیست؟ نشانه‌ها، علت‌ها و درمان‌های مؤثر: https://www.hamnavaa.com/blog/depression-symptoms-treatment/
-- غم یا افسردگی؟ چطور فرق را بفهمیم: https://www.hamnavaa.com/blog/sadness-vs-depression/
-- سوگ و از دست دادن: چه چیزی طبیعی است و کی باید کمک گرفت: https://www.hamnavaa.com/blog/grief-and-loss/
-
-Migration and life abroad:
-- دلتنگی در مهاجرت: وقتی غربت سنگین می‌شود: https://www.hamnavaa.com/blog/homesickness-immigration/
-- شوک فرهنگی و مراحل سازگاری بعد از مهاجرت: https://www.hamnavaa.com/blog/culture-shock-adaptation/
-- تنهایی در غربت و ساختن شبکهٔ حمایتی: https://www.hamnavaa.com/blog/loneliness-abroad/
-
-Anxiety, stress and OCD:
-- اضطراب فراگیر: نشانه‌ها، علت‌ها و درمان‌های مؤثر: https://www.hamnavaa.com/blog/anxiety-disorders/
-- حملهٔ پانیک چیست و در لحظه چه کار کنیم؟: https://www.hamnavaa.com/blog/panic-attack/
-- استرس: راه‌های مبتنی بر شواهد برای مدیریت آن: https://www.hamnavaa.com/blog/stress-management/
-- وسواس فکری-عملی (OCD): نشانه‌ها، علت‌ها و درمان: https://www.hamnavaa.com/blog/ocd-basics/
-
-Relationships, attachment and family:
-- سبک‌های دلبستگی: چرا در رابطه‌ها این‌طور رفتار می‌کنیم؟: https://www.hamnavaa.com/blog/attachment-styles/
-- ارتباط سالم در رابطه: دعوا، ترمیم و درک متقابل: https://www.hamnavaa.com/blog/healthy-communication/
-- مرزگذاری سالم با خانواده، به‌ویژه در خانواده‌های مهاجر: https://www.hamnavaa.com/blog/healthy-boundaries/
-
-Self-knowledge and personal growth:
-- طرحواره‌درمانی چیست؟ الگوهای تکراری زندگی: https://www.hamnavaa.com/blog/schema-therapy-intro/
-- عزت‌نفس چیست و چطور تقویت می‌شود؟: https://www.hamnavaa.com/blog/self-esteem/
-- تنظیم هیجان: مهارت‌های ساده و شواهد علمی: https://www.hamnavaa.com/blog/emotion-regulation/
-
-Counseling and psychotherapy:
-- مشاورهٔ آنلاین چقدر مؤثر است؟ مرور متاآنالیزها: https://www.hamnavaa.com/blog/online-therapy-effectiveness/
-- درمان شناختی-رفتاری (CBT) چیست و چه کاری می‌کند؟: https://www.hamnavaa.com/blog/cbt-explained/
-- چطور درمانگر مناسب پیدا کنیم و جلسهٔ اول چطور است؟: https://www.hamnavaa.com/blog/choosing-a-therapist/
-
-<!-- /blog -->
 
 ## Therapist profile pages (Persian and English)
 - Dr. Sara Fattahi: https://www.hamnavaa.com/en/counselors/sara-fattahi/ (Persian: https://www.hamnavaa.com/counselors/sara-fattahi/)
@@ -221,3 +185,51 @@ Counseling and psychotherapy:
 - Dr. Neshat Gholamipour: https://www.hamnavaa.com/en/counselors/neshat-gholamipour/ (Persian: https://www.hamnavaa.com/counselors/neshat-gholamipour/)
 - Dr. Leila Jabbari: https://www.hamnavaa.com/en/counselors/leila-jabbari/ (Persian: https://www.hamnavaa.com/counselors/leila-jabbari/)
 <!-- /cns-pages -->
+
+## Blog (Persian)
+Evidence-based psychology articles in Persian for Persian speakers abroad, each with a numbered source list (WHO, NHS, NICE, NIMH and peer-reviewed meta-analyses). Not medical advice. Hub: https://www.hamnavaa.com/blog/
+
+
+Depression, grief and mood:
+- افسردگی چیست؟ نشانه‌ها، علت‌ها و درمان‌های مؤثر: https://www.hamnavaa.com/blog/depression-symptoms-treatment/
+- غم یا افسردگی؟ چطور فرق را بفهمیم: https://www.hamnavaa.com/blog/sadness-vs-depression/
+- سوگ و از دست دادن: چه چیزی طبیعی است و کی باید کمک گرفت: https://www.hamnavaa.com/blog/grief-and-loss/
+- افسردگی فصلی (SAD): نشانه‌ها، علت‌ها و درمان: https://www.hamnavaa.com/blog/seasonal-affective-disorder/
+- افسردگی پس از زایمان: نشانه‌ها، علت‌ها و کمک: https://www.hamnavaa.com/blog/postnatal-depression/
+
+Migration and life abroad:
+- دلتنگی در مهاجرت: وقتی غربت سنگین می‌شود: https://www.hamnavaa.com/blog/homesickness-immigration/
+- شوک فرهنگی و مراحل سازگاری بعد از مهاجرت: https://www.hamnavaa.com/blog/culture-shock-adaptation/
+- تنهایی در غربت و ساختن شبکهٔ حمایتی: https://www.hamnavaa.com/blog/loneliness-abroad/
+
+Anxiety, stress, OCD and trauma:
+- اضطراب فراگیر: نشانه‌ها، علت‌ها و درمان‌های مؤثر: https://www.hamnavaa.com/blog/anxiety-disorders/
+- حملهٔ پانیک چیست و در لحظه چه کار کنیم؟: https://www.hamnavaa.com/blog/panic-attack/
+- استرس: راه‌های مبتنی بر شواهد برای مدیریت آن: https://www.hamnavaa.com/blog/stress-management/
+- وسواس فکری-عملی (OCD): نشانه‌ها، علت‌ها و درمان: https://www.hamnavaa.com/blog/ocd-basics/
+- اضطراب اجتماعی: فقط خجالتی بودن نیست: https://www.hamnavaa.com/blog/social-anxiety/
+- PTSD و تروما: نشانه‌ها، علت‌ها و درمان‌های مؤثر: https://www.hamnavaa.com/blog/ptsd-trauma/
+
+Focus, sleep and burnout:
+- ADHD در بزرگسالان: نشانه‌ها، تشخیص و درمان: https://www.hamnavaa.com/blog/adhd-in-adults/
+- بی‌خوابی: علت‌ها، عادت‌های خواب و درمان CBT-I: https://www.hamnavaa.com/blog/insomnia-sleep-habits/
+- فرسودگی شغلی چیست و چطور از آن بیرون بیاییم؟: https://www.hamnavaa.com/blog/burnout-at-work/
+
+Relationships, attachment and family:
+- سبک‌های دلبستگی: چرا در رابطه‌ها این‌طور رفتار می‌کنیم؟: https://www.hamnavaa.com/blog/attachment-styles/
+- ارتباط سالم در رابطه: دعوا، ترمیم و درک متقابل: https://www.hamnavaa.com/blog/healthy-communication/
+- مرزگذاری سالم با خانواده، به‌ویژه در خانواده‌های مهاجر: https://www.hamnavaa.com/blog/healthy-boundaries/
+
+Self-knowledge and personal growth:
+- طرحواره‌درمانی چیست؟ الگوهای تکراری زندگی: https://www.hamnavaa.com/blog/schema-therapy-intro/
+- عزت‌نفس چیست و چطور تقویت می‌شود؟: https://www.hamnavaa.com/blog/self-esteem/
+- تنظیم هیجان: مهارت‌های ساده و شواهد علمی: https://www.hamnavaa.com/blog/emotion-regulation/
+- ذهن‌آگاهی (Mindfulness) چیست و چقدر شواهد دارد؟: https://www.hamnavaa.com/blog/mindfulness-basics/
+- خشم: چرا پیش می‌آید و چطور مدیریتش کنیم؟: https://www.hamnavaa.com/blog/anger-management/
+
+Counseling and psychotherapy:
+- مشاورهٔ آنلاین چقدر مؤثر است؟ مرور متاآنالیزها: https://www.hamnavaa.com/blog/online-therapy-effectiveness/
+- درمان شناختی-رفتاری (CBT) چیست و چه کاری می‌کند؟: https://www.hamnavaa.com/blog/cbt-explained/
+- چطور درمانگر مناسب پیدا کنیم و جلسهٔ اول چطور است؟: https://www.hamnavaa.com/blog/choosing-a-therapist/
+
+<!-- /blog -->
