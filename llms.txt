@@ -202,3 +202,24 @@ Counseling and psychotherapy:
 - چطور درمانگر مناسب پیدا کنیم و جلسهٔ اول چطور است؟: https://www.hamnavaa.com/blog/choosing-a-therapist/
 
 <!-- /blog -->
+
+## Therapist profile pages (Persian)
+- دکتر سارا فتاحی (Dr. Sara Fattahi): https://www.hamnavaa.com/counselors/sara-fattahi/
+- دکتر سپیده وحید هرندی (Dr. Sepideh Vahid Harandi): https://www.hamnavaa.com/counselors/sepideh-vahid-harandi/
+- دکتر صفا مصطفی‌زاده (Dr. Safa Mostafazadeh): https://www.hamnavaa.com/counselors/safa-mostafazadeh/
+- دکتر محسن شاه ولی (Dr. Mohsen Shahvali): https://www.hamnavaa.com/counselors/mohsen-shahvali/
+- دکتر آرمان سلیمی‌کوچی (Dr. Arman Salimi Kouchi): https://www.hamnavaa.com/counselors/arman-salimi-kouchi/
+- دکتر الناز زرین‌فر (Dr. Elnaz Zarinfar): https://www.hamnavaa.com/counselors/elnaz-zarinfar/
+- دکتر ساناز زرین‌فر (Dr. Sanaz Zarinfar): https://www.hamnavaa.com/counselors/sanaz-zarinfar/
+- دکتر مژگان سپاه‌منصور (Dr. Mojgan Sepahmansour): https://www.hamnavaa.com/counselors/mojgan-sepahmansour/
+- دکتر ابوالفضل زارعی (Dr. Abolfazl Zarei): https://www.hamnavaa.com/counselors/abolfazl-zarei/
+- دکتر نورا دهقان‌پور (Dr. Nora Dehghanpour): https://www.hamnavaa.com/counselors/nora-dehghanpour/
+- دکتر سارا منصفی (Dr. Sara Monsefi): https://www.hamnavaa.com/counselors/sara-monsefi/
+- دکتر مرجان علی‌محمدی (Dr. Marjan Alimohammadi): https://www.hamnavaa.com/counselors/marjan-alimohammadi/
+- دکتر مهدی قنبری (Dr. Mahdi Ghanbari): https://www.hamnavaa.com/counselors/mahdi-ghanbari/
+- دکتر آناهیتا بهداروند (Dr. Anahita Behdarvand): https://www.hamnavaa.com/counselors/anahita-behdarvand/
+- دکتر نگار تیموری (Dr. Negar Teymouri): https://www.hamnavaa.com/counselors/negar-teymouri/
+- دکتر حسین مختاری (Dr. Hossein Mokhtari): https://www.hamnavaa.com/counselors/hossein-mokhtari/
+- دکتر نشاط غلامی‌پور (Dr. Neshat Gholamipour): https://www.hamnavaa.com/counselors/neshat-gholamipour/
+- دکتر لیلا جباری (Dr. Leila Jabbari): https://www.hamnavaa.com/counselors/leila-jabbari/
+<!-- /cns-pages -->

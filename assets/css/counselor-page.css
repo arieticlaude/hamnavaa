@@ -1,0 +1,15 @@
+/* Hamnavaa counselor profile pages */
+.cns-hero{display:grid;grid-template-columns:200px minmax(0,1fr);gap:34px;align-items:center;margin-top:8px}
+.cns-hero__photo{width:200px;height:200px;border-radius:50%;object-fit:cover;border:5px solid #fff;box-shadow:var(--glass-shadow)}
+.cns-hero .blog-lead{margin-top:10px}
+.cns-chips{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 0;padding:0;list-style:none}
+.cns-chips li{padding:6px 14px;border-radius:999px;background:var(--glass-bg);border:1px solid var(--glass-border);font-size:.9rem;color:var(--teal-deep)}
+.cns-body{max-width:780px;margin-inline:auto;font-size:1.06rem;line-height:2.1;color:var(--ink)}
+.cns-body h2{margin:38px 0 10px;font-size:1.4rem;line-height:1.6;color:var(--teal-deep)}
+.cns-body p{margin:0 0 16px}
+.cns-body ul{margin:0 0 18px;padding-inline-start:1.5em;list-style:disc}
+.cns-body li{margin-bottom:8px}
+.cns-body li::marker{color:var(--gold-deep);font-weight:800}
+.cns-note{margin-top:30px;padding:16px 22px;border-radius:14px;background:rgba(183,138,7,.08);border:1px solid var(--line);font-size:.95rem;line-height:1.9}
+.page-cta .btn--ghost{color:#fff;border:1.5px solid rgba(255,255,255,.6)}.page-cta .btn--ghost:hover{background:rgba(255,255,255,.12)}
+@media (max-width:640px){.cns-hero{grid-template-columns:1fr;justify-items:center;text-align:center}.cns-hero__photo{width:150px;height:150px}.cns-chips{justify-content:center}}
