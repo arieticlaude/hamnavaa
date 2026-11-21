@@ -203,23 +203,23 @@ Counseling and psychotherapy:
 
 <!-- /blog -->
 
-## Therapist profile pages (Persian)
-- دکتر سارا فتاحی (Dr. Sara Fattahi): https://www.hamnavaa.com/counselors/sara-fattahi/
-- دکتر سپیده وحید هرندی (Dr. Sepideh Vahid Harandi): https://www.hamnavaa.com/counselors/sepideh-vahid-harandi/
-- دکتر صفا مصطفی‌زاده (Dr. Safa Mostafazadeh): https://www.hamnavaa.com/counselors/safa-mostafazadeh/
-- دکتر محسن شاه ولی (Dr. Mohsen Shahvali): https://www.hamnavaa.com/counselors/mohsen-shahvali/
-- دکتر آرمان سلیمی‌کوچی (Dr. Arman Salimi Kouchi): https://www.hamnavaa.com/counselors/arman-salimi-kouchi/
-- دکتر الناز زرین‌فر (Dr. Elnaz Zarinfar): https://www.hamnavaa.com/counselors/elnaz-zarinfar/
-- دکتر ساناز زرین‌فر (Dr. Sanaz Zarinfar): https://www.hamnavaa.com/counselors/sanaz-zarinfar/
-- دکتر مژگان سپاه‌منصور (Dr. Mojgan Sepahmansour): https://www.hamnavaa.com/counselors/mojgan-sepahmansour/
-- دکتر ابوالفضل زارعی (Dr. Abolfazl Zarei): https://www.hamnavaa.com/counselors/abolfazl-zarei/
-- دکتر نورا دهقان‌پور (Dr. Nora Dehghanpour): https://www.hamnavaa.com/counselors/nora-dehghanpour/
-- دکتر سارا منصفی (Dr. Sara Monsefi): https://www.hamnavaa.com/counselors/sara-monsefi/
-- دکتر مرجان علی‌محمدی (Dr. Marjan Alimohammadi): https://www.hamnavaa.com/counselors/marjan-alimohammadi/
-- دکتر مهدی قنبری (Dr. Mahdi Ghanbari): https://www.hamnavaa.com/counselors/mahdi-ghanbari/
-- دکتر آناهیتا بهداروند (Dr. Anahita Behdarvand): https://www.hamnavaa.com/counselors/anahita-behdarvand/
-- دکتر نگار تیموری (Dr. Negar Teymouri): https://www.hamnavaa.com/counselors/negar-teymouri/
-- دکتر حسین مختاری (Dr. Hossein Mokhtari): https://www.hamnavaa.com/counselors/hossein-mokhtari/
-- دکتر نشاط غلامی‌پور (Dr. Neshat Gholamipour): https://www.hamnavaa.com/counselors/neshat-gholamipour/
-- دکتر لیلا جباری (Dr. Leila Jabbari): https://www.hamnavaa.com/counselors/leila-jabbari/
+## Therapist profile pages (Persian and English)
+- Dr. Sara Fattahi: https://www.hamnavaa.com/en/counselors/sara-fattahi/ (Persian: https://www.hamnavaa.com/counselors/sara-fattahi/)
+- Dr. Sepideh Vahid Harandi: https://www.hamnavaa.com/en/counselors/sepideh-vahid-harandi/ (Persian: https://www.hamnavaa.com/counselors/sepideh-vahid-harandi/)
+- Dr. Safa Mostafazadeh: https://www.hamnavaa.com/en/counselors/safa-mostafazadeh/ (Persian: https://www.hamnavaa.com/counselors/safa-mostafazadeh/)
+- Dr. Mohsen Shahvali: https://www.hamnavaa.com/en/counselors/mohsen-shahvali/ (Persian: https://www.hamnavaa.com/counselors/mohsen-shahvali/)
+- Dr. Arman Salimi Kouchi: https://www.hamnavaa.com/en/counselors/arman-salimi-kouchi/ (Persian: https://www.hamnavaa.com/counselors/arman-salimi-kouchi/)
+- Dr. Elnaz Zarinfar: https://www.hamnavaa.com/en/counselors/elnaz-zarinfar/ (Persian: https://www.hamnavaa.com/counselors/elnaz-zarinfar/)
+- Dr. Sanaz Zarinfar: https://www.hamnavaa.com/en/counselors/sanaz-zarinfar/ (Persian: https://www.hamnavaa.com/counselors/sanaz-zarinfar/)
+- Dr. Mojgan Sepahmansour: https://www.hamnavaa.com/en/counselors/mojgan-sepahmansour/ (Persian: https://www.hamnavaa.com/counselors/mojgan-sepahmansour/)
+- Dr. Abolfazl Zarei: https://www.hamnavaa.com/en/counselors/abolfazl-zarei/ (Persian: https://www.hamnavaa.com/counselors/abolfazl-zarei/)
+- Dr. Nora Dehghanpour: https://www.hamnavaa.com/en/counselors/nora-dehghanpour/ (Persian: https://www.hamnavaa.com/counselors/nora-dehghanpour/)
+- Dr. Sara Monsefi: https://www.hamnavaa.com/en/counselors/sara-monsefi/ (Persian: https://www.hamnavaa.com/counselors/sara-monsefi/)
+- Dr. Marjan Alimohammadi: https://www.hamnavaa.com/en/counselors/marjan-alimohammadi/ (Persian: https://www.hamnavaa.com/counselors/marjan-alimohammadi/)
+- Dr. Mahdi Ghanbari: https://www.hamnavaa.com/en/counselors/mahdi-ghanbari/ (Persian: https://www.hamnavaa.com/counselors/mahdi-ghanbari/)
+- Dr. Anahita Behdarvand: https://www.hamnavaa.com/en/counselors/anahita-behdarvand/ (Persian: https://www.hamnavaa.com/counselors/anahita-behdarvand/)
+- Dr. Negar Teymouri: https://www.hamnavaa.com/en/counselors/negar-teymouri/ (Persian: https://www.hamnavaa.com/counselors/negar-teymouri/)
+- Dr. Hossein Mokhtari: https://www.hamnavaa.com/en/counselors/hossein-mokhtari/ (Persian: https://www.hamnavaa.com/counselors/hossein-mokhtari/)
+- Dr. Neshat Gholamipour: https://www.hamnavaa.com/en/counselors/neshat-gholamipour/ (Persian: https://www.hamnavaa.com/counselors/neshat-gholamipour/)
+- Dr. Leila Jabbari: https://www.hamnavaa.com/en/counselors/leila-jabbari/ (Persian: https://www.hamnavaa.com/counselors/leila-jabbari/)
 <!-- /cns-pages -->

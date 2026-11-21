@@ -1,4 +1,4 @@
-/* Hamnavaa counselor profile pages */
+/* Hamnavaa counselor profile pages (fa + en) */
 .cns-hero{display:grid;grid-template-columns:200px minmax(0,1fr);gap:34px;align-items:center;margin-top:8px}
 .cns-hero__photo{width:200px;height:200px;border-radius:50%;object-fit:cover;border:5px solid #fff;box-shadow:var(--glass-shadow)}
 .cns-hero .blog-lead{margin-top:10px}
@@ -11,5 +11,6 @@
 .cns-body li{margin-bottom:8px}
 .cns-body li::marker{color:var(--gold-deep);font-weight:800}
 .cns-note{margin-top:30px;padding:16px 22px;border-radius:14px;background:rgba(183,138,7,.08);border:1px solid var(--line);font-size:.95rem;line-height:1.9}
+html[dir="ltr"] .cns-body,html[dir="ltr"] .cns-hero{line-height:1.8}
 .page-cta .btn--ghost{color:#fff;border:1.5px solid rgba(255,255,255,.6)}.page-cta .btn--ghost:hover{background:rgba(255,255,255,.12)}
 @media (max-width:640px){.cns-hero{grid-template-columns:1fr;justify-items:center;text-align:center}.cns-hero__photo{width:150px;height:150px}.cns-chips{justify-content:center}}
