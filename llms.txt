@@ -10,7 +10,7 @@
 Site: https://www.hamnavaa.com/
 Languages: Persian (default) and English. Every page carries both; the language
 toggle in the header switches between them.
-Last updated: 2026-11-21
+Last updated: 2026-11-22
 
 ## What Hamnavaa is
 
@@ -237,6 +237,9 @@ Self-knowledge and personal growth:
 - کمال‌گرایی: کی انگیزه است و کی فشار روانی؟: https://www.hamnavaa.com/blog/perfectionism/
 - شفقت به خود: مهربانی با خود چه ربطی به سلامت روان دارد؟: https://www.hamnavaa.com/blog/self-compassion/
 - سندرم ایمپاستر (حس شیاد بودن): چقدر شایع است و چه می‌دانیم؟: https://www.hamnavaa.com/blog/impostor-syndrome/
+- تست ۱۶ پرسونالیتی و MBTI: پژوهش چه می‌گوید؟: https://www.hamnavaa.com/blog/mbti-16-personalities/
+- انیاگرام: پژوهش‌ها دربارهٔ اعتبار آن چه می‌گویند؟: https://www.hamnavaa.com/blog/enneagram-evidence/
+- پنج عامل بزرگ شخصیت و سلامت روان: چه رابطه‌ای دارند؟: https://www.hamnavaa.com/blog/big-five-personality-mental-health/
 
 Counseling and psychotherapy:
 - مشاورهٔ آنلاین چقدر مؤثر است؟ مرور متاآنالیزها: https://www.hamnavaa.com/blog/online-therapy-effectiveness/
