@@ -10,7 +10,7 @@
 Site: https://www.hamnavaa.com/
 Languages: Persian (default) and English. Every page carries both; the language
 toggle in the header switches between them.
-Last updated: 2026-11-22
+Last updated: 2026-11-25
 
 ## What Hamnavaa is
 
@@ -227,6 +227,7 @@ Relationships, attachment and family:
 - ارتباط سالم در رابطه: دعوا، ترمیم و درک متقابل: https://www.hamnavaa.com/blog/healthy-communication/
 - مرزگذاری سالم با خانواده، به‌ویژه در خانواده‌های مهاجر: https://www.hamnavaa.com/blog/healthy-boundaries/
 - خشونت در رابطه: انواع، پیامدها و چرا نباید تنها بمانید: https://www.hamnavaa.com/blog/intimate-partner-violence/
+- هوش مصنوعیِ همدم و تنهایی: چه می‌دانیم و چه نمی‌دانیم؟: https://www.hamnavaa.com/blog/ai-companions-loneliness/
 
 Self-knowledge and personal growth:
 - طرحواره‌درمانی چیست؟ الگوهای تکراری زندگی: https://www.hamnavaa.com/blog/schema-therapy-intro/
@@ -240,6 +241,7 @@ Self-knowledge and personal growth:
 - تست ۱۶ پرسونالیتی و MBTI: پژوهش چه می‌گوید؟: https://www.hamnavaa.com/blog/mbti-16-personalities/
 - انیاگرام: پژوهش‌ها دربارهٔ اعتبار آن چه می‌گویند؟: https://www.hamnavaa.com/blog/enneagram-evidence/
 - پنج عامل بزرگ شخصیت و سلامت روان: چه رابطه‌ای دارند؟: https://www.hamnavaa.com/blog/big-five-personality-mental-health/
+- خودتشخیصی از روی ریلز و چت‌بات: پژوهش‌ها چه می‌گویند؟: https://www.hamnavaa.com/blog/self-diagnosis-social-media/
 
 Counseling and psychotherapy:
 - مشاورهٔ آنلاین چقدر مؤثر است؟ مرور متاآنالیزها: https://www.hamnavaa.com/blog/online-therapy-effectiveness/

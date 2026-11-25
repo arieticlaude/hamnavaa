@@ -797,7 +797,7 @@
   <!-- blog:start -->
   <url>
     <loc>https://www.hamnavaa.com/blog/</loc>
-    <lastmod>2026-11-22</lastmod>
+    <lastmod>2026-11-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -999,6 +999,13 @@
   </url>
 
   <url>
+    <loc>https://www.hamnavaa.com/blog/ai-companions-loneliness/</loc>
+    <lastmod>2026-11-25</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
     <loc>https://www.hamnavaa.com/blog/schema-therapy-intro/</loc>
     <lastmod>2026-11-19</lastmod>
     <changefreq>monthly</changefreq>
@@ -1071,6 +1078,13 @@
   <url>
     <loc>https://www.hamnavaa.com/blog/big-five-personality-mental-health/</loc>
     <lastmod>2026-11-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://www.hamnavaa.com/blog/self-diagnosis-social-media/</loc>
+    <lastmod>2026-11-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
