@@ -10,7 +10,7 @@
 Site: https://www.hamnavaa.com/
 Languages: Persian (default) and English. Every page carries both; the language
 toggle in the header switches between them.
-Last updated: 2026-11-25
+Last updated: 2026-11-26
 
 ## What Hamnavaa is
 
@@ -228,6 +228,7 @@ Relationships, attachment and family:
 - مرزگذاری سالم با خانواده، به‌ویژه در خانواده‌های مهاجر: https://www.hamnavaa.com/blog/healthy-boundaries/
 - خشونت در رابطه: انواع، پیامدها و چرا نباید تنها بمانید: https://www.hamnavaa.com/blog/intimate-partner-violence/
 - هوش مصنوعیِ همدم و تنهایی: چه می‌دانیم و چه نمی‌دانیم؟: https://www.hamnavaa.com/blog/ai-companions-loneliness/
+- رابطهٔ مبهم و بی‌برچسب (سیچویشن‌شیپ): چرا می‌مانیم؟: https://www.hamnavaa.com/blog/situationship-ambiguity/
 
 Self-knowledge and personal growth:
 - طرحواره‌درمانی چیست؟ الگوهای تکراری زندگی: https://www.hamnavaa.com/blog/schema-therapy-intro/
